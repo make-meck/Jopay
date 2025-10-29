@@ -10,6 +10,7 @@ module com.example.jopay {
     requires org.kordamp.bootstrapfx.core;
     requires com.almasb.fxgl.all;
     requires java.sql;
+    requires java.desktop;
 
     opens com.example.jopay to javafx.fxml;
     exports com.example.jopay;
