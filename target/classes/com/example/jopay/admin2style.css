@@ -1,0 +1,51 @@
+.loginButton {
+    -fx-background-color: #0a625b;
+}
+
+.loginButton:hover {
+    -fx-opacity: 0.85;
+}
+
+.adminButton{
+    -fx-background-color: #dfdfdf;
+    -fx-text-fill: black;
+    -fx-background-radius: 15;
+}
+
+.adminButton:hover{
+    -fx-background-color: #a4cfb7;
+    -fx-text-fill: #0a625b;
+}
+.adminButton:pressed{
+    -fx-background-color: #a4cfb7;
+    -fx-text-fill: #0a625b;
+}
+.addRemoveButtons{
+    -fx-background-color: #dfdfdf;
+    -fx-text-fill: #0a625b;
+}
+
+.addRemoveButtons:hover{
+    -fx-background-color: #a4cfb7;
+    -fx-text-fill: #0a625b;
+}
+#saveButton {
+    -fx-background-color: #a4cfb7;
+}
+#saveButton:hover {
+    -fx-background-color: #75a289;
+}
+.clearBackButtons {
+    -fx-background-color: #a8a8a8;
+}
+.clearBackButtons:hover {
+    -fx-background-color: #8d8d8d;
+}
+#removeButton {
+    -fx-background-color: #cfa4a4;
+}
+#removeButton:hover {
+    -fx-background-color: #d28484;
+}
+
+
