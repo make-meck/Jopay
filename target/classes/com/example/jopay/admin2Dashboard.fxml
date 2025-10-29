@@ -255,8 +255,14 @@
                                 <Font name="System Bold" size="32.0" />
                             </font>
                         </Label>
-                        <Button fx:id="yesRemoveButton" layoutX="26.0" layoutY="164.0" mnemonicParsing="false" onAction="#yesRemoveClick" prefHeight="40.0" prefWidth="121.0" text="YES, REMOVE" />
-                        <Button fx:id="noBackButton" layoutX="186.0" layoutY="164.0" mnemonicParsing="false" onAction="#noBackClick" prefHeight="40.0" prefWidth="121.0" text="NO, BACK" />
+                        <Button id="yesRemoveButton" fx:id="yesRemoveButton" layoutX="26.0" layoutY="164.0" mnemonicParsing="false" onAction="#yesRemoveClick" prefHeight="40.0" prefWidth="121.0" text="YES, REMOVE" textFill="#620a0a">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font></Button>
+                        <Button id="noBackButton" fx:id="noBackButton" layoutX="186.0" layoutY="164.0" mnemonicParsing="false" onAction="#noBackClick" prefHeight="40.0" prefWidth="121.0" text="NO, BACK">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font></Button>
                     </children>
                 </AnchorPane>
             </children>

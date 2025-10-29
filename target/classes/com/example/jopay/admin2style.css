@@ -48,4 +48,15 @@
     -fx-background-color: #d28484;
 }
 
-
+#noBackButton {
+    -fx-background-color: #dfdfdf;
+}
+#noBackButton:hover {
+    -fx-background-color: #adadad;
+}
+#yesRemoveButton {
+    -fx-background-color: #cfa4a4;
+}
+#yesRemoveButton:hover {
+    -fx-background-color: #d28484;
+}
