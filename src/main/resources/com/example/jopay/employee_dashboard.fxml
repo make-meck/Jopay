@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.Group?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -12,17 +13,23 @@
         <Group layoutX="418.0" layoutY="355.0" />
         <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#a4cfb7" height="628.0" layoutX="1.0" layoutY="1.0" stroke="#a4cfb7" strokeType="OUTSIDE" width="1200.0" />
         <Rectangle arcHeight="5.0" arcWidth="5.0" fill="WHITE" height="592.0" layoutY="68.0" nodeOrientation="LEFT_TO_RIGHT" stroke="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" width="1202.0" />
-        <Label alignment="CENTER" layoutX="-22.0" layoutY="80.0" prefHeight="64.0" prefWidth="522.0" text="Mabuhay, Mr. Coco Martin!" textFill="#0a625b">
+        <Label id="year_period" alignment="CENTER" layoutX="-22.0" layoutY="80.0" prefHeight="64.0" prefWidth="522.0" text="Mabuhay, Mr. Coco Martin!" textFill="#0a625b">
             <font>
                 <Font name="System Bold" size="38.0" />
             </font>
         </Label>
         <ImageView fitHeight="54.0" fitWidth="200.0" layoutX="14.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true" />
-      <Label alignment="CENTER" layoutX="-104.0" layoutY="119.0" prefHeight="64.0" prefWidth="522.0" text="Here are the latest update on your payslip." textFill="#797979">
+      <Label alignment="CENTER" layoutX="-59.0" layoutY="119.0" prefHeight="64.0" prefWidth="522.0" text="Here are the latest update on your payslip." textFill="#797979">
          <font>
-            <Font size="15.0" />
+            <Font size="20.0" />
          </font>
       </Label>
-      <Rectangle id="employee_panel" arcHeight="20.0" arcWidth="20.0" fill="#a4cfb7" height="405.0" layoutX="28.0" layoutY="177.0" stroke="TRANSPARENT" strokeType="INSIDE" styleClass="employee_panel" width="987.0" />
+      <Rectangle id="employee_panel" arcHeight="20.0" arcWidth="20.0" fill="#a4cfb7" height="405.0" layoutX="28.0" layoutY="177.0" stroke="TRANSPARENT" strokeType="INSIDE" styleClass="employee_panel" width="675.0" />
+      <Label alignment="CENTER" layoutX="-140.0" layoutY="189.0" prefHeight="64.0" prefWidth="522.0" text="Payslips">
+         <font>
+            <Font name="System Bold" size="33.0" />
+         </font>
+      </Label>
+      <ComboBox editable="true" layoutX="64.0" layoutY="253.0" prefHeight="64.0" prefWidth="251.0" promptText="2025" />
     </children>
 </AnchorPane>
