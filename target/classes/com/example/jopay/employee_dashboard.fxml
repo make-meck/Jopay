@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="628.0" prefWidth="1200.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.jopay.adminDashboard">
+    <children>
+        <Group layoutX="418.0" layoutY="355.0" />
+        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#a4cfb7" height="628.0" layoutX="1.0" layoutY="1.0" stroke="#a4cfb7" strokeType="OUTSIDE" width="1200.0" />
+        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="WHITE" height="592.0" layoutY="58.0" nodeOrientation="LEFT_TO_RIGHT" stroke="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" width="1202.0" />
+        <Label alignment="CENTER" layoutX="22.0" layoutY="80.0" prefHeight="64.0" prefWidth="522.0" text="Mabuhay, Mr. Coco Martin!" textFill="#0a625b">
+            <font>
+                <Font name="Inter Semi Bold" size="38.0" />
+            </font>
+        </Label>
+        <ImageView fitHeight="54.0" fitWidth="200.0" layoutX="14.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true" />
+    </children>
+</AnchorPane>
