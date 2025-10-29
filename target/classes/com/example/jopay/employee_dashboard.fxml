@@ -1,28 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.Group?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="628.0" prefWidth="1200.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.jopay.adminDashboard">
+<AnchorPane prefHeight="628.0" prefWidth="1200.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.jopay.employeeController">
     <children>
         <Group layoutX="418.0" layoutY="355.0" />
         <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#a4cfb7" height="628.0" layoutX="1.0" layoutY="1.0" stroke="#a4cfb7" strokeType="OUTSIDE" width="1200.0" />
         <Rectangle arcHeight="5.0" arcWidth="5.0" fill="WHITE" height="592.0" layoutY="68.0" nodeOrientation="LEFT_TO_RIGHT" stroke="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" width="1202.0" />
-        <Label alignment="CENTER" layoutX="-22.0" layoutY="80.0" prefHeight="64.0" prefWidth="522.0" text="Mabuhay, Mr. Coco Martin!" textFill="#0a625b">
+        <Label id="year_period" alignment="CENTER" layoutX="-22.0" layoutY="80.0" prefHeight="64.0" prefWidth="522.0" text="Mabuhay, Mr. Coco Martin!" textFill="#0a625b">
             <font>
                 <Font name="System Bold" size="38.0" />
             </font>
         </Label>
+
         <ImageView fitHeight="54.0" fitWidth="200.0" layoutX="14.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true" />
-      <Label alignment="CENTER" layoutX="-104.0" layoutY="119.0" prefHeight="64.0" prefWidth="522.0" text="Here are the latest update on your payslip." textFill="#797979">
-         <font>
-            <Font size="15.0" />
-         </font>
-      </Label>
-      <Rectangle id="employee_panel" arcHeight="20.0" arcWidth="20.0" fill="#a4cfb7" height="405.0" layoutX="28.0" layoutY="177.0" stroke="TRANSPARENT" strokeType="INSIDE" styleClass="employee_panel" width="987.0" />
+        <Label alignment="CENTER" layoutX="-59.0" layoutY="119.0" prefHeight="64.0" prefWidth="522.0" text="Here are the latest update on your payslip." textFill="#797979">
+            <font>
+                <Font size="20.0" />
+            </font>
+        </Label>
+
+        <Rectangle id="employee_panel" arcHeight="20.0" arcWidth="20.0" fill="#a4cfb7" height="405.0" layoutX="28.0" layoutY="177.0" stroke="TRANSPARENT" strokeType="INSIDE" styleClass="employee_panel" width="675.0" />
+        <Label alignment="CENTER" layoutX="-140.0" layoutY="189.0" prefHeight="64.0" prefWidth="522.0" text="Payslips">
+            <font>
+                <Font name="System Bold" size="33.0" />
+            </font>
+        </Label>
+
+        <ComboBox fx:id="comboBoxMonth" layoutX="64.0" layoutY="253.0" onAction="#handleMonthSelection" prefHeight="64.0" prefWidth="251.0" promptText="Select Month" />
+
+        <Button fx:id="btnDownload" layoutX="340.0" layoutY="253.0" onAction="#handleDownloadPayslip" prefHeight="64.0" prefWidth="180.0" styleClass="download-button" text="Download PDF" visible="false">
+            <font>
+                <Font name="System Bold" size="16.0" />
+            </font>
+        </Button>
+
+        <LineChart layoutX="772.0" layoutY="244.0" prefHeight="340.0" prefWidth="375.0">
+            <xAxis>
+                <CategoryAxis side="BOTTOM" />
+            </xAxis>
+            <yAxis>
+                <NumberAxis side="LEFT" />
+            </yAxis>
+        </LineChart>
+        <Label alignment="CENTER" layoutX="628.0" layoutY="182.0" prefHeight="64.0" prefWidth="522.0" text="Summary of Attendance">
+            <font>
+                <Font name="System Italic" size="28.0" />
+            </font>
+        </Label>
+
+        <Hyperlink fx:id="updatePasswordLink" id="update_password" layoutX="1044.0" layoutY="89.0" onAction="#handleUpdatePassword" text="Update password" textFill="#0a625b" underline="true">
+            <font>
+                <Font name="System Bold" size="13.0" />
+            </font>
+        </Hyperlink>
+
+        <ImageView fx:id="logoutImageView" fitHeight="35.0" fitWidth="30.0" layoutX="1121.0" layoutY="21.0" onMouseClicked="#handleLogoutImageClick" pickOnBounds="true" preserveRatio="true" style="-fx-cursor: hand;">
+            <image>
+                <Image url="@logoutbutton.png" />
+            </image>
+        </ImageView>
+
+        <Hyperlink fx:id="logoutLink" layoutX="1072.0" layoutY="25.0" onAction="#handleLogout" text="Logout" textFill="#0a625b" />
     </children>
 </AnchorPane>

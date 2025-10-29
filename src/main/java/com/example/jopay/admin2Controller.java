@@ -61,15 +61,6 @@ public class admin2Controller {
 
 
     @FXML
-    private void adminIconClick() throws IOException {
-        FXMLLoader adminLogin_fxmlLoader = new FXMLLoader(getClass().getResource("admin2.fxml"));
-        Stage stage = (Stage) adminButton.getScene().getWindow();
-        Scene adminLoginScene = new Scene(adminLogin_fxmlLoader.load());
-        stage.setScene(adminLoginScene);
-        stage.show();
-    }
-
-    @FXML
     private void loginClick() throws IOException {
         if (Integer.parseInt(admin_id.getText()) != adminID || !pass_word.getText().equals(password)){
             error.setText("Account not found. Please try again.");

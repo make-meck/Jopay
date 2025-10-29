@@ -81,8 +81,6 @@ public class timeController {
          int employeeId= Integer.parseInt(employeeIdText);
          Connection conn= DriverManager.getConnection(URL, User, Password);
 
-         //to check whether the employeeID exist
-
          String query= "SELECT * FROM employee_info WHERE employee_id = ?";
          PreparedStatement stmt = conn.prepareStatement(query);
          stmt.setInt(1, employeeId);
