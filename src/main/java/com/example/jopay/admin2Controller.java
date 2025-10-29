@@ -50,10 +50,24 @@ public class admin2Controller {
     Button noBackButton;
     @FXML
     HBox searchHBox;
+    @FXML
+    Button adminButton;
+    @FXML
+    Button adminBackButton;
 
 
     private int adminID = 11111;
     private String password = "0000";
+
+
+    @FXML
+    private void adminIconClick() throws IOException {
+        FXMLLoader adminLogin_fxmlLoader = new FXMLLoader(getClass().getResource("admin2.fxml"));
+        Stage stage = (Stage) adminButton.getScene().getWindow();
+        Scene adminLoginScene = new Scene(adminLogin_fxmlLoader.load());
+        stage.setScene(adminLoginScene);
+        stage.show();
+    }
 
     @FXML
     private void loginClick() throws IOException {
@@ -62,12 +76,21 @@ public class admin2Controller {
         }
 
         else {
-            FXMLLoader fxmlLoader2 = new FXMLLoader(getClass().getResource("admin2Dashboard.fxml"));
+            FXMLLoader dashboardfxmlLoader = new FXMLLoader(getClass().getResource("admin2Dashboard.fxml"));
             Stage stage = (Stage) loginButton.getScene().getWindow();
-            Scene scene2 = new Scene(fxmlLoader2.load());
-            stage.setScene(scene2);
+            Scene dashboardScene = new Scene(dashboardfxmlLoader.load());
+            stage.setScene(dashboardScene);
             stage.show();
         }
+    }
+
+    @FXML
+    private void adminBackClick() throws IOException {
+        FXMLLoader employeeLogin_fxmlLoader = new FXMLLoader(getClass().getResource("employeelogin.fxml"));
+        Stage stage = (Stage) adminBackButton.getScene().getWindow();
+        Scene employeeLoginScene = new Scene(employeeLogin_fxmlLoader.load());
+        stage.setScene(employeeLoginScene);
+        stage.show();
     }
 
     @FXML
