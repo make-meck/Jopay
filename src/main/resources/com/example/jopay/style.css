@@ -12,3 +12,7 @@
     -fx-background-color: #a4cfb7;
     -fx-text-fill: #0a625b;
 }
+
+.employee_panel{
+    -fx-background-radius: 15;
+}
