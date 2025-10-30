@@ -3,9 +3,12 @@ package com.example.jopay;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -51,14 +54,25 @@ public class admin2Controller {
     @FXML
     HBox searchHBox;
     @FXML
-    Button adminButton;
+    Rectangle reportAnalysispanel;
     @FXML
-    Button adminBackButton;
+    Circle headcountCircle;
+    @FXML
+    Label reportAnalysisLabel;
+    @FXML
+    Label headCountCircle;
+    @FXML
+    BarChart reportAnalysisGraph;
+
+    @FXML
+    AnchorPane reportAnalysisPane;
+
+
+
 
 
     private int adminID = 11111;
     private String password = "0000";
-
 
     @FXML
     private void loginClick() throws IOException {
@@ -67,21 +81,12 @@ public class admin2Controller {
         }
 
         else {
-            FXMLLoader dashboardfxmlLoader = new FXMLLoader(getClass().getResource("admin2Dashboard.fxml"));
+            FXMLLoader fxmlLoader2 = new FXMLLoader(getClass().getResource("admin2Dashboard.fxml"));
             Stage stage = (Stage) loginButton.getScene().getWindow();
-            Scene dashboardScene = new Scene(dashboardfxmlLoader.load());
-            stage.setScene(dashboardScene);
+            Scene scene2 = new Scene(fxmlLoader2.load());
+            stage.setScene(scene2);
             stage.show();
         }
-    }
-
-    @FXML
-    private void adminBackClick() throws IOException {
-        FXMLLoader employeeLogin_fxmlLoader = new FXMLLoader(getClass().getResource("employeelogin.fxml"));
-        Stage stage = (Stage) adminBackButton.getScene().getWindow();
-        Scene employeeLoginScene = new Scene(employeeLogin_fxmlLoader.load());
-        stage.setScene(employeeLoginScene);
-        stage.show();
     }
 
     @FXML

@@ -2,6 +2,9 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.Group?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
@@ -12,6 +15,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
@@ -19,7 +23,7 @@
     <children>
         <Group layoutX="418.0" layoutY="355.0" />
         <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#a4cfb7" height="628.0" layoutX="1.0" layoutY="1.0" stroke="#a4cfb7" strokeType="OUTSIDE" width="1200.0" />
-        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="WHITE" height="592.0" layoutY="58.0" nodeOrientation="LEFT_TO_RIGHT" stroke="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" width="1202.0" />
+        <Rectangle arcHeight="5.0" arcWidth="10.0" fill="WHITE" height="592.0" layoutX="-2.0" layoutY="58.0" nodeOrientation="LEFT_TO_RIGHT" stroke="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" width="1202.0" />
         <Label alignment="CENTER" layoutX="22.0" layoutY="80.0" prefHeight="64.0" prefWidth="336.0" text="Report Analysis " textFill="#0a625b">
             <font>
                 <Font name="Inter Semi Bold" size="38.0" />
@@ -267,5 +271,51 @@
                 </AnchorPane>
             </children>
         </AnchorPane>
+      <AnchorPane id="reportAnalysisPane" layoutX="14.0" layoutY="229.0" prefHeight="416.0" prefWidth="1184.0">
+         <children>
+            <Rectangle id="reportAnalysispanel" arcHeight="10.0" arcWidth="5.0" fill="#a4cfb7" height="286.0" stroke="#f2f1f1" strokeType="INSIDE" style="-fx-arc-width: 50; -fx-arc-height: 50;" visible="false" width="334.0" />
+            <Label id="reportAnalysisLabel" prefHeight="40.0" prefWidth="270.0" text="Department Wise Headcount" visible="false">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font>
+            </Label>
+            <Rectangle id="reportAnalysispanel" arcHeight="10.0" arcWidth="5.0" fill="#a4cfb7" height="286.0" stroke="#f2f1f1" strokeType="INSIDE" style="-fx-arc-width: 50; -fx-arc-height: 50;" visible="false" width="334.0" />
+            <Circle id="headcountCircle" fill="WHITE" radius="101.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" visible="false" />
+            <Label id="population_label" text="200" visible="false">
+               <font>
+                  <Font name="System Bold" size="42.0" />
+               </font>
+            </Label>
+            <Label id="reportAnalysisLabel" prefHeight="40.0" prefWidth="270.0" text="Department Wise Headcount" visible="false">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font>
+               <graphic>
+                  <Label id="reportAnalysisLabel" prefHeight="31.0" prefWidth="142.0" text="Headcount " visible="false">
+                     <font>
+                        <Font name="System Bold" size="25.0" />
+                     </font>
+                  </Label>
+               </graphic>
+            </Label>
+            <Rectangle id="reportAnalysispanel" arcHeight="10.0" arcWidth="5.0" fill="#a4cfb7" height="286.0" stroke="#f2f1f1" strokeType="INSIDE" style="-fx-arc-width: 50; -fx-arc-height: 50;" visible="false" width="334.0" />
+            <BarChart id="reportAnalysisGraph" prefHeight="202.0" prefWidth="295.0" visible="false">
+              <xAxis>
+                <CategoryAxis side="BOTTOM" />
+              </xAxis>
+              <yAxis>
+                <NumberAxis side="LEFT" />
+              </yAxis>
+            </BarChart>
+            <BarChart id="reportAnalysisGraph" prefHeight="202.0" prefWidth="295.0" visible="false">
+               <xAxis>
+                  <CategoryAxis side="BOTTOM" />
+               </xAxis>
+               <yAxis>
+                  <NumberAxis side="LEFT" />
+               </yAxis>
+            </BarChart>
+         </children>
+      </AnchorPane>
     </children>
 </AnchorPane>

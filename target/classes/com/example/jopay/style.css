@@ -16,3 +16,7 @@
 .employee_panel{
     -fx-background-radius: 15;
 }
+.reportAnalysisPanel{
+-fx-border-radius: 15;
+
+}
