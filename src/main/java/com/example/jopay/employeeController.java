@@ -112,7 +112,6 @@ public class employeeController {
         if (selectedPeriod != null && !selectedPeriod.isEmpty()) {
             downloadLink.setVisible(true);
             downloadBtn.setVisible(true);
-            System.out.println("Selected period: " + selectedPeriod);
         } else {
             downloadLink.setVisible(false);
             downloadBtn.setVisible(false);
@@ -127,7 +126,7 @@ public class employeeController {
         }
 
         try {
-            String filename = "payslips/" + employeeId + "_" + selectedPeriod + ".pdf";
+            String filename = "payslips/" + employeeId + "_" + selectedPeriod + "_payslip.pdf";
             File pdfFile = new File(filename);
 
             generatePayslipPDF(pdfFile);
@@ -146,7 +145,7 @@ public class employeeController {
     }
 
     private void generatePayslipPDF(File file) throws DocumentException, IOException {
-        Document document = new Document(PageSize.LETTER, 50, 50, 80, 50);
+        Document document = new Document(PageSize.A4, 50, 50, 80, 50);
         PdfWriter.getInstance(document, new FileOutputStream(file));
         document.open();
 
@@ -166,7 +165,7 @@ public class employeeController {
         document.add(empName);
 
         Paragraph period = new Paragraph("Period: " + selectedPeriod, normalFont);
-        period.setSpacingAfter(10);
+        period.setSpacingAfter(5);
         document.add(period);
 
         Paragraph empStatus = new Paragraph("Employment Status: " + employmentStatus, normalFont);
@@ -179,14 +178,14 @@ public class employeeController {
         mainTable.setWidths(columnWidths);
 
         addCell(mainTable, "Basic Pay", normalFont, Rectangle.BOX);
-        addCell(mainTable, formatAmount(basicPay), normalFont, Rectangle.BOX, Element.ALIGN_RIGHT);
+        addCell(mainTable, formatAmount(basicPay), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
         addCell(mainTable, "", normalFont, Rectangle.BOX);
         addCell(mainTable, "", normalFont, Rectangle.BOX);
 
         addCell(mainTable, "", normalFont, Rectangle.BOX);
         addCell(mainTable, "", normalFont, Rectangle.BOX);
         addCell(mainTable, "Overtime", normalFont, Rectangle.BOX);
-        addCell(mainTable, formatAmount(overtime), normalFont, Rectangle.BOX, Element.ALIGN_RIGHT);
+        addCell(mainTable, formatAmount(overtime), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
 
         addCell(mainTable, "Allowance and De Minimis", boldFont, Rectangle.BOX);
         addCell(mainTable, "", normalFont, Rectangle.BOX);
