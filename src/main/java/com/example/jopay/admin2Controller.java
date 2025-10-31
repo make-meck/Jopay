@@ -24,6 +24,8 @@ public class admin2Controller {
     @FXML
     Button loginButton;
     @FXML
+    Button adminBackButton;
+    @FXML
     Button manageEmployeeButton;
     @FXML
     Button managePayrollButton;
@@ -68,9 +70,6 @@ public class admin2Controller {
     AnchorPane reportAnalysisPane;
 
 
-
-
-
     private int adminID = 11111;
     private String password = "0000";
 
@@ -87,6 +86,15 @@ public class admin2Controller {
             stage.setScene(scene2);
             stage.show();
         }
+    }
+
+    @FXML
+    void backButtonClick() throws IOException {
+        FXMLLoader employeeDashboardLoader = new FXMLLoader(getClass().getResource("employeelogin.fxml"));
+        Stage stage = (Stage) adminBackButton.getScene().getWindow();
+        Scene employeeLoginScene = new Scene(employeeDashboardLoader.load());
+        stage.setScene(employeeLoginScene);
+        stage.show();
     }
 
     @FXML
@@ -114,12 +122,6 @@ public class admin2Controller {
         searchHBox.setVisible(true);
         employeeTablePane.setVisible(false);
         removeEmpPane.setVisible(false);
-    }
-
-    @FXML
-    private void backButtonClick() {
-        employeeTablePane.setVisible(true);
-        addEmpPane.setVisible(false);
     }
 
     @FXML

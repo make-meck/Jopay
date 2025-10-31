@@ -4,7 +4,6 @@
 <?import javafx.scene.chart.CategoryAxis?>
 <?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
@@ -39,13 +38,7 @@
             </font>
         </Label>
 
-        <ComboBox fx:id="comboBoxMonth" layoutX="64.0" layoutY="253.0" onAction="#handleMonthSelection" prefHeight="64.0" prefWidth="251.0" promptText="Select Month" />
-
-        <Button fx:id="btnDownload" layoutX="340.0" layoutY="253.0" onAction="#handleDownloadPayslip" prefHeight="64.0" prefWidth="180.0" styleClass="download-button" text="Download PDF" visible="false">
-            <font>
-                <Font name="System Bold" size="16.0" />
-            </font>
-        </Button>
+        <ComboBox id="period_comboBox" fx:id="comboBoxPeriod" layoutX="64.0" layoutY="284.0" onAction="#handleMonthSelection" prefHeight="64.0" prefWidth="251.0" promptText="Select period" styleClass="period_comboBox" />
 
         <LineChart layoutX="772.0" layoutY="244.0" prefHeight="340.0" prefWidth="375.0">
             <xAxis>
@@ -61,7 +54,7 @@
             </font>
         </Label>
 
-        <Hyperlink fx:id="updatePasswordLink" id="update_password" layoutX="1044.0" layoutY="89.0" onAction="#handleUpdatePassword" text="Update password" textFill="#0a625b" underline="true">
+        <Hyperlink id="update_password" fx:id="updatePasswordLink" layoutX="1044.0" layoutY="89.0" onAction="#handleUpdatePassword" text="Update password" textFill="#0a625b" underline="true">
             <font>
                 <Font name="System Bold" size="13.0" />
             </font>
@@ -72,7 +65,25 @@
                 <Image url="@logoutbutton.png" />
             </image>
         </ImageView>
-
         <Hyperlink fx:id="logoutLink" layoutX="1072.0" layoutY="25.0" onAction="#handleLogout" text="Logout" textFill="#0a625b" />
+
+        <Hyperlink fx:id="downloadLink" layoutX="487.0" layoutY="291.0" onAction="#handleDownloadPayslip" prefHeight="36.0" prefWidth="144.0" text="Download payslip PDF" textFill="WHITE" visible="true">
+            <font>
+                <Font name="System Bold" size="13.0" />
+            </font>
+        </Hyperlink>
+        <ImageView id="download_button" fx:id="downloadBtn" fitHeight="36.0" fitWidth="30.0" layoutX="623.0" layoutY="294.0" onMouseClicked="#handleDownloadPayslip" pickOnBounds="true" preserveRatio="true" visible="true">
+            <image>
+                <Image url="@downloadbutton.png" />
+            </image>
+            <clip>
+                <Rectangle arcHeight="15.0" arcWidth="15.0" height="30.0" width="30.0" />
+            </clip>
+        </ImageView>
+      <Label alignment="CENTER" layoutX="-170.0" layoutY="236.0" prefHeight="64.0" prefWidth="522.0" text="2025" textFill="#0a625b">
+         <font>
+            <Font name="System Bold" size="20.0" />
+         </font>
+      </Label>
     </children>
 </AnchorPane>

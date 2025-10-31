@@ -35,7 +35,7 @@
          </font>
       </Button>
 
-      <Button fx:id="loginButton" layoutX="626.0" layoutY="399.0" mnemonicParsing="false" onAction="#loginClick" prefHeight="39.0" prefWidth="203.0" style="-fx-background-radius: 10;" styleClass="loginButton" stylesheets="@admin2style.css" text="LOG IN" textFill="WHITE">
+      <Button fx:id="loginButton" defaultButton="true" layoutX="626.0" layoutY="399.0" mnemonicParsing="false" onAction="#loginClick" prefHeight="39.0" prefWidth="203.0" style="-fx-background-radius: 10;" styleClass="loginButton" stylesheets="@admin2style.css" text="LOG IN" textFill="WHITE">
          <font>
             <Font name="Arial Bold" size="18.0" />
          </font>
