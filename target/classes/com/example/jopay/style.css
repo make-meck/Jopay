@@ -27,6 +27,8 @@
     -fx-background-radius: 13px;
     -fx-font-family: "System Bold";
     -fx-font-size: 15px;
+    -fx-pref-height: 50px;
+    -fx-pref-width: 300px;
 }
 
 .period_comboBox .arrow-button {
@@ -41,7 +43,6 @@
 .combo-box-popup .list-view {
     -fx-background-color: white;
     -fx-border-color: #a8a8a8;
-    -fx-border-radius: 10px;
 }
 
 .combo-box-popup .list-view .list-cell {

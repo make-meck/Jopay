@@ -95,7 +95,7 @@ public class employeeController {
                 "2025 Nov 11 - Nov 25"
         );
 
-        comboBoxPeriod.setPromptText("2025");
+        comboBoxPeriod.setPromptText("Select period");
         downloadLink.setVisible(false);
         downloadBtn.setVisible(false);
 
@@ -127,7 +127,7 @@ public class employeeController {
         }
 
         try {
-            String filename = "payslips/" + employeeId + "_" + selectedPeriod.replace(" ", "_") + ".pdf";
+            String filename = "payslips/" + employeeId + "_" + selectedPeriod + ".pdf";
             File pdfFile = new File(filename);
 
             generatePayslipPDF(pdfFile);
@@ -194,39 +194,39 @@ public class employeeController {
         addCell(mainTable, "", normalFont, Rectangle.BOX);
 
         addCell(mainTable, "Telecom", normalFont, Rectangle.BOX);
-        addCell(mainTable, formatAmount(telecom), normalFont, Rectangle.BOX, Element.ALIGN_RIGHT);
+        addCell(mainTable, formatAmount(telecom), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
         addCell(mainTable, "SSS Contributions", normalFont, Rectangle.BOX);
-        addCell(mainTable, formatAmount(sssContributions), normalFont, Rectangle.BOX, Element.ALIGN_RIGHT);
+        addCell(mainTable, formatAmount(sssContributions), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
 
         addCell(mainTable, "Travel", normalFont, Rectangle.BOX);
-        addCell(mainTable, formatAmount(travel), normalFont, Rectangle.BOX, Element.ALIGN_RIGHT);
+        addCell(mainTable, formatAmount(travel), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
         addCell(mainTable, "PHIC Contributions", normalFont, Rectangle.BOX);
-        addCell(mainTable, formatAmount(phicContributions), normalFont, Rectangle.BOX, Element.ALIGN_RIGHT);
+        addCell(mainTable, formatAmount(phicContributions), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
 
         addCell(mainTable, "Rice subsidy", normalFont, Rectangle.BOX);
-        addCell(mainTable, formatAmount(riceSubsidy), normalFont, Rectangle.BOX, Element.ALIGN_RIGHT);
+        addCell(mainTable, formatAmount(riceSubsidy), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
         addCell(mainTable, "HDMF Contributions", normalFont, Rectangle.BOX);
-        addCell(mainTable, formatAmount(hdmfContributions), normalFont, Rectangle.BOX, Element.ALIGN_RIGHT);
+        addCell(mainTable, formatAmount(hdmfContributions), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
 
         addCell(mainTable, "Non-taxable salary", normalFont, Rectangle.BOX);
-        addCell(mainTable, formatAmount(nonTaxableSalary), normalFont, Rectangle.BOX, Element.ALIGN_RIGHT);
+        addCell(mainTable, formatAmount(nonTaxableSalary), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
         addCell(mainTable, "SSS Loan", normalFont, Rectangle.BOX);
-        addCell(mainTable, formatAmount(sssLoan), normalFont, Rectangle.BOX, Element.ALIGN_RIGHT);
+        addCell(mainTable, formatAmount(sssLoan), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
 
         addCell(mainTable, "Per Diem", normalFont, Rectangle.BOX);
-        addCell(mainTable, formatAmount(perDiem), normalFont, Rectangle.BOX, Element.ALIGN_RIGHT);
+        addCell(mainTable, formatAmount(perDiem), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
         addCell(mainTable, "", normalFont, Rectangle.BOX);
         addCell(mainTable, "", normalFont, Rectangle.BOX);
 
         addCell(mainTable, "", normalFont, Rectangle.BOX);
         addCell(mainTable, "", normalFont, Rectangle.BOX);
         addCell(mainTable, "Absences", normalFont, Rectangle.BOX);
-        addCell(mainTable, formatAmount(absences), normalFont, Rectangle.BOX, Element.ALIGN_RIGHT);
+        addCell(mainTable, formatAmount(absences), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
 
         addCell(mainTable, "", normalFont, Rectangle.BOX);
         addCell(mainTable, "", normalFont, Rectangle.BOX);
         addCell(mainTable, "Withholding Tax", normalFont, Rectangle.BOX);
-        addCell(mainTable, formatAmount(withholdingTax), normalFont, Rectangle.BOX, Element.ALIGN_RIGHT);
+        addCell(mainTable, formatAmount(withholdingTax), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
 
         document.add(mainTable);
 
@@ -241,10 +241,10 @@ public class employeeController {
         summaryTable.setWidths(summaryWidths);
 
         addCell(summaryTable, "Gross Pay", boldFont, Rectangle.BOX);
-        addCell(summaryTable, formatAmount(grossPay), normalFont, Rectangle.BOX, Element.ALIGN_RIGHT);
+        addCell(summaryTable, formatAmount(grossPay), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
 
         addCell(summaryTable, "Total Deductions & Taxes", boldFont, Rectangle.BOX);
-        addCell(summaryTable, formatAmount(totalDeductions), normalFont, Rectangle.BOX, Element.ALIGN_RIGHT);
+        addCell(summaryTable, formatAmount(totalDeductions), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
 
         PdfPCell netPayLabel = new PdfPCell(new Phrase("Net Pay", boldFont));
         netPayLabel.setPadding(5);

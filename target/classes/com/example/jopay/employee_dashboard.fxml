@@ -67,12 +67,12 @@
         </ImageView>
         <Hyperlink fx:id="logoutLink" layoutX="1072.0" layoutY="25.0" onAction="#handleLogout" text="Logout" textFill="#0a625b" />
 
-        <Hyperlink fx:id="downloadLink" layoutX="487.0" layoutY="299.0" onAction="#handleDownloadPayslip" prefHeight="36.0" prefWidth="133.0" text="Download payslip PDF" textFill="WHITE" visible="true">
+        <Hyperlink fx:id="downloadLink" layoutX="487.0" layoutY="291.0" onAction="#handleDownloadPayslip" prefHeight="36.0" prefWidth="144.0" text="Download payslip PDF" textFill="WHITE" visible="true">
             <font>
                 <Font name="System Bold" size="13.0" />
             </font>
         </Hyperlink>
-        <ImageView id="download_button" fx:id="downloadBtn" fitHeight="36.0" fitWidth="30.0" layoutX="623.0" layoutY="302.0" onMouseClicked="#handleDownloadPayslip" pickOnBounds="true" preserveRatio="true" visible="true">
+        <ImageView id="download_button" fx:id="downloadBtn" fitHeight="36.0" fitWidth="30.0" layoutX="623.0" layoutY="294.0" onMouseClicked="#handleDownloadPayslip" pickOnBounds="true" preserveRatio="true" visible="true">
             <image>
                 <Image url="@downloadbutton.png" />
             </image>
