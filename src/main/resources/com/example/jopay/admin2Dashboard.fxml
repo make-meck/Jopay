@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.Group?>
 <?import javafx.scene.chart.BarChart?>
 <?import javafx.scene.chart.CategoryAxis?>
 <?import javafx.scene.chart.NumberAxis?>
@@ -14,21 +13,16 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="628.0" prefWidth="1200.0" stylesheets="@admin2style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.jopay.admin2Controller">
+<AnchorPane prefHeight="604.0" prefWidth="1248.0" stylesheets="@admin2style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.jopay.admin2Controller">
     <children>
-        <Group layoutX="418.0" layoutY="355.0" />
-        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#a4cfb7" height="632.0" layoutX="-1.0" layoutY="-1.0" stroke="#a4cfb7" strokeType="OUTSIDE" width="1214.0" />
-        <Rectangle fill="WHITE" height="592.0" layoutX="1.0" layoutY="58.0" nodeOrientation="LEFT_TO_RIGHT" stroke="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" width="1216.0" />
-        <Label id="payrollLabel" alignment="CENTER" layoutX="22.0" layoutY="80.0" prefHeight="64.0" prefWidth="336.0" text="Manage Payroll" textFill="#0a625b">
-            <font>
-                <Font name="Inter Semi Bold" size="38.0" />
-            </font>
-        </Label>
+        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#a4cfb7" height="655.0" layoutX="-18.0" layoutY="-10.0" stroke="#a4cfb7" strokeType="OUTSIDE" width="1266.0" />
+        <Rectangle fill="WHITE" height="583.0" layoutX="1.0" layoutY="64.0" nodeOrientation="LEFT_TO_RIGHT" onMousePressed="#reportAnalysisClick" stroke="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" width="1248.0" />
         <Button fx:id="reportAnalysisButton" layoutX="47.0" layoutY="161.0" mnemonicParsing="false" onAction="#reportAnalysisClick" prefHeight="47.0" prefWidth="213.0" style="-fx-background-radius: 15;" styleClass="adminButton" text="Report Analysis">
             <opaqueInsets>
                 <Insets bottom="1.0" left="1.0" right="1.0" top="1.0" />
@@ -45,8 +39,71 @@
             <font>
                 <Font size="15.0" />
             </font></Button>
-        <ImageView fitHeight="54.0" fitWidth="200.0" layoutX="14.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true" />
-        <AnchorPane fx:id="pane1" layoutX="-2.0" layoutY="217.0" prefHeight="436.0" prefWidth="1202.0" visible="false">
+        <ImageView fitHeight="62.0" fitWidth="182.0" layoutX="14.0" layoutY="6.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@JopayLogo.png" />
+         </image></ImageView>
+      <AnchorPane id="reportAnalysisPane" fx:id="reportAnalysisPane" layoutX="3.0" layoutY="217.0" onMouseClicked="#reportAnalysisClick" onMousePressed="#reportAnalysisClick" prefHeight="390.0" prefWidth="1200.0">
+         <children>
+            <HBox layoutX="31.0" layoutY="29.0" prefHeight="307.0" prefWidth="1166.0" spacing="20.0">
+               <children>
+                  <Pane>
+                     <children>
+                        <Rectangle id="reportAnalysispaBackground" arcHeight="50.0" arcWidth="50.0" fill="#a4cfb7" height="266.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="289.0" />
+                        <Label layoutX="27.0" layoutY="23.0" prefHeight="25.0" prefWidth="182.0" text="Headcount ">
+                           <font>
+                              <Font size="20.0" />
+                           </font>
+                        </Label>
+                        <Circle fill="#fdfeff" layoutX="144.0" layoutY="154.0" radius="100.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" />
+                        <Label layoutX="87.0" layoutY="108.0" prefHeight="64.0" prefWidth="115.0" text="200">
+                           <font>
+                              <Font size="63.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </Pane>
+                  <Pane layoutX="10.0" layoutY="10.0">
+                     <children>
+                        <Rectangle id="reportAnalysispaBackground" arcHeight="50.0" arcWidth="50.0" fill="#a4cfb7" height="266.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="289.0" />
+                        <Label layoutX="27.0" layoutY="23.0" prefHeight="30.0" prefWidth="242.0" text="Department Wise Headcount ">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                        <BarChart layoutX="9.0" layoutY="64.0" prefHeight="218.0" prefWidth="273.0">
+                          <xAxis>
+                            <CategoryAxis side="BOTTOM" />
+                          </xAxis>
+                          <yAxis>
+                            <NumberAxis side="LEFT" />
+                          </yAxis>
+                        </BarChart>
+                     </children>
+                  </Pane>
+                  <Pane layoutX="300.0" layoutY="10.0">
+                     <children>
+                        <Rectangle id="reportAnalysispaBackground" arcHeight="50.0" arcWidth="50.0" fill="#a4cfb7" height="266.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="289.0" />
+                        <Label layoutX="27.0" layoutY="23.0" prefHeight="30.0" prefWidth="242.0" text="Type of Employment ">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                        <BarChart layoutX="9.0" layoutY="64.0" prefHeight="218.0" prefWidth="273.0">
+                           <xAxis>
+                              <CategoryAxis side="BOTTOM" />
+                           </xAxis>
+                           <yAxis>
+                              <NumberAxis side="LEFT" />
+                           </yAxis>
+                        </BarChart>
+                     </children>
+                  </Pane>
+               </children>
+            </HBox>
+         </children>
+      </AnchorPane>
+        <AnchorPane fx:id="pane1" layoutX="-2.0" layoutY="217.0" prefHeight="436.0" prefWidth="1200.0" visible="false">
             <children>
                 <HBox fx:id="searchHBox" layoutX="54.0" layoutY="12.0" prefHeight="49.0" prefWidth="651.0">
                     <children>
@@ -271,246 +328,219 @@
                 </AnchorPane>
             </children>
         </AnchorPane>
-      <AnchorPane id="reportAnalysisPane" layoutX="3.0" layoutY="216.0" prefHeight="429.0" prefWidth="1195.0">
+      <AnchorPane id="managePayrollPane" fx:id="managePayrollPane" layoutX="-2.0" layoutY="178.0" onMouseClicked="#managePayrollClick" prefHeight="472.0" prefWidth="1183.0" visible="false">
          <children>
-            <Rectangle id="reportAnalysispanel" arcHeight="10.0" arcWidth="5.0" fill="#a4cfb7" height="286.0" stroke="#f2f1f1" strokeType="INSIDE" style="-fx-arc-width: 50; -fx-arc-height: 50;" visible="false" width="334.0" />
-            <Label id="reportAnalysisLabel" prefHeight="40.0" prefWidth="270.0" text="Department Wise Headcount" visible="false">
-               <font>
-                  <Font name="System Bold" size="18.0" />
-               </font>
-            </Label>
-            <Rectangle id="reportAnalysispanel" arcHeight="10.0" arcWidth="5.0" fill="#a4cfb7" height="286.0" stroke="#f2f1f1" strokeType="INSIDE" style="-fx-arc-width: 50; -fx-arc-height: 50;" visible="false" width="334.0" />
-            <Circle id="headcountCircle" fill="WHITE" radius="101.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" visible="false" />
-            <Label id="population_label" text="200" visible="false">
-               <font>
-                  <Font name="System Bold" size="42.0" />
-               </font>
-            </Label>
-            <Label id="reportAnalysisLabel" prefHeight="40.0" prefWidth="270.0" text="Department Wise Headcount" visible="false">
-               <font>
-                  <Font name="System Bold" size="18.0" />
-               </font>
-               <graphic>
-                  <Label id="reportAnalysisLabel" prefHeight="31.0" prefWidth="142.0" text="Headcount " visible="false">
-                     <font>
-                        <Font name="System Bold" size="25.0" />
-                     </font>
-                  </Label>
-               </graphic>
-            </Label>
-            <Rectangle id="reportAnalysispanel" arcHeight="10.0" arcWidth="5.0" fill="#a4cfb7" height="286.0" stroke="#f2f1f1" strokeType="INSIDE" style="-fx-arc-width: 50; -fx-arc-height: 50;" visible="false" width="334.0" />
-            <BarChart id="reportAnalysisGraph" prefHeight="202.0" prefWidth="295.0" visible="false">
-              <xAxis>
-                <CategoryAxis side="BOTTOM" />
-              </xAxis>
-              <yAxis>
-                <NumberAxis side="LEFT" />
-              </yAxis>
-            </BarChart>
-            <BarChart id="reportAnalysisGraph" prefHeight="202.0" prefWidth="295.0" visible="false">
-               <xAxis>
-                  <CategoryAxis side="BOTTOM" />
-               </xAxis>
-               <yAxis>
-                  <NumberAxis side="LEFT" />
-               </yAxis>
-            </BarChart>
-            <AnchorPane layoutX="-14.0" layoutY="1.0" prefHeight="426.0" prefWidth="1226.0">
+            <Rectangle id="manageEmpPane" arcHeight="5.0" arcWidth="5.0" fill="#dfdfdf" height="361.0" layoutX="14.0" layoutY="99.0" smooth="false" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="1000.0" />
+            <VBox id="manageEmpLabelPane1" alignment="TOP_CENTER" layoutX="27.0" layoutY="114.0" prefHeight="346.0" prefWidth="160.0">
                <children>
-                  <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#dfdfdf" height="361.0" layoutX="21.0" layoutY="60.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="1000.0" />
-                  <TextField layoutX="47.0" layoutY="7.0" prefHeight="47.0" prefWidth="346.0" promptText="Employee ID" />
-                  <ImageView fitHeight="40.0" fitWidth="36.0" layoutX="351.0" layoutY="13.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@searchIconManagePayroll.png" />
-                     </image>
-                  </ImageView>
-                  <Button layoutX="1045.0" layoutY="264.0" mnemonicParsing="false" prefHeight="54.0" prefWidth="170.0" text="Update" />
-                  <Button layoutX="1045.0" layoutY="345.0" mnemonicParsing="false" prefHeight="47.0" prefWidth="170.0" text="Delete" />
-                  <VBox alignment="TOP_CENTER" layoutX="47.0" layoutY="64.0" prefHeight="346.0" prefWidth="160.0">
-                     <children>
-                        <Label prefHeight="25.0" prefWidth="165.0" text="Employee Name: ">
-                           <VBox.margin>
-                              <Insets />
-                           </VBox.margin>
-                        </Label>
-                        <Label prefHeight="25.0" prefWidth="166.0" text="Employee ID: ">
-                           <VBox.margin>
-                              <Insets />
-                           </VBox.margin>
-                        </Label>
-                        <Label prefHeight="31.0" prefWidth="160.0" text="Telecom:">
-                           <VBox.margin>
-                              <Insets />
-                           </VBox.margin>
-                           <padding>
-                              <Insets top="14.0" />
-                           </padding>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="166.0" text="Travel:">
-                           <padding>
-                              <Insets top="8.0" />
-                           </padding>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="167.0" text="Rice Subsidy:">
-                           <padding>
-                              <Insets top="8.0" />
-                           </padding>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="168.0" text="Non-Taxable Salary:">
-                           <padding>
-                              <Insets top="8.0" />
-                           </padding>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="170.0" text="Per Deim: ">
-                           <padding>
-                              <Insets top="8.0" />
-                           </padding>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="168.0" text="Per Deim Count: ">
-                           <padding>
-                              <Insets top="8.0" />
-                           </padding>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="169.0" text="SSS Contribution:">
-                           <padding>
-                              <Insets top="17.0" />
-                           </padding>
-                        </Label>
-                        <Label layoutX="11.0" layoutY="220.0" prefHeight="18.0" prefWidth="169.0" text="PHIC Contributions:">
-                           <padding>
-                              <Insets top="10.0" />
-                           </padding>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="167.0" text="HDMF Contributions:">
-                           <padding>
-                              <Insets top="10.0" />
-                           </padding>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="176.0" text="SSS Loan:">
-                           <padding>
-                              <Insets top="5.0" />
-                           </padding>
-                        </Label>
-                     </children>
-                  </VBox>
-                  <VBox layoutX="226.0" layoutY="64.0" prefHeight="346.0" prefWidth="226.0">
-                     <children>
-                        <TextField prefHeight="12.0" prefWidth="169.0" />
-                        <TextField>
-                           <VBox.margin>
-                              <Insets bottom="10.0" />
-                           </VBox.margin>
-                        </TextField>
-                        <TextField layoutX="11.0" layoutY="44.0" />
-                        <TextField layoutX="11.0" layoutY="78.0" />
-                        <TextField layoutX="11.0" layoutY="112.0" />
-                        <TextField layoutX="11.0" layoutY="145.0" />
-                        <TextField layoutX="11.0" layoutY="179.0" />
-                        <TextField layoutX="11.0" layoutY="212.0">
-                           <VBox.margin>
-                              <Insets bottom="10.0" />
-                           </VBox.margin>
-                        </TextField>
-                        <TextField layoutX="11.0" layoutY="246.0" />
-                        <TextField layoutX="11.0" layoutY="280.0" />
-                        <TextField layoutX="11.0" layoutY="246.0" />
-                        <TextField layoutX="11.0" layoutY="280.0" />
-                     </children>
-                  </VBox>
-                  <VBox layoutX="513.0" layoutY="64.0" prefHeight="353.0" prefWidth="182.0">
-                     <children>
-                        <Label prefHeight="18.0" prefWidth="182.0" text="Basic Pay: ">
-                           <VBox.margin>
-                              <Insets bottom="5.0" top="5.0" />
-                           </VBox.margin>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="192.0" text="Starting Period:">
-                           <VBox.margin>
-                              <Insets bottom="5.0" top="5.0" />
-                           </VBox.margin>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="184.0" text="Ending Period: ">
-                           <VBox.margin>
-                              <Insets bottom="10.0" />
-                           </VBox.margin>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="178.0" text="Taxable Pay: ">
-                           <padding>
-                              <Insets bottom="3.0" top="8.0" />
-                           </padding>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="196.0" text="Tax:">
-                           <padding>
-                              <Insets top="3.0" />
-                           </padding>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="184.0" text="Overtime:">
-                           <padding>
-                              <Insets bottom="5.0" top="5.0" />
-                           </padding>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="198.0" text="No. of Authorized Leave:">
-                           <padding>
-                              <Insets top="8.0" />
-                           </padding>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="191.0" text="Absences:">
-                           <padding>
-                              <Insets top="8.0" />
-                           </padding>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="197.0" text="Number of Absences:">
-                           <VBox.margin>
-                              <Insets bottom="10.0" />
-                           </VBox.margin>
-                           <padding>
-                              <Insets top="8.0" />
-                           </padding>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="200.0" text="Gross Pay:">
-                           <padding>
-                              <Insets top="10.0" />
-                           </padding>
-                        </Label>
-                        <Label prefHeight="18.0" prefWidth="189.0" text="Total Deduction:">
-                           <padding>
-                              <Insets top="10.0" />
-                           </padding>
-                        </Label>
-                        <Label layoutX="10.0" layoutY="194.0" prefHeight="18.0" prefWidth="189.0" text="Net Pay: ">
-                           <padding>
-                              <Insets top="6.0" />
-                           </padding>
-                        </Label>
-                     </children>
-                  </VBox>
-                  <VBox layoutX="714.0" layoutY="64.0" prefHeight="346.0" prefWidth="226.0">
-                     <children>
-                        <TextField prefHeight="12.0" prefWidth="169.0" />
-                        <TextField />
-                        <TextField layoutX="11.0" layoutY="44.0">
-                           <VBox.margin>
-                              <Insets bottom="10.0" />
-                           </VBox.margin>
-                        </TextField>
-                        <TextField layoutX="11.0" layoutY="78.0" />
-                        <TextField layoutX="11.0" layoutY="112.0" />
-                        <TextField layoutX="11.0" layoutY="145.0" />
-                        <TextField layoutX="11.0" layoutY="179.0" />
-                        <TextField layoutX="11.0" layoutY="212.0" />
-                        <TextField layoutX="11.0" layoutY="246.0">
-                           <VBox.margin>
-                              <Insets bottom="12.0" />
-                           </VBox.margin>
-                        </TextField>
-                        <TextField layoutX="11.0" layoutY="280.0" />
-                        <TextField layoutX="11.0" layoutY="246.0" />
-                        <TextField layoutX="11.0" layoutY="280.0" />
-                     </children>
-                  </VBox>
+                  <Label prefHeight="25.0" prefWidth="165.0" text="Employee Name: ">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                  </Label>
+                  <Label prefHeight="25.0" prefWidth="166.0" text="Employee ID: ">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                  </Label>
+                  <Label prefHeight="31.0" prefWidth="160.0" text="Telecom:">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                     <padding>
+                        <Insets top="14.0" />
+                     </padding>
+                  </Label>
+                  <Label prefHeight="18.0" prefWidth="166.0" text="Travel:">
+                     <padding>
+                        <Insets top="8.0" />
+                     </padding>
+                  </Label>
+                  <Label prefHeight="18.0" prefWidth="167.0" text="Rice Subsidy:">
+                     <padding>
+                        <Insets top="8.0" />
+                     </padding>
+                  </Label>
+                  <Label prefHeight="18.0" prefWidth="168.0" text="Non-Taxable Salary:">
+                     <padding>
+                        <Insets top="8.0" />
+                     </padding>
+                  </Label>
+                  <Label prefHeight="18.0" prefWidth="170.0" text="Per Deim: ">
+                     <padding>
+                        <Insets top="8.0" />
+                     </padding>
+                  </Label>
+                  <Label prefHeight="18.0" prefWidth="168.0" text="Per Deim Count: ">
+                     <padding>
+                        <Insets top="8.0" />
+                     </padding>
+                  </Label>
+                  <Label prefHeight="18.0" prefWidth="169.0" text="SSS Contribution:">
+                     <padding>
+                        <Insets top="17.0" />
+                     </padding>
+                  </Label>
+                  <Label layoutX="11.0" layoutY="220.0" prefHeight="18.0" prefWidth="169.0" text="PHIC Contributions:">
+                     <padding>
+                        <Insets top="10.0" />
+                     </padding>
+                  </Label>
+                  <Label prefHeight="18.0" prefWidth="167.0" text="HDMF Contributions:">
+                     <padding>
+                        <Insets top="10.0" />
+                     </padding>
+                  </Label>
+                  <Label prefHeight="18.0" prefWidth="176.0" text="SSS Loan:">
+                     <padding>
+                        <Insets top="5.0" />
+                     </padding>
+                  </Label>
                </children>
-            </AnchorPane>
+            </VBox>
+            <VBox id="manageEmpTextfieldPane1" layoutX="174.0" layoutY="116.0" prefHeight="346.0" prefWidth="242.0">
+               <children>
+                  <TextField prefHeight="12.0" prefWidth="169.0" />
+                  <TextField>
+                     <VBox.margin>
+                        <Insets bottom="10.0" />
+                     </VBox.margin>
+                  </TextField>
+                  <TextField layoutX="11.0" layoutY="44.0" />
+                  <TextField layoutX="11.0" layoutY="78.0" />
+                  <TextField layoutX="11.0" layoutY="112.0" />
+                  <TextField layoutX="11.0" layoutY="145.0" />
+                  <TextField layoutX="11.0" layoutY="179.0" />
+                  <TextField layoutX="11.0" layoutY="212.0">
+                     <VBox.margin>
+                        <Insets bottom="10.0" />
+                     </VBox.margin>
+                  </TextField>
+                  <TextField layoutX="11.0" layoutY="246.0" />
+                  <TextField layoutX="11.0" layoutY="280.0" />
+                  <TextField layoutX="11.0" layoutY="246.0" />
+                  <TextField layoutX="11.0" layoutY="280.0" />
+               </children>
+            </VBox>
+            <VBox id="manageEmpLabelPane2" layoutX="458.0" layoutY="116.0" prefHeight="353.0" prefWidth="182.0">
+               <children>
+                  <Label prefHeight="18.0" prefWidth="182.0" text="Basic Pay: ">
+                     <VBox.margin>
+                        <Insets bottom="5.0" top="5.0" />
+                     </VBox.margin>
+                  </Label>
+                  <Label prefHeight="18.0" prefWidth="192.0" text="Starting Period:">
+                     <VBox.margin>
+                        <Insets bottom="5.0" top="5.0" />
+                     </VBox.margin>
+                  </Label>
+                  <Label prefHeight="18.0" prefWidth="184.0" text="Ending Period: ">
+                     <VBox.margin>
+                        <Insets bottom="10.0" />
+                     </VBox.margin>
+                  </Label>
+                  <Label prefHeight="18.0" prefWidth="178.0" text="Taxable Pay: ">
+                     <padding>
+                        <Insets bottom="3.0" top="8.0" />
+                     </padding>
+                  </Label>
+                  <Label prefHeight="18.0" prefWidth="196.0" text="Tax:">
+                     <padding>
+                        <Insets top="3.0" />
+                     </padding>
+                  </Label>
+                  <Label prefHeight="18.0" prefWidth="184.0" text="Overtime:">
+                     <padding>
+                        <Insets bottom="5.0" top="5.0" />
+                     </padding>
+                  </Label>
+                  <Label prefHeight="18.0" prefWidth="198.0" text="No. of Authorized Leave:">
+                     <padding>
+                        <Insets top="8.0" />
+                     </padding>
+                  </Label>
+                  <Label prefHeight="18.0" prefWidth="191.0" text="Absences:">
+                     <padding>
+                        <Insets top="8.0" />
+                     </padding>
+                  </Label>
+                  <Label prefHeight="18.0" prefWidth="197.0" text="Number of Absences:">
+                     <VBox.margin>
+                        <Insets bottom="10.0" />
+                     </VBox.margin>
+                     <padding>
+                        <Insets top="8.0" />
+                     </padding>
+                  </Label>
+                  <Label prefHeight="18.0" prefWidth="200.0" text="Gross Pay:">
+                     <padding>
+                        <Insets top="10.0" />
+                     </padding>
+                  </Label>
+                  <Label prefHeight="18.0" prefWidth="189.0" text="Total Deduction:">
+                     <padding>
+                        <Insets top="10.0" />
+                     </padding>
+                  </Label>
+                  <Label layoutX="10.0" layoutY="194.0" prefHeight="18.0" prefWidth="189.0" text="Net Pay: ">
+                     <padding>
+                        <Insets top="6.0" />
+                     </padding>
+                  </Label>
+               </children>
+            </VBox>
+            <VBox id="manageEmpTextfieldPane2" layoutX="648.0" layoutY="119.0" prefHeight="346.0" prefWidth="242.0">
+               <children>
+                  <TextField prefHeight="12.0" prefWidth="169.0" />
+                  <TextField />
+                  <TextField layoutX="11.0" layoutY="44.0">
+                     <VBox.margin>
+                        <Insets bottom="10.0" />
+                     </VBox.margin>
+                  </TextField>
+                  <TextField layoutX="11.0" layoutY="78.0" />
+                  <TextField layoutX="11.0" layoutY="112.0" />
+                  <TextField layoutX="11.0" layoutY="145.0" />
+                  <TextField layoutX="11.0" layoutY="179.0" />
+                  <TextField layoutX="11.0" layoutY="212.0" />
+                  <TextField layoutX="11.0" layoutY="246.0">
+                     <VBox.margin>
+                        <Insets bottom="12.0" />
+                     </VBox.margin>
+                  </TextField>
+                  <TextField layoutX="11.0" layoutY="280.0" />
+                  <TextField layoutX="11.0" layoutY="246.0" />
+                  <TextField layoutX="11.0" layoutY="280.0" />
+               </children>
+            </VBox>
+            <VBox id="manageEmpButtons" layoutX="1033.0" layoutY="293.0" prefHeight="147.0" prefWidth="160.0" spacing="20.0">
+               <children>
+                  <Button mnemonicParsing="false" prefHeight="46.0" prefWidth="178.0" text="Update" />
+                  <Button mnemonicParsing="false" prefHeight="41.0" prefWidth="178.0" text="Delete" />
+               </children>
+            </VBox>
+            <TextField id="manageEmpSearchBar" layoutX="27.0" layoutY="37.0" prefHeight="46.0" prefWidth="334.0" promptText="Employee ID " />
+            <ImageView id="manageEmpSearchIcon" fitHeight="40.0" fitWidth="41.0" layoutX="312.0" layoutY="41.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@searchIconManagePayroll.png" />
+               </image>
+            </ImageView>
          </children>
       </AnchorPane>
+      <Label id="reportAnalysisLabel" fx:id="reportAnalysisLabel" layoutX="47.0" layoutY="84.0" prefHeight="62.0" prefWidth="334.0" text="Report Analysis " textFill="#0a625b">
+         <font>
+            <Font size="39.0" />
+         </font>
+      </Label>
+      <Label id="manageEmpLabel" fx:id="manageEmpLabel" layoutX="57.0" layoutY="94.0" prefHeight="62.0" prefWidth="334.0" text="Manage Employee" textFill="#0a625b" visible="false">
+         <font>
+            <Font size="39.0" />
+         </font>
+      </Label>
+      <Label id="payrollLabel" fx:id="payrollLabel" layoutX="57.0" layoutY="94.0" prefHeight="62.0" prefWidth="334.0" text="Manage Payroll " textFill="#0a625b" visible="false">
+         <font>
+            <Font size="39.0" />
+         </font>
+      </Label>
     </children>
 </AnchorPane>

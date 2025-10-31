@@ -5,8 +5,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
@@ -55,19 +58,20 @@ public class admin2Controller {
     Button noBackButton;
     @FXML
     HBox searchHBox;
+
     @FXML
-    Rectangle reportAnalysispanel;
-    @FXML
-    Circle headcountCircle;
-    @FXML
-    Label reportAnalysisLabel;
-    @FXML
-    Label headCountCircle;
-    @FXML
-    BarChart reportAnalysisGraph;
+    AnchorPane managePayrollPane;
 
     @FXML
     AnchorPane reportAnalysisPane;
+    @FXML
+    Label payrollLabel;
+    @FXML
+    Label manageEmpLabel;
+    @FXML
+    Label reportAnalysisLabel;
+
+
 
 
     private int adminID = 11111;
@@ -104,16 +108,34 @@ public class admin2Controller {
         searchHBox.setVisible(true);
         addEmpPane.setVisible(false);
         removeEmpPane.setVisible(false);
+        managePayrollPane.setVisible(false);
+        reportAnalysisPane.setVisible(false);
+        manageEmpLabel.setVisible(true);
+        payrollLabel.setVisible(false);
+        reportAnalysisLabel.setVisible(false);
+
     }
 
     @FXML
     private void managePayrollClick() {
         pane1.setVisible(false);
+        managePayrollPane.setVisible(true);
+        reportAnalysisPane.setVisible(false);
+        payrollLabel.setVisible(true);
+        manageEmpLabel.setVisible(false);
+        reportAnalysisLabel.setVisible(false);
+
+
     }
 
     @FXML
     private void reportAnalysisClick() {
         pane1.setVisible(false);
+        reportAnalysisPane.setVisible(true);
+        managePayrollPane.setVisible(false);
+        reportAnalysisLabel.setVisible(true);
+        payrollLabel.setVisible(false);
+        manageEmpLabel.setVisible(false);
     }
 
     @FXML
@@ -146,7 +168,6 @@ public class admin2Controller {
     private void noBackClick() {
         confirmationPane.setVisible(false);
     }
-
 
 
 }
