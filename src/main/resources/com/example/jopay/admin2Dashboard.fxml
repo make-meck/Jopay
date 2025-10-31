@@ -253,13 +253,32 @@
                                         <Font name="Arial Bold" size="15.0" />
                                     </font>
                                 </Button>
-                                <Button fx:id="backButton" mnemonicParsing="false" onAction="#backButtonClick" prefHeight="31.0" prefWidth="121.0" style="-fx-background-radius: 15;" styleClass="clearBackButtons" text="Back">
+                                <Button fx:id="addEmpBackButton" mnemonicParsing="false" onAction="#addEmpBackButtonClick" prefHeight="31.0" prefWidth="121.0" style="-fx-background-radius: 15;" styleClass="clearBackButtons" text="Back">
                                     <font>
                                         <Font name="Arial Bold" size="15.0" />
                                     </font>
                                 </Button>
                             </children>
                         </HBox>
+                  <VBox alignment="TOP_RIGHT" layoutX="39.0" layoutY="39.0" prefHeight="198.0" prefWidth="20.0" spacing="18.0">
+                     <children>
+                        <Label alignment="CENTER_RIGHT" text="*" textFill="RED" />
+                        <Label text="*" textFill="RED" />
+                        <Label textFill="RED" />
+                        <Label text="*" textFill="RED" />
+                        <Label text="*" textFill="RED" />
+                        <Label text="*" textFill="RED" />
+                     </children>
+                  </VBox>
+                  <VBox alignment="TOP_RIGHT" layoutX="548.0" layoutY="38.0" prefHeight="198.0" prefWidth="20.0" spacing="18.0">
+                     <children>
+                        <Label alignment="CENTER_RIGHT" text="*" textFill="RED" />
+                        <Label text="*" textFill="RED" />
+                        <Label text="*" textFill="RED" />
+                        <Label text="*" textFill="RED" />
+                        <Label text="*" textFill="RED" />
+                     </children>
+                  </VBox>
                     </children>
                 </AnchorPane>
                 <AnchorPane fx:id="removeEmpPane" layoutX="55.0" layoutY="82.0" prefHeight="285.0" prefWidth="940.0" style="-fx-background-color: #dfdfdf;" visible="false">
@@ -298,7 +317,7 @@
                                 <Font name="System Bold" size="13.0" />
                             </font>
                         </Button>
-                        <TextField layoutX="69.0" layoutY="57.0" prefHeight="40.0" prefWidth="407.0" promptText="Employee ID" style="-fx-background-color: white; -fx-padding: 0 0 0 20; -fx-prompt-text-fill: #bbbbbb;">
+                        <TextField fx:id="employeeIDToRemoveTextfield" layoutX="69.0" layoutY="57.0" prefHeight="40.0" prefWidth="407.0" promptText="Employee ID" style="-fx-background-color: white; -fx-padding: 0 0 0 20; -fx-prompt-text-fill: #bbbbbb;">
                             <font>
                                 <Font name="System Bold" size="12.0" />
                             </font></TextField>
@@ -307,6 +326,11 @@
                                 <Font name="System Bold" size="13.0" />
                             </font>
                         </Label>
+                  <Label fx:id="employeeIDErrorLabel" alignment="CENTER_RIGHT" layoutX="279.0" layoutY="38.0" prefHeight="17.0" prefWidth="195.0" textAlignment="RIGHT" textFill="RED">
+                     <font>
+                        <Font size="9.0" />
+                     </font>
+                  </Label>
                     </children>
                 </AnchorPane>
                 <AnchorPane fx:id="confirmationPane" layoutX="436.0" layoutY="8.0" prefHeight="228.0" prefWidth="333.0" style="-fx-background-color: #a4cfb7;" visible="false">

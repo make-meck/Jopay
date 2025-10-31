@@ -39,7 +39,7 @@ public class admin2Controller {
     @FXML
     Button addEmployeeButton;
     @FXML
-    Button backButton;
+    Button addEmpBackButton;
     @FXML
     Button removeEmployeeButton;
     @FXML
@@ -70,6 +70,10 @@ public class admin2Controller {
     Label manageEmpLabel;
     @FXML
     Label reportAnalysisLabel;
+    @FXML
+    Label employeeIDErrorLabel;
+    @FXML
+    TextField employeeIDToRemoveTextfield;
 
 
 
@@ -79,17 +83,23 @@ public class admin2Controller {
 
     @FXML
     private void loginClick() throws IOException {
-        if (Integer.parseInt(admin_id.getText()) != adminID || !pass_word.getText().equals(password)){
-            error.setText("Account not found. Please try again.");
+        try {
+            if (Integer.parseInt(admin_id.getText()) != adminID || !pass_word.getText().equals(password)){
+                error.setText("Account not found. Please try again.");
+            }
+
+            else {
+                FXMLLoader fxmlLoader2 = new FXMLLoader(getClass().getResource("admin2Dashboard.fxml"));
+                Stage stage = (Stage) loginButton.getScene().getWindow();
+                Scene scene2 = new Scene(fxmlLoader2.load());
+                stage.setScene(scene2);
+                stage.show();
+            }
+        }
+        catch (NumberFormatException e){
+            error.setText("Please fill in all fields.");
         }
 
-        else {
-            FXMLLoader fxmlLoader2 = new FXMLLoader(getClass().getResource("admin2Dashboard.fxml"));
-            Stage stage = (Stage) loginButton.getScene().getWindow();
-            Scene scene2 = new Scene(fxmlLoader2.load());
-            stage.setScene(scene2);
-            stage.show();
-        }
     }
 
     @FXML
@@ -147,6 +157,13 @@ public class admin2Controller {
     }
 
     @FXML
+    private void addEmpBackButtonClick() {
+        pane1.setVisible(true);
+        employeeTablePane.setVisible(true);
+        addEmpPane.setVisible(false);
+    }
+
+    @FXML
     private void removeEmployeeClick() {
         removeEmpPane.setVisible(true);
         employeeTablePane.setVisible(false);
@@ -156,7 +173,16 @@ public class admin2Controller {
 
     @FXML
     private void removeEmployeeREDClick() {
-        confirmationPane.setVisible(true);
+        if (employeeIDToRemoveTextfield.getText().isEmpty()){
+            employeeIDErrorLabel.setText("Please enter an Employee ID.");
+        }
+        else if (!employeeIDToRemoveTextfield.getText().matches("^[0-9]*$")) {
+            employeeIDErrorLabel.setText("Please enter a valid Employee ID.");
+        }
+        else {
+            confirmationPane.setVisible(true);
+        }
+
     }
 
     @FXML
