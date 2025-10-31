@@ -68,9 +68,6 @@ public class admin2Controller {
     AnchorPane reportAnalysisPane;
 
 
-
-
-
     private int adminID = 11111;
     private String password = "0000";
 
