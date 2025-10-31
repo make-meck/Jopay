@@ -60,3 +60,35 @@
 #yesRemoveButton:hover {
     -fx-background-color: #d28484;
 }
+
+#payrollUpdateButton {
+-fx-background-color: #dfdfdf;
+-fx-background-radius: 15;
+}
+
+#payrollUpdateButton: hover {
+-fx-background-color: #a4cfb7;
+-fx-text-fill: #0a625b;
+}
+
+#payrollUpdateButton: pressed {
+-fx-background-color: #a4cfb7;
+-fx-text-fill: #0a625b;
+}
+
+
+#payrollDeleteButton {
+-fx-background-color: #dfdfdf;
+-fx-background-radius: 15;
+}
+
+#payrollDeleteButton:hover {
+-fx-background-color: #cfa4a4;
+-fx-text-fill: #FFFFFF;
+}
+
+#payrollDeleteButton:pressed {
+-fx-background-color: #cfa4a4;
+-fx-text-fill: #FFFFFF;
+}
+

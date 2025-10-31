@@ -1,3 +1,7 @@
+*{
+-fx-font-family: "Inter Semi Bold";
+}
+
 .adminButton {
     -fx-background-color: #dfdfdf;
     -fx-text-fill: black;
