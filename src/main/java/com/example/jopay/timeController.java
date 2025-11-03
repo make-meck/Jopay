@@ -1,4 +1,4 @@
-package com.example.jopay;
+/*package com.example.jopay;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -51,10 +51,7 @@ public class timeController {
 
  private final DateTimeFormatter timeFormatter= DateTimeFormatter.ofPattern("HH:mm:ss");
  private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EE, MMMM dd, yyyy");
-    //sql connection
-    private final String URL = "jdbc:mysql://localhost:3306/jopay_db";
-    private final String User= "root";
-    private final String Password= "0123456789";
+
 
 
  @FXML
@@ -151,3 +148,5 @@ public class timeController {
 
 
 }
+
+ */
