@@ -48,28 +48,28 @@
                   <Font name="Inter Semi Bold" size="14.0" />
                </font>
             </TextField>
+            <Label fx:id="statusLabel" layoutX="137.0" layoutY="281.0" prefHeight="19.0" prefWidth="496.0" textFill="#0a625b">
+               <font>
+                  <Font size="13.0" />
+               </font>
+            </Label>
          </children>
       </Pane>
-      <Pane layoutX="257.0" layoutY="322.0" prefHeight="292.0" prefWidth="738.0">
+      <Pane fx:id="employeeInfoPane" layoutX="257.0" layoutY="336.0" prefHeight="278.0" prefWidth="738.0" visible="false">
          <children>
             <Rectangle fx:id="employeeInfo_panel" arcHeight="10.0" arcWidth="10.0" fill="WHITE" height="218.0" layoutX="167.0" layoutY="59.0" opacity="0.3" stroke="#1db9ac" strokeLineCap="ROUND" strokeLineJoin="ROUND" strokeType="OUTSIDE" strokeWidth="18.0" width="366.0">
                <effect>
                   <Blend />
                </effect>
             </Rectangle>
-            <Label fx:id="employeeIdfoId" layoutX="213.0" layoutY="159.0" prefHeight="26.0" prefWidth="210.0" textFill="#0a625b">
+            <Label fx:id="employeeInfoId" layoutX="213.0" layoutY="159.0" prefHeight="26.0" prefWidth="210.0" textFill="#0a625b">
                <font>
                   <Font name="Inter Semi Bold" size="16.0" />
                </font>
             </Label>
-            <Label fx:id="employeeInfoName" layoutX="213.0" layoutY="106.0" prefHeight="26.0" prefWidth="210.0" text="sdff" textFill="#0a625b">
+            <Label fx:id="employeeInfoName" layoutX="213.0" layoutY="106.0" prefHeight="26.0" prefWidth="210.0" textFill="#0a625b">
                <font>
                   <Font name="Inter Semi Bold" size="16.0" />
-               </font>
-            </Label>
-            <Label fx:id="statusLabel" layoutY="2.0" prefHeight="5.0" prefWidth="222.0" text="sxdsd" textFill="#0a625b">
-               <font>
-                  <Font size="13.0" />
                </font>
             </Label>
             <Label fx:id="employeeDeptLabel" layoutX="171.0" layoutY="200.0" prefHeight="23.0" prefWidth="141.0" text="DEPARTMENT:" textFill="#0a625b">
@@ -92,14 +92,14 @@
                   <Font size="17.0" />
                </font>
             </Label>
-            <Label fx:id="loginInfo" contentDisplay="CENTER" layoutX="182.0" layoutY="13.0" prefHeight="23.0" prefWidth="336.0" text="LOG-IN TIME: " textFill="#0a625b">
-               <font>
-                  <Font name="Inter Semi Bold" size="18.0" />
-               </font>
-            </Label>
-            <Label fx:id="employeeInfoDept" layoutX="207.0" layoutY="237.0" prefHeight="26.0" prefWidth="210.0" text="sdsd" textFill="#0a625b">
+            <Label fx:id="employeeInfoDept" layoutX="207.0" layoutY="237.0" prefHeight="26.0" prefWidth="210.0" textFill="#0a625b">
                <font>
                   <Font name="Inter Semi Bold" size="16.0" />
+               </font>
+            </Label>
+            <Label fx:id="loginInfo" contentDisplay="CENTER" layoutX="171.0" layoutY="14.0" prefHeight="23.0" prefWidth="336.0" text="LOG-IN TIME: " textFill="#0a625b">
+               <font>
+                  <Font name="Inter Semi Bold" size="18.0" />
                </font>
             </Label>
          </children>

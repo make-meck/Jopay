@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
 import javafx.stage. Stage;
 import javafx.event.ActionEvent;
@@ -47,12 +48,14 @@ public class timeController {
  private Label employeeIDLabel;
  @FXML
  private Label employeeDeptLabel;
+ @FXML
+ private Pane employeeInfoPane;
 
 
  private final DateTimeFormatter timeFormatter= DateTimeFormatter.ofPattern("HH:mm:ss");
  private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EE, MMMM dd, yyyy");
 
- private DatabaseConnector connect = new DatabaseConnector();
+  DatabaseConnector connect = new DatabaseConnector();
 
 
 
@@ -78,10 +81,10 @@ public class timeController {
 
      try{
          int employeeId= Integer.parseInt(employeeIdText);
-         Connection conn= DriverManager.getConnection(URL, User, Password);
+        connect.getConnection();
 
          String query= "SELECT * FROM employee_info WHERE employee_id = ?";
-         PreparedStatement stmt = conn.prepareStatement(query);
+         PreparedStatement stmt = connect.prepareStatement(query);
          stmt.setInt(1, employeeId);
          ResultSet rs= stmt.executeQuery();
 
@@ -89,21 +92,27 @@ public class timeController {
              //displays the employee ID
              String firstName= rs.getString("employee_FirstName");
              String lastName = rs.getString("employee_LastName");
-             String department = rs.getString("employee_dept");
+             String department = rs.getString("employee_Department");
 
              employeeInfoName.setText(firstName + " "+ lastName);
              employeeInfoId.setText(String.valueOf(employeeId));
              employeeInfoDept.setText(department);
-             EmployeeInfoVisibile(true);
+             employeeInfoPane.setVisible(true);
 
 
 
 
              //this code will record time-in of the employee
+            LocalDateTime present =LocalDateTime.now();
+            Date date = Date.valueOf(present.toLocalDate()); //converts to java.sqldate
+            Time time = Time.valueOf(present.toLocalTime()); // converts to java.sql time
 
-             String insert= "INSERT INTO time_logs (employee_id, time_in) VALUES (?, NOW()) ";
-             PreparedStatement insertStmt= conn.prepareStatement(insert);
+
+             String insert = "INSERT INTO time_log (employee_id, log_date, time_in) VALUES (?, ?, ?)";
+             PreparedStatement insertStmt= connect.prepareStatement(insert);
              insertStmt.setInt(1, employeeId);
+             insertStmt.setDate(2, date);
+             insertStmt.setTime(3, time);
              insertStmt.executeUpdate();
 
              loginInfo.setText("LOG-IN TIME: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
@@ -115,12 +124,12 @@ public class timeController {
              employeeInfoName.setText(" ");
              employeeInfoId.setText(" ");
              employeeInfoDept.setText(" ");
-             EmployeeInfoVisibile(false);
+             employeeInfoPane.setVisible(false);
 
          }
       rs.close();
          stmt.close();
-         conn.close();
+         connect.close();
 
      } catch (SQLException e) {
          statusLabel.setText("Database error:" + e.getMessage());
@@ -131,16 +140,7 @@ public class timeController {
 
     }
 
-    private void EmployeeInfoVisibile(boolean visible)
-    {
-        employeeInfo_panel.setVisible(visible);
-        employeeNameLabel.setVisible(visible);
-        employeeIDLabel.setVisible(visible);
-        employeeDeptLabel.setVisible(visible);
-        loginInfo.setVisible(visible);
-        employeeInfoLabel.setVisible(visible);
 
-    }
 
     private void updateDateTime() {
      LocalDateTime now= LocalDateTime.now();
