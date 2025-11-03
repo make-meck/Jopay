@@ -151,7 +151,6 @@ public class employeeController {
 
         Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
         Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
-        Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11);
 
         Image photo = Image.getInstance("/Users/kirstencruz/Documents/college/secondyear/CS21S1/cs 002 - OOP/finals/jojopaypay/Jopay/src/main/resources/com/example/jopay/logo.png");
 
