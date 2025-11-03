@@ -97,3 +97,30 @@
 -fx-text-fill: #FFFFFF;
 }
 
+.date-picker {
+    -fx-background-color: white;
+}
+.date-picker .arrow-button {
+    -fx-background-color: #a4cfb7;
+}
+.date-picker .arrow-button:hover {
+    -fx-background-color: #d4f3e1;
+}
+.date-picker .popup {
+    -fx-background-color: white;
+    -fx-border-color: #a4cfb7;
+}
+.date-cell {
+    -fx-background-color: white;
+}
+
+.date-cell:hover {
+    -fx-background-color: #a4cfb7;
+    -fx-text-fill: black;
+}
+
+.date-cell:selected {
+    -fx-background-color: #a4cfb7;
+    -fx-text-fill: black;
+}
+

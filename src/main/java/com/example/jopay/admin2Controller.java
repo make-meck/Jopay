@@ -41,6 +41,12 @@ public class admin2Controller {
     @FXML
     Button addEmpBackButton;
     @FXML
+    Button saveEmployeeButton;
+    @FXML
+    Button clearButton;
+    @FXML
+    Label addEmpPaneErrorLabel;
+    @FXML
     Button removeEmployeeButton;
     @FXML
     Button removeEmployeeButtonRED;
@@ -75,16 +81,49 @@ public class admin2Controller {
     @FXML
     TextField employeeIDToRemoveTextfield;
 
+    //Add Employee Pane Fields
+    @FXML
+    TextField firstName;
+    @FXML
+    TextField lastName;
+    @FXML
+    TextField middleName;
+    @FXML
+    TextField employeeID;
+    @FXML
+    TextField tempPassword;
+    @FXML
+    DatePicker dateOfBirth;
+    @FXML
+    TextField department;
+    @FXML
+    TextField employmentStatus;
+    @FXML
+    DatePicker dateHired;
+    @FXML
+    TextField jobTitle;
+    @FXML
+    TextField basicSalary;
 
 
-
+    // Temporary admin login inputs
     private int adminID = 11111;
     private String password = "0000";
 
+
+
     @FXML
     private void loginClick() throws IOException {
+
         try {
-            if (Integer.parseInt(admin_id.getText()) != adminID || !pass_word.getText().equals(password)){
+            String adminIDAsString = admin_id.getText();
+            int adminIDAsInt = Integer.parseInt(adminIDAsString);
+            String adminPassword = pass_word.getText();
+
+            if (adminPassword.equals("") || adminIDAsString.equals("")) {
+                error.setText("Please fill in all fields.");
+            }
+            else if (adminIDAsInt != adminID || !adminPassword.equals(password)){
                 error.setText("Account not found. Please try again.");
             }
 
@@ -152,6 +191,7 @@ public class admin2Controller {
     private void addEmployeeClick() {
         addEmpPane.setVisible(true);
         searchHBox.setVisible(true);
+        addEmpPaneErrorLabel.setText("");
         employeeTablePane.setVisible(false);
         removeEmpPane.setVisible(false);
     }
@@ -163,10 +203,40 @@ public class admin2Controller {
         addEmpPane.setVisible(false);
     }
 
+
+    @FXML
+    private void saveEmployeeClick() {
+        if (firstName.getText().trim().isEmpty() || lastName.getText().trim().isEmpty() || employeeID.getText().trim().isEmpty() ||
+            tempPassword.getText().trim().isEmpty() || dateOfBirth.getValue() == null || department.getText().trim().isEmpty() ||
+            employmentStatus.getText().trim().isEmpty() || dateHired.getValue() == null || jobTitle.getText().trim().isEmpty() ||
+            basicSalary.getText().trim().isEmpty()) {
+            addEmpPaneErrorLabel.setText("Please fill in all required fields.");
+        }
+        else {
+            addEmpPaneErrorLabel.setText("");
+        }
+    }
+
+    @FXML
+    private void clearClick() {
+        firstName.setText("");
+        lastName.setText("");
+        middleName.setText("");
+        employeeID.setText("");
+        tempPassword.setText("");
+        dateOfBirth.setValue(null);
+        department.setText("");
+        employmentStatus.setText("");
+        dateHired.setValue(null);
+        jobTitle.setText("");
+        basicSalary.setText("");
+    }
+
     @FXML
     private void removeEmployeeClick() {
         removeEmpPane.setVisible(true);
         employeeTablePane.setVisible(false);
+        employeeIDErrorLabel.setText("");
         addEmpPane.setVisible(false);
         searchHBox.setVisible(false);
     }
