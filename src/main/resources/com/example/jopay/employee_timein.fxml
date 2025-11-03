@@ -23,7 +23,7 @@
                   <Font name="Inter Semi Bold" size="57.0" />
                </font>
             </Label>
-            <Label fx:id="dateLabel" alignment="CENTER" layoutX="350.0" layoutY="123.0" prefHeight="39.0" prefWidth="326.0" text="Date " textFill="#0a625b">
+            <Label fx:id="dateLabel" alignment="CENTER" layoutX="280.0" layoutY="111.0" prefHeight="46.0" prefWidth="513.0" text="Date " textFill="#0a625b">
                <font>
                   <Font name="Inter Semi Bold" size="31.0" />
                </font>

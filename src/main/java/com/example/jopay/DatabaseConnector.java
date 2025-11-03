@@ -37,7 +37,7 @@ public class DatabaseConnector {
     try{
         if(connection != null && !connection.isClosed()){
             connection.close();
-            System.out.println("The database is disconnected");
+            System.out.println("Database is close");
         }
     } catch (SQLException e){
         e.printStackTrace();
