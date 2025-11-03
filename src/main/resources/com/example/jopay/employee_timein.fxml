@@ -1,92 +1,108 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.effect.*?>
-<?import javafx.scene.image.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.shape.*?>
-<?import javafx.scene.text.*?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.Blend?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="employeeLogin" minHeight="628.0" minWidth="1200.0" nodeOrientation="LEFT_TO_RIGHT" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.jopay.timeController">
+<AnchorPane fx:id="employeeLogin" minHeight="628.0" minWidth="1200.0" nodeOrientation="LEFT_TO_RIGHT" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.jopay.timeController">
    <children>
-      <ImageView fx:id="icon_label" fitHeight="52.0" fitWidth="141.0" layoutX="14.0" layoutY="14.0" pickOnBounds="true" smooth="false" />
-      <Label fx:id="timeLabel" alignment="CENTER" contentDisplay="CENTER" layoutX="437.0" layoutY="110.0" prefHeight="44.0" prefWidth="326.0" text="TIME " textAlignment="CENTER" textFill="#0a625b">
-         <font>
-            <Font name="Inter Semi Bold" size="57.0" />
-         </font>
-      </Label>
-      <Label fx:id="dateLabel" alignment="CENTER" layoutX="437.0" layoutY="53.0" prefHeight="39.0" prefWidth="326.0" text="Date " textFill="#0a625b">
-         <font>
-            <Font name="Inter Semi Bold" size="31.0" />
-         </font>
-      </Label>
-      <Label fx:id="timeInLabel" alignment="CENTER" layoutX="260.0" layoutY="212.0" prefHeight="52.0" prefWidth="188.0" text="TIME IN " textFill="#0a625b" AnchorPane.leftAnchor="260.0">
-         <font>
-            <Font name="Inter Semi Bold" size="35.0" />
-         </font>
-      </Label>
-      <Label fx:id="timeOutLabel" alignment="CENTER" layoutX="802.0" layoutY="212.0" prefHeight="52.0" prefWidth="200.0" text="TIME OUT " textFill="#0a625b" AnchorPane.bottomAnchor="364.0">
-         <font>
-            <Font name="Inter Semi Bold" size="35.0" />
-         </font>
-      </Label>
-      <TextField fx:id="timeInEmployeeID" blendMode="SRC_ATOP" layoutX="241.0" layoutY="279.0" prefHeight="44.0" prefWidth="222.0" promptText=" Enter Employee ID">
-         <font>
-            <Font name="Inter Semi Bold" size="14.0" />
-         </font>
-      </TextField>
-      <Rectangle fx:id="employeeInfo_panel" arcHeight="10.0" arcWidth="10.0" fill="WHITE" height="243.0" layoutX="398.0" layoutY="375.0" opacity="0.3" stroke="#1db9ac" strokeLineCap="ROUND" strokeLineJoin="ROUND" strokeType="INSIDE" strokeWidth="18.0" visible="false" width="393.0">
-         <effect>
-            <Blend />
-         </effect></Rectangle>
-      <Label fx:id="loginInfo" contentDisplay="CENTER" layoutX="430.0" layoutY="349.0" prefHeight="23.0" prefWidth="336.0" text="LOG-IN TIME: " textFill="#0a625b" visible="false">
-         <font>
-            <Font name="Inter Semi Bold" size="18.0" />
-         </font></Label>
-      <Label fx:id="employeeInfoLabel" layoutX="413.0" layoutY="377.0" prefHeight="20.0" prefWidth="222.0" text="EMPLOYEE INFORMATION " textFill="#0a625b" visible="false">
-         <font>
-            <Font name="Inter Semi Bold" size="15.0" />
-         </font>
-      </Label>
-      <Label fx:id="employeeNameLabel" layoutX="422.0" layoutY="417.0" prefHeight="18.0" prefWidth="68.0" text="NAME: " textFill="#0a625b" visible="false">
-         <font>
-            <Font name="Inter Semi Bold" size="18.0" />
-         </font>
-      </Label>
-      <Label fx:id="employeeInfoName" layoutX="463.0" layoutY="447.0" prefHeight="26.0" prefWidth="210.0" textFill="#0a625b">
-         <font>
-            <Font name="Inter Semi Bold" size="16.0" />
-         </font>
-      </Label>
-      <Label fx:id="employeeIDLabel" layoutX="422.0" layoutY="485.0" prefHeight="18.0" prefWidth="68.0" text="ID:" textFill="#0a625b" visible="false">
-         <font>
-            <Font name="Inter Semi Bold" size="18.0" />
-         </font>
-      </Label>
-      <Label fx:id="employeeInfoId" layoutX="463.0" layoutY="508.0" prefHeight="26.0" prefWidth="210.0" textFill="#0a625b">
-         <font>
-            <Font name="Inter Semi Bold" size="16.0" />
-         </font>
-      </Label>
-      <Label fx:id="employeeDeptLabel" layoutX="422.0" layoutY="541.0" prefHeight="23.0" prefWidth="141.0" text="DEPARTMENT:" textFill="#0a625b" visible="false">
-         <font>
-            <Font name="Inter Semi Bold" size="18.0" />
-         </font>
-      </Label>
-      <Label fx:id="employeeInfoDept" layoutX="463.0" layoutY="564.0" prefHeight="26.0" prefWidth="210.0" textFill="#0a625b">
-         <font>
-            <Font name="Inter Semi Bold" size="16.0" />
-         </font>
-      </Label>
-      <Label fx:id="statusLabel" layoutX="202.0" layoutY="341.0" prefHeight="18.0" prefWidth="239.0" textFill="#0a625b">
-         <font>
-            <Font name="Inter Semi Bold" size="12.0" />
-         </font>
-      </Label>
-      <TextField fx:id="timeOutEmployeeID" blendMode="SRC_ATOP" layoutX="791.0" layoutY="279.0" prefHeight="44.0" prefWidth="222.0" promptText=" Enter Employee ID">
-         <font>
-            <Font name="Inter Semi Bold" size="14.0" />
-         </font>
-      </TextField>
+      <ImageView fx:id="icon_label" fitHeight="46.0" fitWidth="134.0" layoutX="14.0" layoutY="14.0" pickOnBounds="true" smooth="false">
+         <image>
+            <Image url="@JopayLogo.png" />
+         </image></ImageView>
+      <Pane layoutX="90.0" layoutY="52.0" prefHeight="314.0" prefWidth="1026.0">
+         <children>
+            <Label fx:id="timeLabel" alignment="CENTER" contentDisplay="CENTER" layoutX="373.0" layoutY="14.0" prefHeight="44.0" prefWidth="326.0" text="TIME " textAlignment="CENTER" textFill="#0a625b">
+               <font>
+                  <Font name="Inter Semi Bold" size="57.0" />
+               </font>
+            </Label>
+            <Label fx:id="dateLabel" alignment="CENTER" layoutX="350.0" layoutY="123.0" prefHeight="39.0" prefWidth="326.0" text="Date " textFill="#0a625b">
+               <font>
+                  <Font name="Inter Semi Bold" size="31.0" />
+               </font>
+            </Label>
+            <Label fx:id="timeInLabel" alignment="CENTER" layoutX="154.0" layoutY="157.0" prefHeight="52.0" prefWidth="188.0" text="TIME IN " textFill="#0a625b">
+               <font>
+                  <Font name="Inter Semi Bold" size="35.0" />
+               </font>
+            </Label>
+            <Label fx:id="timeInLabel1" alignment="CENTER" layoutX="730.0" layoutY="157.0" prefHeight="52.0" prefWidth="188.0" text="TIME OUT " textFill="#0a625b">
+               <font>
+                  <Font name="Inter Semi Bold" size="35.0" />
+               </font>
+            </Label>
+            <TextField fx:id="timeInEmployeeID" blendMode="SRC_ATOP" layoutX="137.0" layoutY="226.0" prefHeight="44.0" prefWidth="222.0" promptText=" Enter Employee ID">
+               <font>
+                  <Font name="Inter Semi Bold" size="14.0" />
+               </font>
+            </TextField>
+            <TextField fx:id="timeInEmployeeID1" blendMode="SRC_ATOP" layoutX="713.0" layoutY="226.0" prefHeight="44.0" prefWidth="222.0" promptText=" Enter Employee ID">
+               <font>
+                  <Font name="Inter Semi Bold" size="14.0" />
+               </font>
+            </TextField>
+         </children>
+      </Pane>
+      <Pane layoutX="257.0" layoutY="322.0" prefHeight="292.0" prefWidth="738.0">
+         <children>
+            <Rectangle fx:id="employeeInfo_panel" arcHeight="10.0" arcWidth="10.0" fill="WHITE" height="218.0" layoutX="167.0" layoutY="59.0" opacity="0.3" stroke="#1db9ac" strokeLineCap="ROUND" strokeLineJoin="ROUND" strokeType="OUTSIDE" strokeWidth="18.0" width="366.0">
+               <effect>
+                  <Blend />
+               </effect>
+            </Rectangle>
+            <Label fx:id="employeeIdfoId" layoutX="213.0" layoutY="159.0" prefHeight="26.0" prefWidth="210.0" textFill="#0a625b">
+               <font>
+                  <Font name="Inter Semi Bold" size="16.0" />
+               </font>
+            </Label>
+            <Label fx:id="employeeInfoName" layoutX="213.0" layoutY="106.0" prefHeight="26.0" prefWidth="210.0" text="sdff" textFill="#0a625b">
+               <font>
+                  <Font name="Inter Semi Bold" size="16.0" />
+               </font>
+            </Label>
+            <Label fx:id="statusLabel" layoutY="2.0" prefHeight="5.0" prefWidth="222.0" text="sxdsd" textFill="#0a625b">
+               <font>
+                  <Font size="13.0" />
+               </font>
+            </Label>
+            <Label fx:id="employeeDeptLabel" layoutX="171.0" layoutY="200.0" prefHeight="23.0" prefWidth="141.0" text="DEPARTMENT:" textFill="#0a625b">
+               <font>
+                  <Font name="Inter Semi Bold" size="18.0" />
+               </font>
+            </Label>
+            <Label fx:id="employeeIDLabel" layoutX="176.0" layoutY="132.0" prefHeight="18.0" prefWidth="68.0" text="ID:" textFill="#0a625b">
+               <font>
+                  <Font name="Inter Semi Bold" size="18.0" />
+               </font>
+            </Label>
+            <Label fx:id="employeeInfoLabel" layoutX="178.0" layoutY="41.0" prefHeight="20.0" prefWidth="222.0" text="EMPLOYEE INFORMATION " textFill="#0a625b">
+               <font>
+                  <Font name="Inter Semi Bold" size="15.0" />
+               </font>
+            </Label>
+            <Label fx:id="employeeNameLabel" layoutX="178.0" layoutY="69.0" prefHeight="21.0" prefWidth="68.0" text="NAME: " textFill="#0a625b">
+               <font>
+                  <Font size="17.0" />
+               </font>
+            </Label>
+            <Label fx:id="loginInfo" contentDisplay="CENTER" layoutX="182.0" layoutY="13.0" prefHeight="23.0" prefWidth="336.0" text="LOG-IN TIME: " textFill="#0a625b">
+               <font>
+                  <Font name="Inter Semi Bold" size="18.0" />
+               </font>
+            </Label>
+            <Label fx:id="employeeInfoDept" layoutX="207.0" layoutY="237.0" prefHeight="26.0" prefWidth="210.0" text="sdsd" textFill="#0a625b">
+               <font>
+                  <Font name="Inter Semi Bold" size="16.0" />
+               </font>
+            </Label>
+         </children>
+      </Pane>
    </children>
 </AnchorPane>
