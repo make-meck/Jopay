@@ -8,7 +8,7 @@ public class DatabaseConnector {
 
     private static final String URL = "jdbc:mysql://mysql-25123e52-tip-9280.h.aivencloud.com:15872/buhayinCo_db?sslMode=REQUIRED";
     private static final String USER= "avnadmin";
-    private static final String PASSWORD = "AVNS_jAPKvAIP9tFpxAbeacP";
+    private static final String PASSWORD = "AVNS_jAPKvAIP9tFpxAbeacP";// papalitan ung password if needed
 
    public static Connection getConnection() throws SQLException {
        return DriverManager.getConnection(URL, USER, PASSWORD);

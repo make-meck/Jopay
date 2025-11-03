@@ -1,4 +1,4 @@
-/*package com.example.jopay;
+package com.example.jopay;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -51,6 +51,8 @@ public class timeController {
 
  private final DateTimeFormatter timeFormatter= DateTimeFormatter.ofPattern("HH:mm:ss");
  private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EE, MMMM dd, yyyy");
+
+ private DatabaseConnector connect = new DatabaseConnector();
 
 
 
@@ -149,4 +151,3 @@ public class timeController {
 
 }
 
- */
