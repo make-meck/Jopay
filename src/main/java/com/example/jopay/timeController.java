@@ -146,12 +146,10 @@ private AnchorPane timelogs;
                     return;
                 }
 
-
                 if (timelog.hasTimedOutToday(employeeId)) {
                     statusLabel.setText("You already timed out today!");
                     return;
                 }
-
 
                 Time timeIn = timelog.getTimeIn(employeeId);
                 if (timeIn == null) {
@@ -194,7 +192,7 @@ private AnchorPane timelogs;
         }
 
         timeOutEmployeeID.clear();
-        employeeInfoPane.setVisible(false);
+
     }
 
 
@@ -215,8 +213,6 @@ private void updateDateTime() {
      timeLabel.setText(now.format(timeFormatter));
      dateLabel.setText(now.format(dateFormatter));
     }
-
-
 
 }
 
