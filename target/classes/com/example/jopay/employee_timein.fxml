@@ -10,7 +10,7 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="employeeLogin" minHeight="628.0" minWidth="1200.0" nodeOrientation="LEFT_TO_RIGHT" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.jopay.timeController">
+<AnchorPane fx:id="timelogs" minHeight="628.0" minWidth="1200.0" nodeOrientation="LEFT_TO_RIGHT" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.jopay.timeController">
    <children>
       <ImageView fx:id="icon_label" fitHeight="46.0" fitWidth="134.0" layoutX="14.0" layoutY="14.0" pickOnBounds="true" smooth="false">
          <image>
@@ -43,7 +43,7 @@
                   <Font name="Inter Semi Bold" size="14.0" />
                </font>
             </TextField>
-            <TextField fx:id="timeInEmployeeID1" blendMode="SRC_ATOP" layoutX="713.0" layoutY="226.0" prefHeight="44.0" prefWidth="222.0" promptText=" Enter Employee ID">
+            <TextField fx:id="timeOutEmployeeID" blendMode="SRC_ATOP" layoutX="713.0" layoutY="226.0" prefHeight="44.0" prefWidth="222.0" promptText=" Enter Employee ID">
                <font>
                   <Font name="Inter Semi Bold" size="14.0" />
                </font>
