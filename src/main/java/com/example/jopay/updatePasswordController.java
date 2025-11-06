@@ -7,6 +7,8 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Optional;
 
 public class updatePasswordController {
 
@@ -34,6 +36,8 @@ public class updatePasswordController {
     private int employeeID = 11111;
     private String currentPassword = "0000";
 
+    private final EmployeeDAO  employeeDAO= new EmployeeDAO();
+
     @FXML
     void updateBackButton() throws IOException {
         FXMLLoader employeeDashboardLoader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
@@ -43,7 +47,7 @@ public class updatePasswordController {
         stage.show();
     }
 
-    @FXML
+    /*@FXML
     void updatePassword() throws IOException {
         try {
             if (employee_id.getText().isEmpty() || pass_word.getText().isEmpty() ||
@@ -85,7 +89,78 @@ public class updatePasswordController {
         } catch (NumberFormatException e) {
             error.setText("Invalid Employee ID format.");
         }
+    } */
+
+    @FXML
+    void updatePassword() {
+        String typedId = employee_id.getText();
+        String oldPassword = pass_word.getText();
+        String newPassword = pass_word1.getText();
+        String confirmPassword = pass_word11.getText();
+
+        // Check if all fields are filled
+        if (typedId.isEmpty() || oldPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
+            error.setText("Please fill in all fields.");
+            return;
+        }
+
+        try {
+            int id = Integer.parseInt(typedId);
+
+            // Fetch employee from database
+            //taga-kuha ng info sa database
+            Optional<Employee> employeeOpt = employeeDAO.findEmployeeId(typedId);
+            if (employeeOpt.isEmpty()) {
+                error.setText("Employee ID not found.");
+                return;
+            }
+
+            Employee employee = employeeOpt.get();
+
+            // Verify old password
+            // iveverify niya ung dating password na nasa database
+            if (!employee.getPassword().equals(oldPassword)) {
+                error.setText("Incorrect old password.");
+                return;
+            }
+
+            //checks the new and confirm password if same sila
+            if (!newPassword.equals(confirmPassword)) {
+                error.setText("New passwords do not match.");
+                return;
+            }
+
+            //preventing the user para magamit ung dati nilang password
+            if (oldPassword.equals(newPassword)) {
+                error.setText("New password must be different from old password.");
+                return;
+            }
+
+            // Update password in database
+            employeeDAO.updatePassword(id, newPassword);
+
+
+            showAlert("Password updated successfully!");
+
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
+            Stage stage = (Stage) loginButton.getScene().getWindow();
+            Scene scene = new Scene(loader.load());
+            stage.setScene(scene);
+            stage.show();
+
+        } catch (NumberFormatException e) {
+            error.setText("Invalid Employee ID format. Please enter numbers only.");
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            error.setText("Database error while updating password.");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            error.setText("Error loading dashboard.");
+        }
     }
+
+
 
     private void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);

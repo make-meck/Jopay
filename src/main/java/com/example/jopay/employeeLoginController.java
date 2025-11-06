@@ -70,14 +70,11 @@ public class employeeLoginController {
         }
 
         Optional<Employee> employee = authService.authenticate(employeeId, password);
-        // after Optional<Employee> employee = ...
-
+        
 
         if (employee.isPresent()) {
             try {
-                System.out.println("DEBUG (controller) - employeeId: " + employee.get().getEmployeeId());
-                System.out.println("DEBUG (controller) - firstName: " + employee.get().getFirstName());
-                System.out.println("DEBUG (controller) - lastName: " + employee.get().getLastName());
+
 
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
                 Scene scene = new Scene(loader.load());

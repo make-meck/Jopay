@@ -51,14 +51,15 @@ public class EmployeeDAO {
     }
 
     //updates the employee password
-    public boolean updatePassword( String employeeId, String newPassword) throws SQLException {
+   public boolean updatePassword(int employeeId, String newPassword) throws SQLException {
         String updatePass = "UPDATE employee_account SET  employee_password = ?  WHERE employee_Id= ?";
         try(PreparedStatement stmt = connect.prepareStatement(updatePass)){
             stmt.setString(1, newPassword);
-            stmt.setString(2, employeeId);
+            stmt.setInt(2, Integer.parseInt(String.valueOf(employeeId)));
             return stmt.executeUpdate() >0;
         }
     }
+
     //delete an employee in the table of employee account
     public boolean deleteEmployee(String employeeId) throws SQLException {
         String delete = "DELETE FROM employee_account WHERE employee_Id=?";
