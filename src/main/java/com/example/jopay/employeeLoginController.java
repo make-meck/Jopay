@@ -6,7 +6,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
+import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.Optional;
 
 public class employeeLoginController {
 
@@ -28,7 +30,10 @@ public class employeeLoginController {
     @FXML
     private Button adminButton;
 
-    private int employeeID = 11111;
+    @FXML
+    private final AutheticationHandler authService = new AutheticationHandler();
+
+   /* private int employeeID = 11111;
     private String password = "0000";
 
     @FXML
@@ -52,15 +57,49 @@ public class employeeLoginController {
             error.setText("Invalid Employee ID format.");
         }
     }
+    */
 
-    /*@FXML
-    private void backClick() throws IOException {
-        FXMLLoader welcomeLoader = new FXMLLoader(getClass().getResource("welcome.fxml"));
-        Stage stage = (Stage) backButton.getScene().getWindow();
-        Scene welcomeScene = new Scene(welcomeLoader.load());
-        stage.setScene(welcomeScene);
-        stage.show();
-    }*/
+    @FXML
+    private void handleLogin() {
+        String employeeId = employee_id.getText();
+        String password = pass_word.getText();
+
+        if (employeeId.isEmpty() || password.isEmpty()) {
+            error.setText("Please fill in all fields.");
+            return;
+        }
+
+        Optional<Employee> employee = authService.authenticate(employeeId, password);
+        // after Optional<Employee> employee = ...
+
+
+        if (employee.isPresent()) {
+            try {
+                System.out.println("DEBUG (controller) - employeeId: " + employee.get().getEmployeeId());
+                System.out.println("DEBUG (controller) - firstName: " + employee.get().getFirstName());
+                System.out.println("DEBUG (controller) - lastName: " + employee.get().getLastName());
+
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
+                Scene scene = new Scene(loader.load());
+
+                employeeController controller = loader.getController();
+                controller.setEmployeeName(employee.get().getEmployeeId());
+
+                String fullName = employee.get().getFirstName() + " " + employee.get().getLastName();
+                controller.setEmployeeName(fullName);
+
+                Stage stage = (Stage) employee_id.getScene().getWindow();
+                stage.setScene(scene);
+                stage.show();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                error.setText("Error loading dashboard.");
+            }
+        } else {
+            error.setText("Invalid Employee ID or Password.");
+        }
+    }
 
     @FXML
     private void adminIconClick() throws IOException {
@@ -71,3 +110,14 @@ public class employeeLoginController {
         stage.show();
     }
 }
+
+
+    /*@FXML
+    private void backClick() throws IOException {
+        FXMLLoader welcomeLoader = new FXMLLoader(getClass().getResource("welcome.fxml"));
+        Stage stage = (Stage) backButton.getScene().getWindow();
+        Scene welcomeScene = new Scene(welcomeLoader.load());
+        stage.setScene(welcomeScene);
+        stage.show();
+    }*/
+
