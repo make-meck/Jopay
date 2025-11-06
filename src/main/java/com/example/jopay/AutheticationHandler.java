@@ -14,16 +14,16 @@ public class AutheticationHandler {
         try {
             Optional<Employee> employeeOpt = employeeDAO.findEmployeeId(employeeId);
             if (employeeOpt.isEmpty()) {
-                return Optional.empty(); // employee not found
+                return Optional.empty();
             }
 
             Employee employee = employeeOpt.get();
 
             // Check password
             if (employee.getPassword().equals(password)) {
-                return Optional.of(employee); // correct password
+                return Optional.of(employee);
             } else {
-                return Optional.empty(); // incorrect password
+                return Optional.empty();
             }
 
         } catch (SQLException e) {

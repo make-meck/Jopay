@@ -148,7 +148,7 @@ public class updatePasswordController {
                 Scene scene = new Scene(loader.load());
 
                 employeeController controller = loader.getController();
-                controller.setEmployeeName(employee.getFirstName() + " " + employee.getLastName());
+                controller.setEmployeeName(currentEmployee.getFirstName() + " " + currentEmployee.getLastName());
 
                 Stage stage = (Stage) loginButton.getScene().getWindow();
                 stage.setScene(scene);
