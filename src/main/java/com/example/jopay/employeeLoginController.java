@@ -70,11 +70,10 @@ public class employeeLoginController {
         }
 
         Optional<Employee> employee = authService.authenticate(employeeId, password);
-        
+
 
         if (employee.isPresent()) {
             try {
-
 
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
                 Scene scene = new Scene(loader.load());

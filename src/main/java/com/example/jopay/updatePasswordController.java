@@ -93,23 +93,23 @@ public class updatePasswordController {
 
     @FXML
     void updatePassword() {
-        String typedId = employee_id.getText();
+        String EmpID = employee_id.getText();
         String oldPassword = pass_word.getText();
         String newPassword = pass_word1.getText();
         String confirmPassword = pass_word11.getText();
 
         // Check if all fields are filled
-        if (typedId.isEmpty() || oldPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
+        if ( EmpID.isEmpty() || oldPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
             error.setText("Please fill in all fields.");
             return;
         }
 
         try {
-            int id = Integer.parseInt(typedId);
+            int id = Integer.parseInt( EmpID);
 
             // Fetch employee from database
             //taga-kuha ng info sa database
-            Optional<Employee> employeeOpt = employeeDAO.findEmployeeId(typedId);
+            Optional<Employee> employeeOpt = employeeDAO.findEmployeeId( EmpID);
             if (employeeOpt.isEmpty()) {
                 error.setText("Employee ID not found.");
                 return;
@@ -137,17 +137,27 @@ public class updatePasswordController {
             }
 
             // Update password in database
-            employeeDAO.updatePassword(id, newPassword);
 
+            boolean updated = employeeDAO.updatePassword(Integer.parseInt(EmpID), newPassword);
+            if (updated){
+                showAlert("Password updated successfully!");
 
-            showAlert("Password updated successfully!");
+                Employee currentEmployee = employeeDAO.findEmployeeId(EmpID).get();
 
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
+                Scene scene = new Scene(loader.load());
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
-            Stage stage = (Stage) loginButton.getScene().getWindow();
-            Scene scene = new Scene(loader.load());
-            stage.setScene(scene);
-            stage.show();
+                employeeController controller = loader.getController();
+                controller.setEmployeeName(employee.getFirstName() + " " + employee.getLastName());
+
+                Stage stage = (Stage) loginButton.getScene().getWindow();
+                stage.setScene(scene);
+                stage.show();
+
+            }
+            else {
+                error.setText("Failed to update password. Try Again");
+            }
 
         } catch (NumberFormatException e) {
             error.setText("Invalid Employee ID format. Please enter numbers only.");

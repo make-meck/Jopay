@@ -11,24 +11,29 @@ public class AutheticationHandler {
     private final EmployeeDAO employeeDAO = new EmployeeDAO();
 
     public Optional<Employee> authenticate(String employeeId, String password) {
-        Optional<Employee> employeeOpt;
         try {
-            employeeOpt = employeeDAO.findEmployeeId((employeeId));
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+            Optional<Employee> employeeOpt = employeeDAO.findEmployeeId(employeeId);
+            if (employeeOpt.isEmpty()) {
+                return Optional.empty(); // employee not found
+            }
 
-        if (employeeOpt.isEmpty()) {
+            Employee employee = employeeOpt.get();
+
+            // Check password
+            if (employee.getPassword().equals(password)) {
+                return Optional.of(employee); // correct password
+            } else {
+                return Optional.empty(); // incorrect password
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
             return Optional.empty();
-        }
-        Employee employee = employeeOpt.get();
-        if (employee.getPassword().equals(password)) ;
-        {
-            return Optional.of(employee);
         }
     }
 }
-        // for hashed if kakayanin implementation nito
+
+// for hashed if kakayanin implementation nito
        /*String hashedInput =hashPassword (rawPassword);
 
        if(employee.getPassword().equals(hashedInput)){
