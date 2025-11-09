@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 public class TimelogModel {
     private final DatabaseConnector connect;
-    public boolean hasTimedInToday;
+
 
     public TimelogModel(){
         this.connect = new DatabaseConnector();
