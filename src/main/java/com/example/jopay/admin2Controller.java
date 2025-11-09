@@ -196,6 +196,14 @@ public class admin2Controller {
         addEmpPaneErrorLabel.setText("");
         employeeTablePane.setVisible(false);
         removeEmpPane.setVisible(false);
+
+     try{
+            int nextId= EmployeeDAO.getNextEmployeeId();
+            employeeID.setText(String.valueOf(nextId));
+        } catch (SQLException e) {
+           addEmpPaneErrorLabel.setText("Error in generating Employee ID: " + e.getMessage());
+           e.printStackTrace();
+        }
     }
 
     @FXML
@@ -219,25 +227,28 @@ public class admin2Controller {
         }
          try{
              Employee emp = new Employee();
-             emp.setEmployeeId(employeeID.getText());
+
+             int nextID= EmployeeDAO.getNextEmployeeId();
+             emp.setEmployeeId(String.valueOf(nextID));
+             employeeID.setText(String.valueOf(nextID));
+
              emp.setFirstName(firstName.getText());
              emp.setLastName(lastName.getText());
              emp.setMiddleName(middleName.getText());
              emp.setDob(dateOfBirth.getValue()); // LocalDate
              emp.setDepartment(department.getText());
-             emp.setPosition(jobTitle.getText());
              emp.setTitle(jobTitle.getText()); // if Title is same as jobTitle
              emp.setBasicSalary(Double.parseDouble(basicSalary.getText()));
              emp.setEmploymentStatus(employmentStatus.getText());
+             emp.setDateHired(String.valueOf(dateHired.getValue()));
 
              String tempPass = tempPassword.getText();
 
-
              EmployeeDAO.addEmployee(emp, tempPass);
 
-             // Success feedback
+
              addEmpPaneErrorLabel.setText("Employee added successfully!");
-             clearClick(); // optional: method to clear all fields
+             clearClick();
 
          } catch (NumberFormatException ex) {
              addEmpPaneErrorLabel.setText("Please enter a valid number for Basic Salary.");

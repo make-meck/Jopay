@@ -15,27 +15,29 @@ transactions like delete, add, update and so on
 public class EmployeeDAO {
     private static DatabaseConnector connect;
 
-    public EmployeeDAO(){
-        this.connect= new DatabaseConnector();
+
+    public EmployeeDAO() {
+        this.connect = new DatabaseConnector();
     }
 
     //create or add new employee to the database
 
     public boolean createEmployee(Employee employee) throws SQLException {
         String addEmp = "INSERT INTO employee_account (employee_Id, employee_password) VALUES (? , ?) ";
-            PreparedStatement stmt = connect.prepareStatement(addEmp);
-            stmt.setString(1, employee.getEmployeeId());
-            stmt.setString(2, employee.getPassword());
-            return stmt.executeUpdate() >0;
+        PreparedStatement stmt = connect.prepareStatement(addEmp);
+        stmt.setString(1, employee.getEmployeeId());
+        stmt.setString(2, employee.getPassword());
+        return stmt.executeUpdate() > 0;
     }
+
     // find the employee by their employee_ID
     public Optional<Employee> findEmployeeId(String employeeId) throws SQLException {
         String findEmp = """
-        SELECT ea.employee_Id, ea.employee_password, ei.employee_FirstName, ei.employee_LastName
-        FROM employee_account ea
-        JOIN employee_info ei ON ea.employee_Id = ei.employee_Id
-        WHERE ea.employee_Id = ?
-    """;
+                    SELECT ea.employee_Id, ea.employee_password, ei.employee_FirstName, ei.employee_LastName
+                    FROM employee_account ea
+                    JOIN employee_info ei ON ea.employee_Id = ei.employee_Id
+                    WHERE ea.employee_Id = ?
+                """;
 
         try (PreparedStatement stmt = connect.prepareStatement(findEmp)) {
             stmt.setString(1, employeeId);
@@ -54,19 +56,19 @@ public class EmployeeDAO {
     }
 
     //updates the employee password
-   public boolean updatePassword(int employeeId, String newPassword) throws SQLException {
+    public boolean updatePassword(int employeeId, String newPassword) throws SQLException {
         String updatePass = "UPDATE employee_account SET  employee_password = ?  WHERE employee_Id= ?";
-        try(PreparedStatement stmt = connect.prepareStatement(updatePass)){
+        try (PreparedStatement stmt = connect.prepareStatement(updatePass)) {
             stmt.setString(1, newPassword);
             stmt.setInt(2, Integer.parseInt(String.valueOf(employeeId)));
-            return stmt.executeUpdate() >0;
+            return stmt.executeUpdate() > 0;
         }
     }
 
     //delete an employee in the table of employee account
     public boolean deleteEmployee(String employeeId) throws SQLException {
         String delete = "DELETE FROM employee_account WHERE employee_Id=?";
-        try(PreparedStatement stmt = connect.prepareStatement(delete)){
+        try (PreparedStatement stmt = connect.prepareStatement(delete)) {
             stmt.setString(1, employeeId);
             return stmt.executeUpdate() > 0;
         }
@@ -75,11 +77,11 @@ public class EmployeeDAO {
     //it checks if the empployee exists in the database
     public boolean employeeExists(String employeeId) throws SQLException {
         String check = "SELECT COUNT (*) FROM employee_account WHERE employee_Id= ?";
-        try(PreparedStatement stmt = connect.prepareStatement(check)){
+        try (PreparedStatement stmt = connect.prepareStatement(check)) {
             stmt.setString(1, employeeId);
-            ResultSet rs= stmt.executeQuery();
-            if(rs.next()){
-                return rs.getInt(1)>0;
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
             }
 
         }
@@ -87,12 +89,12 @@ public class EmployeeDAO {
     }
 
     public boolean validateLogin(String employeeId, String password) throws SQLException {
-        String valiDate="SELECT employee_password FROM employee_account WHERE employee_Id=?";
-        try (PreparedStatement stmt= connect.prepareStatement(valiDate)){
+        String valiDate = "SELECT employee_password FROM employee_account WHERE employee_Id=?";
+        try (PreparedStatement stmt = connect.prepareStatement(valiDate)) {
             stmt.setString(1, employeeId);
-            ResultSet rs= stmt.executeQuery();
-            if(rs.next()){
-                String storedPassword= rs.getString("employee_id");
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                String storedPassword = rs.getString("employee_id");
                 //for now, using plain-text comparison
                 //later, replace with Bcrypt.checkpw(password,storedpassword
                 return storedPassword.equals(password);
@@ -121,52 +123,58 @@ public class EmployeeDAO {
         }
     }*/
 
-    public static void addEmployee(Employee employee, String tempPassword) throws SQLException {
-        DatabaseConnector db = new DatabaseConnector();
+    public static void addEmployee(Employee employee, String password) throws SQLException {
+        connect.setAutoCommit(false);
 
         // 1️⃣ Insert Employee (without RETURN_GENERATED_KEYS)
         String insertEmployee = "INSERT INTO employee_info " +
-                "(employee_Id, employee_FirstName, employee_LastName, employee_DOB, employement_Status, " +
-                "employee_MiddleName, employee_department, employee_position, employee_Title, basic_Salary) " +
+                "(employee_Id, employee_FirstName, employee_LastName,employee_MiddleName, employee_DOB,employee_department, " +
+                "employee_Title, basic_Salary, employment_Status, date_Hired) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        PreparedStatement stmt = db.prepareStatement(insertEmployee);
+        PreparedStatement stmt = connect.prepareStatement(insertEmployee);
         stmt.setString(1, employee.getEmployeeId());
         stmt.setString(2, employee.getFirstName());
         stmt.setString(3, employee.getLastName());
-        stmt.setDate(4, java.sql.Date.valueOf(employee.getDOB()));
-        stmt.setString(5, employee.getStatus());
-        stmt.setString(6, employee.getMiddleName());
-        stmt.setString(7, employee.getDepartment());
-        stmt.setString(8, employee.getPosition());
-        stmt.setString(9, employee.getTitle());
-        stmt.setDouble(10, employee.getBasicSalary());
+        stmt.setString(4, employee.getMiddleName());
+        stmt.setDate(5, java.sql.Date.valueOf(employee.getDOB()));
+        stmt.setString(6, employee.getDepartment());
+        stmt.setString(7, employee.getTitle());
+        stmt.setDouble(8, employee.getBasicSalary());
+        stmt.setString(9, employee.getStatus());
+        stmt.setDate(10, java.sql.Date.valueOf(employee.getDateHired()));
 
         stmt.executeUpdate();
 
-        // 2️⃣ Get the generated employee ID (if your DB auto-increments a primary key)
-        String getIdQuery = "SELECT LAST_INSERT_ID()"; // MySQL specific
-        PreparedStatement idStmt = db.prepareStatement(getIdQuery);
-        ResultSet keys = idStmt.executeQuery();
-        int employeeId = 0;
-        if (keys.next()) {
-            employeeId = keys.getInt(1);
-        }
 
-        // 3️⃣ Insert temporary password
-        String insertTemp = "INSERT INTO temp_passwords (employee_Id, temp_password) VALUES (?, ?)";
-        PreparedStatement tempStmt = db.prepareStatement(insertTemp);
-        tempStmt.setInt(1, employeeId);
-        tempStmt.setString(2, tempPassword);
-        tempStmt.executeUpdate();
+        String insertAccount = "INSERT INTO employee_account (employee_id, employee_password) VALUES (?, ?)";
+        PreparedStatement accountStmt = connect.prepareStatement(insertAccount);
+        accountStmt.setInt(1, Integer.parseInt(employee.getEmployeeId()));
+        accountStmt.setString(2, password);
+        accountStmt.executeUpdate();
 
-        // 4️⃣ Close statements and result set
-        keys.close();
-        stmt.close();
-        idStmt.close();
-        tempStmt.close();
+        connect.commit();
     }
 
+            public static int getNextEmployeeId () throws SQLException {
+                String query = "SELECT MAX(employee_Id) AS maxId FROM employee_info";
+                PreparedStatement stmt = connect.prepareStatement(query);
+                ResultSet rs = stmt.executeQuery();
 
 
-}
+                int nextId = 6700002;
+                if (rs.next()) {
+                    int maxId = rs.getInt("maxId"); // get the MAX value from the query
+                    if (maxId != 0) {
+                        nextId = maxId + 1;
+                    }
+                }
+                rs.close();
+                stmt.close();
+                return nextId;
+            }
+
+
+        }
+
+

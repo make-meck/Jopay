@@ -43,4 +43,27 @@ public class DatabaseConnector {
         e.printStackTrace();
     }
     }
+
+    public void setAutoCommit(boolean autoCommit) throws SQLException {
+        getConnection().setAutoCommit(autoCommit);
+    }
+
+    public void commit() throws SQLException {
+        getConnection().commit();
+    }
+
+    public void rollback() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.rollback();
+                System.out.println("Transaction rolled back.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean isAutoCommit() throws SQLException {
+        return getConnection().getAutoCommit();
+    }
 }
