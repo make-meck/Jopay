@@ -14,7 +14,9 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
+import javax.swing.*;
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class admin2Controller {
 
@@ -215,7 +217,36 @@ public class admin2Controller {
         else {
             addEmpPaneErrorLabel.setText("");
         }
-    }
+         try{
+             Employee emp = new Employee();
+             emp.setEmployeeId(employeeID.getText());
+             emp.setFirstName(firstName.getText());
+             emp.setLastName(lastName.getText());
+             emp.setMiddleName(middleName.getText());
+             emp.setDob(dateOfBirth.getValue()); // LocalDate
+             emp.setDepartment(department.getText());
+             emp.setPosition(jobTitle.getText());
+             emp.setTitle(jobTitle.getText()); // if Title is same as jobTitle
+             emp.setBasicSalary(Double.parseDouble(basicSalary.getText()));
+             emp.setEmploymentStatus(employmentStatus.getText());
+
+             String tempPass = tempPassword.getText();
+
+
+             EmployeeDAO.addEmployee(emp, tempPass);
+
+             // Success feedback
+             addEmpPaneErrorLabel.setText("Employee added successfully!");
+             clearClick(); // optional: method to clear all fields
+
+         } catch (NumberFormatException ex) {
+             addEmpPaneErrorLabel.setText("Please enter a valid number for Basic Salary.");
+         } catch (SQLException ex) {
+             addEmpPaneErrorLabel.setText("Database error: " + ex.getMessage());
+             ex.printStackTrace();
+         }
+
+         }
 
     @FXML
     private void clearClick() {
