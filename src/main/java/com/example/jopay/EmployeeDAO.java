@@ -4,9 +4,6 @@ package com.example.jopay;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 /*this class will handle the employees of the company
@@ -65,14 +62,28 @@ public class EmployeeDAO {
         }
     }
 
-    //delete an employee in the table of employee account
-    public boolean deleteEmployee(String employeeId) throws SQLException {
-        String delete = "DELETE FROM employee_account WHERE employee_Id=?";
-        try (PreparedStatement stmt = connect.prepareStatement(delete)) {
-            stmt.setString(1, employeeId);
-            return stmt.executeUpdate() > 0;
+    //makes the employee inactive
+    public static void deactivateEmployee(int employeeId) throws SQLException{
+        String sql = "UPDATE employee_info SET is_Active = 0 WHERE employee_Id= ?";
+        PreparedStatement active= connect.prepareStatement(sql);
+        active.setInt(1, employeeId);
+        int updateRows= active.executeUpdate();
+        active.close();
+
+        if(updateRows == 0){
+            throw new SQLException("No employee found with ID" + employeeId);
         }
     }
+
+    //makes the account inactive
+    public static void deactivateAccount(int employeeId) throws SQLException{
+        String sql = "UPDATE employee_account SET employee_password = NULL WHERE employee_Id =?";
+        PreparedStatement deactivate= connect.prepareStatement(sql);
+        deactivate.setInt(1, employeeId);
+        deactivate.executeUpdate();
+        deactivate.close();
+    }
+
 
     //it checks if the empployee exists in the database
     public boolean employeeExists(String employeeId) throws SQLException {
@@ -173,8 +184,33 @@ public class EmployeeDAO {
                 stmt.close();
                 return nextId;
             }
+    public static Employee getEmployeeById(int employeeId) throws SQLException {
+        String query = """
+        SELECT employee_Id, employee_FirstName, employee_LastName, 
+               employee_department, employee_Title, employment_Status
+        FROM employee_info
+        WHERE employee_Id = ? AND is_Active = 1
+        """;
 
+        PreparedStatement stmt = connect.prepareStatement(query);
+        stmt.setInt(1, employeeId);
+        ResultSet rs = stmt.executeQuery();
 
+        Employee employee = null;
+        if (rs.next()) {
+            employee = new Employee();
+            employee.setEmployeeId(String.valueOf(rs.getInt("employee_Id")));
+            employee.setFirstName(rs.getString("employee_FirstName" ));
+            employee.setLastName(rs.getString("employee_LastName"));
+            employee.setDepartment(rs.getString("employee_department"));
+            employee.setTitle(rs.getString("employee_Title"));
+            employee.setEmploymentStatus(rs.getString("employment_Status"));
+        }
+
+        rs.close();
+        stmt.close();
+        return employee;
+    }
         }
 
 

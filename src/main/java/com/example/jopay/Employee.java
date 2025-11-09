@@ -51,9 +51,11 @@ public class Employee {
     public void setDateHired(String dateHired){ this.dateHired= LocalDate.parse(dateHired);}
 
 
+
     public String getFullName() {
         return firstName + " " + lastName;
     }
+
 
 
 

@@ -107,11 +107,23 @@ public class admin2Controller {
     @FXML
     TextField basicSalary;
 
+    //remove employee pane
+    @FXML
+    Label removeEmployeeLabel;
+    @FXML
+    Label removeIdLabel;
+    @FXML
+    Label removeDeptLabel;
+    @FXML
+    Label removeEmployLabel;
+    @FXML
+    Label removeJobLabel;
+
+
 
     // Temporary admin login inputs
     private int adminID = 11111;
     private String password = "0000";
-
 
 
     @FXML
@@ -124,20 +136,16 @@ public class admin2Controller {
 
             if (adminPassword.equals("") || adminIDAsString.equals("")) {
                 error.setText("Please fill in all fields.");
-            }
-            else if (adminIDAsInt != adminID || !adminPassword.equals(password)){
+            } else if (adminIDAsInt != adminID || !adminPassword.equals(password)) {
                 error.setText("Account not found. Please try again.");
-            }
-
-            else {
+            } else {
                 FXMLLoader fxmlLoader2 = new FXMLLoader(getClass().getResource("admin2Dashboard.fxml"));
                 Stage stage = (Stage) loginButton.getScene().getWindow();
                 Scene scene2 = new Scene(fxmlLoader2.load());
                 stage.setScene(scene2);
                 stage.show();
             }
-        }
-        catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             error.setText("Please fill in all fields.");
         }
 
@@ -197,12 +205,12 @@ public class admin2Controller {
         employeeTablePane.setVisible(false);
         removeEmpPane.setVisible(false);
 
-     try{
-            int nextId= EmployeeDAO.getNextEmployeeId();
+        try {
+            int nextId = EmployeeDAO.getNextEmployeeId();
             employeeID.setText(String.valueOf(nextId));
         } catch (SQLException e) {
-           addEmpPaneErrorLabel.setText("Error in generating Employee ID: " + e.getMessage());
-           e.printStackTrace();
+            addEmpPaneErrorLabel.setText("Error in generating Employee ID: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -217,47 +225,46 @@ public class admin2Controller {
     @FXML
     private void saveEmployeeClick() {
         if (firstName.getText().trim().isEmpty() || lastName.getText().trim().isEmpty() || employeeID.getText().trim().isEmpty() ||
-            tempPassword.getText().trim().isEmpty() || dateOfBirth.getValue() == null || department.getText().trim().isEmpty() ||
-            employmentStatus.getText().trim().isEmpty() || dateHired.getValue() == null || jobTitle.getText().trim().isEmpty() ||
-            basicSalary.getText().trim().isEmpty()) {
+                tempPassword.getText().trim().isEmpty() || dateOfBirth.getValue() == null || department.getText().trim().isEmpty() ||
+                employmentStatus.getText().trim().isEmpty() || dateHired.getValue() == null || jobTitle.getText().trim().isEmpty() ||
+                basicSalary.getText().trim().isEmpty()) {
             addEmpPaneErrorLabel.setText("Please fill in all required fields.");
-        }
-        else {
+        } else {
             addEmpPaneErrorLabel.setText("");
         }
-         try{
-             Employee emp = new Employee();
+        try {
+            Employee emp = new Employee();
 
-             int nextID= EmployeeDAO.getNextEmployeeId();
-             emp.setEmployeeId(String.valueOf(nextID));
-             employeeID.setText(String.valueOf(nextID));
+            int nextID = EmployeeDAO.getNextEmployeeId();
+            emp.setEmployeeId(String.valueOf(nextID));
+            employeeID.setText(String.valueOf(nextID));
 
-             emp.setFirstName(firstName.getText());
-             emp.setLastName(lastName.getText());
-             emp.setMiddleName(middleName.getText());
-             emp.setDob(dateOfBirth.getValue()); // LocalDate
-             emp.setDepartment(department.getText());
-             emp.setTitle(jobTitle.getText()); // if Title is same as jobTitle
-             emp.setBasicSalary(Double.parseDouble(basicSalary.getText()));
-             emp.setEmploymentStatus(employmentStatus.getText());
-             emp.setDateHired(String.valueOf(dateHired.getValue()));
+            emp.setFirstName(firstName.getText());
+            emp.setLastName(lastName.getText());
+            emp.setMiddleName(middleName.getText());
+            emp.setDob(dateOfBirth.getValue()); // LocalDate
+            emp.setDepartment(department.getText());
+            emp.setTitle(jobTitle.getText()); // if Title is same as jobTitle
+            emp.setBasicSalary(Double.parseDouble(basicSalary.getText()));
+            emp.setEmploymentStatus(employmentStatus.getText());
+            emp.setDateHired(String.valueOf(dateHired.getValue()));
 
-             String tempPass = tempPassword.getText();
+            String tempPass = tempPassword.getText();
 
-             EmployeeDAO.addEmployee(emp, tempPass);
+            EmployeeDAO.addEmployee(emp, tempPass);
 
 
-             addEmpPaneErrorLabel.setText("Employee added successfully!");
-             clearClick();
+            addEmpPaneErrorLabel.setText("Employee added successfully!");
+            clearClick();
 
-         } catch (NumberFormatException ex) {
-             addEmpPaneErrorLabel.setText("Please enter a valid number for Basic Salary.");
-         } catch (SQLException ex) {
-             addEmpPaneErrorLabel.setText("Database error: " + ex.getMessage());
-             ex.printStackTrace();
-         }
+        } catch (NumberFormatException ex) {
+            addEmpPaneErrorLabel.setText("Please enter a valid number for Basic Salary.");
+        } catch (SQLException ex) {
+            addEmpPaneErrorLabel.setText("Database error: " + ex.getMessage());
+            ex.printStackTrace();
+        }
 
-         }
+    }
 
     @FXML
     private void clearClick() {
@@ -285,13 +292,11 @@ public class admin2Controller {
 
     @FXML
     private void removeEmployeeREDClick() {
-        if (employeeIDToRemoveTextfield.getText().isEmpty()){
+        if (employeeIDToRemoveTextfield.getText().isEmpty()) {
             employeeIDErrorLabel.setText("Please enter an Employee ID.");
-        }
-        else if (!employeeIDToRemoveTextfield.getText().matches("^[0-9]*$")) {
+        } else if (!employeeIDToRemoveTextfield.getText().matches("^[0-9]*$")) {
             employeeIDErrorLabel.setText("Please enter a valid Employee ID.");
-        }
-        else {
+        } else {
             confirmationPane.setVisible(true);
         }
 
@@ -299,6 +304,19 @@ public class admin2Controller {
 
     @FXML
     private void yesRemoveClick() {
+        try {
+            int employeeId = Integer.parseInt(employeeIDToRemoveTextfield.getText());
+            EmployeeDAO.deactivateEmployee(employeeId);
+
+            addEmpPaneErrorLabel.setText("Employee has been deactivated.");
+            confirmationPane.setVisible(false);
+            clearRemoveLabels();
+        } catch (SQLException e) {
+            addEmpPaneErrorLabel.setText("Error deactivating employee: " + e.getMessage());
+            e.printStackTrace();
+        } catch (NumberFormatException e) {
+            addEmpPaneErrorLabel.setText("Invalid Employee ID");
+        }
 
     }
 
@@ -307,5 +325,53 @@ public class admin2Controller {
         confirmationPane.setVisible(false);
     }
 
+    @FXML
+    private void searchEmployeebyID() {
+        String findEmp = employeeIDToRemoveTextfield.getText().trim();
+
+
+        if (findEmp.isEmpty()) {
+            addEmpPaneErrorLabel.setText("Please Enter an Employee Id");
+            return;
+        }
+        try {
+            int empId = Integer.parseInt(findEmp);
+
+
+            Employee emp = EmployeeDAO.getEmployeeById(empId);
+
+            if (emp != null) {
+                removeEmployeeLabel.setText("Employee Name: " + emp.getFullName());
+                removeIdLabel.setText("Employee ID: " + emp.getEmployeeId());
+                removeDeptLabel.setText("Department: " + emp.getDepartment());
+                removeEmployLabel.setText("Employement Status: " + emp.getStatus());
+                removeJobLabel.setText("Job Title: " + emp.getTitle());
+                addEmpPaneErrorLabel.setText("");
+                System.out.println("Labels updated!");
+            } else {
+                System.out.println("Employee NOT found!");
+                addEmpPaneErrorLabel.setText("Employee not found or inactive");
+                clearRemoveLabels();
+            }
+
+        }
+        catch(NumberFormatException emp){
+            addEmpPaneErrorLabel.setText("Invalid employee ID format");
+            clearRemoveLabels();
+        }
+        catch(SQLException emp){
+            addEmpPaneErrorLabel.setText("Database error: " + emp.getMessage());
+        }
+
+    }
+
+    private void clearRemoveLabels() {
+        employeeIDToRemoveTextfield.clear();
+        removeEmployeeLabel.setText("Employee Name:");
+        removeIdLabel.setText("Employee ID:");
+        removeDeptLabel.setText("Department:");
+        removeEmployLabel.setText("Employment Status:");
+        removeJobLabel.setText("Job Title:");
+    }
 
 }
