@@ -185,17 +185,93 @@ public class PayrollDAO {
         }
     }
 
-    public boolean savePayroll(String employeeId, int periodId, PayrollModel model,
-                               SalaryConfig config, AttendanceData attendance) {
-        String query = """
-            INSERT INTO payroll_records 
-            (employee_Id, period_id, basic_pay, telecom_Allowance, travel_Allowance,
-             rice_Subsidy, non_Taxable_Salary, per_Deim, per_Deim_Count,
-             overtime_Pay, overtime_hours, sss_Contribution, phic_contribution,
-             hdmf_Contribution, sss_Loan, absences, num_Absences,
-             gross_pay, total_Deduction, net_Pay, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'DRAFT')
+    public int getOrCreatePayrollPeriod(LocalDate startDate, LocalDate endDate) {
+        try {
+            // First try to find existing period
+            String selectQuery = """
+            SELECT period_ID 
+            FROM payroll_period 
+            WHERE start_Date = ? AND end_Date = ?
+            LIMIT 1
         """;
+
+            try (PreparedStatement stmt = connect.getConnection().prepareStatement(selectQuery)) {
+                stmt.setDate(1, java.sql.Date.valueOf(startDate));
+                stmt.setDate(2, java.sql.Date.valueOf(endDate));
+                ResultSet rs = stmt.executeQuery();
+
+                if (rs.next()) {
+                    return rs.getInt("period_ID");
+                }
+            }
+
+            // If not found, create new period
+            String insertQuery = """
+            INSERT INTO payroll_period (period_name, start_Date, end_Date, pay_Date, status)
+            VALUES (?, ?, ?, ?, 'DRAFT')
+        """;
+
+            String periodName = startDate.toString() + " to " + endDate.toString();
+            LocalDate payDate = endDate.plusDays(5); // Pay date is 5 days after period end
+
+            try (PreparedStatement stmt = connect.getConnection().prepareStatement(insertQuery,
+                    PreparedStatement.RETURN_GENERATED_KEYS)) {
+                stmt.setString(1, periodName);
+                stmt.setDate(2, java.sql.Date.valueOf(startDate));
+                stmt.setDate(3, java.sql.Date.valueOf(endDate));
+                stmt.setDate(4, java.sql.Date.valueOf(payDate));
+
+                stmt.executeUpdate();
+
+                ResultSet rs = stmt.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+
+            // If we reach here, something went wrong
+            System.err.println("Failed to create or retrieve payroll period");
+            return -1; // Return -1 to indicate failure
+
+        } catch (SQLException e) {
+            System.err.println("Error in getOrCreatePayrollPeriod: " + e.getMessage());
+            e.printStackTrace();
+            return -1; // Return -1 to indicate failure
+        }
+    }
+
+    public boolean savePayroll(String employeeId, int periodId, PayrollModel model,
+                               SalaryConfig config, AttendanceData attendance,
+                               double perDiem, int perDiemCount, double sssLoan) {
+        String query = """
+        INSERT INTO payroll_records 
+        (employee_Id, period_id, basic_pay, telecom_Allowance, travel_Allowance,
+         rice_Subsidy, non_Taxable_Salary, per_Deim, per_Deim_Count,
+         overtime_Pay, overtime_hours, sss_Contribution, phic_contribution,
+         hdmf_Contribution, sss_Loan, absences, num_Absences, withholding_tax,
+         gross_pay, total_Deduction, net_Pay, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'DRAFT')
+        ON DUPLICATE KEY UPDATE
+        basic_pay = VALUES(basic_pay),
+        telecom_Allowance = VALUES(telecom_Allowance),
+        travel_Allowance = VALUES(travel_Allowance),
+        rice_Subsidy = VALUES(rice_Subsidy),
+        non_Taxable_Salary = VALUES(non_Taxable_Salary),
+        per_Deim = VALUES(per_Deim),
+        per_Deim_Count = VALUES(per_Deim_Count),
+        overtime_Pay = VALUES(overtime_Pay),
+        overtime_hours = VALUES(overtime_hours),
+        sss_Contribution = VALUES(sss_Contribution),
+        phic_contribution = VALUES(phic_contribution),
+        hdmf_Contribution = VALUES(hdmf_Contribution),
+        sss_Loan = VALUES(sss_Loan),
+        absences = VALUES(absences),
+        num_Absences = VALUES(num_Absences),
+        withholding_tax = VALUES(withholding_tax),
+        gross_pay = VALUES(gross_pay),
+        total_Deduction = VALUES(total_Deduction),
+        net_Pay = VALUES(net_Pay)
+    """;
 
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -212,19 +288,23 @@ public class PayrollDAO {
             stmt.setDouble(5, config != null ? config.travelAllowance : 0.0);
             stmt.setDouble(6, config != null ? config.riceSubsidy : 0.0);
             stmt.setDouble(7, config != null ? config.nonTaxableSalary : 0.0);
-            stmt.setDouble(8, config != null ? config.perDiem : 0.0);
-            stmt.setInt(9, config != null ? config.perDiemCount : 0);
+            stmt.setDouble(8, perDiem);
+            stmt.setInt(9, perDiemCount);
             stmt.setDouble(10, attendance.regularOTHours * model.getHourlyRate() * 1.25);
             stmt.setDouble(11, attendance.regularOTHours);
+
+            // Use computed values from PayrollModel
             stmt.setDouble(12, model.getSSSContribution());
             stmt.setDouble(13, model.getPHICContribution());
             stmt.setDouble(14, model.getHDMFContribution());
-            stmt.setDouble(15, 0.0); // SSS loan from deduction_config
+
+            stmt.setDouble(15, sssLoan);
             stmt.setDouble(16, attendance.daysAbsent * model.getGrossDailyRate());
             stmt.setInt(17, attendance.daysAbsent);
-            stmt.setDouble(18, model.getSemiMonthlyGrossPay());
-            stmt.setDouble(19, model.getTotalDeductions());
-            stmt.setDouble(20, model.getNetPay());
+            stmt.setDouble(18, model.getWithholdingTax());
+            stmt.setDouble(19, model.getSemiMonthlyGrossPay());
+            stmt.setDouble(20, model.getTotalDeductions());
+            stmt.setDouble(21, model.getNetPay());
 
             int result = stmt.executeUpdate();
             conn.commit();
@@ -279,12 +359,58 @@ public class PayrollDAO {
         return employeeIds;
     }
 
+    public PayrollRecord getPayrollRecord(String employeeId, int periodId) {
+        String query = """
+        SELECT * FROM payroll_records
+        WHERE employee_Id = ? AND period_id = ?
+        LIMIT 1
+    """;
+
+        try (PreparedStatement stmt = connect.getConnection().prepareStatement(query)) {
+            stmt.setString(1, employeeId);
+            stmt.setInt(2, periodId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                PayrollRecord record = new PayrollRecord();
+                record.employeeId = rs.getString("employee_Id");
+                record.periodId = rs.getInt("period_id");
+                record.basicPay = rs.getDouble("basic_pay");
+                record.telecomAllowance = rs.getDouble("telecom_Allowance");
+                record.travelAllowance = rs.getDouble("travel_Allowance");
+                record.riceSubsidy = rs.getDouble("rice_Subsidy");
+                record.nonTaxableSalary = rs.getDouble("non_Taxable_Salary");
+                record.perDiem = rs.getDouble("per_Deim");
+                record.perDiemCount = rs.getInt("per_Deim_Count");
+                record.overtimePay = rs.getDouble("overtime_Pay");
+                record.overtimeHours = rs.getDouble("overtime_hours");
+                record.sssContribution = rs.getDouble("sss_Contribution");
+                record.phicContribution = rs.getDouble("phic_contribution");
+                record.hdmfContribution = rs.getDouble("hdmf_Contribution");
+                record.sssLoan = rs.getDouble("sss_Loan");
+                record.absences = rs.getDouble("absences");
+                record.numAbsences = rs.getInt("num_Absences");
+                record.withholdingTax = rs.getDouble("withholding_tax");
+                record.grossPay = rs.getDouble("gross_pay");
+                record.totalDeduction = rs.getDouble("total_Deduction");
+                record.netPay = rs.getDouble("net_Pay");
+                record.status = rs.getString("status");
+                return record;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching payroll record: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public PayrollPeriod getPayrollPeriod(int periodId) {
         String query = """
-            SELECT period_ID, period_name, start_Date, end_Date, pay_Date, status
-            FROM payroll_period
-            WHERE period_ID = ?
-        """;
+        SELECT period_ID, period_name, start_Date, end_Date, pay_Date, status
+        FROM payroll_period
+        WHERE period_ID = ?
+        LIMIT 1
+    """;
 
         try (PreparedStatement stmt = connect.getConnection().prepareStatement(query)) {
             stmt.setInt(1, periodId);
@@ -305,6 +431,31 @@ public class PayrollDAO {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static class PayrollRecord {
+        public String employeeId;
+        public int periodId;
+        public double basicPay;
+        public double telecomAllowance;
+        public double travelAllowance;
+        public double riceSubsidy;
+        public double nonTaxableSalary;
+        public double perDiem;
+        public int perDiemCount;
+        public double overtimePay;
+        public double overtimeHours;
+        public double sssContribution;
+        public double phicContribution;
+        public double hdmfContribution;
+        public double sssLoan;
+        public double absences;
+        public int numAbsences;
+        public double withholdingTax;
+        public double grossPay;
+        public double totalDeduction;
+        public double netPay;
+        public String status;
     }
 
     public List<PayrollPeriod> getAllPayrollPeriods() {

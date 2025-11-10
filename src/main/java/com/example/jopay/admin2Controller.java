@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.List;
 
 public class admin2Controller {
 
@@ -77,12 +78,31 @@ public class admin2Controller {
     @FXML TextField nonTaxableTF;
     @FXML TextField perDeimTF;
     @FXML TextField perDeimCountTF;
-    @FXML DatePicker startingDatePicker;
-    @FXML DatePicker endDatePicker;
     @FXML TextField searchIDManager;
     @FXML Label errorLabelManagePayroll;
-    @FXML Button savePayrollButton;
+    @FXML TextField sssLoanTF;
+    @FXML TextField basicPayTF;
+    @FXML TextField overtimeTF;
+    @FXML TextField absencesTF;
+    @FXML TextField numAbsencesTF;
+    @FXML TextField sssContributionTF;
+    @FXML TextField phicContributionTF;
+    @FXML TextField hdmfContributionTF;
+    @FXML TextField withholdingTaxTF;
+    @FXML TextField grossPayTF;
+    @FXML TextField totalDeductionTF;
+    @FXML TextField netPayTF;
     @FXML Button computePayrollButton;
+    @FXML Button savePayrollButton;
+    @FXML Button clearPayrollButton;
+
+    // *** NEW: Period ComboBox (replaces DatePickers) ***
+    @FXML ComboBox<PayrollPeriodItem> payrollPeriodComboBox;
+
+    // Store selected period information
+    private LocalDate selectedStartDate;
+    private LocalDate selectedEndDate;
+    private int selectedPeriodId;
 
     // Employee Table
     @FXML private TableView<Employee> employeeTable;
@@ -103,6 +123,53 @@ public class admin2Controller {
         if (employeeTable != null) {
             setupEmployeeTable();
         }
+
+        // *** NEW: Initialize period ComboBox ***
+        if (payrollPeriodComboBox != null) {
+            setupPeriodComboBox();
+        }
+    }
+
+    /**
+     * NEW: Setup the payroll period ComboBox with data from database
+     */
+    private void setupPeriodComboBox() {
+        PayrollDAO dao = new PayrollDAO();
+        List<PayrollDAO.PayrollPeriod> periods = dao.getAllPayrollPeriods();
+
+        ObservableList<PayrollPeriodItem> periodItems = FXCollections.observableArrayList();
+
+        for (PayrollDAO.PayrollPeriod period : periods) {
+            periodItems.add(new PayrollPeriodItem(period));
+        }
+
+        payrollPeriodComboBox.setItems(periodItems);
+
+        // Set listener to capture selected period
+        payrollPeriodComboBox.setOnAction(event -> {
+            PayrollPeriodItem selected = payrollPeriodComboBox.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                selectedStartDate = selected.getPeriod().startDate;
+                selectedEndDate = selected.getPeriod().endDate;
+                selectedPeriodId = selected.getPeriod().periodId;
+
+                // Determine period type and show info
+                boolean isFirstPeriod = selectedStartDate.getDayOfMonth() >= 11 &&
+                        selectedStartDate.getDayOfMonth() <= 25;
+                String periodType = isFirstPeriod ? "FIRST PERIOD (11-25) - Pag-IBIG WILL be deducted" :
+                        "SECOND PERIOD (26-10) - Pag-IBIG NOT deducted";
+
+                errorLabelManagePayroll.setStyle("-fx-text-fill: blue;");
+                errorLabelManagePayroll.setText("✓ Selected: " + periodType);
+
+                System.out.println("Period selected: " + selected.getPeriod().periodName);
+                System.out.println("Dates: " + selectedStartDate + " to " + selectedEndDate);
+                System.out.println("Period ID: " + selectedPeriodId);
+                System.out.println("Type: " + periodType);
+            }
+        });
+
+        dao.close();
     }
 
     @FXML
@@ -180,6 +247,89 @@ public class admin2Controller {
     }
 
     @FXML
+    private void displayComputedPayroll(PayrollModel model, PayrollDAO.SalaryConfig config,
+                                        PayrollDAO.AttendanceData attendance, double perDiem, int perDiemCount) {
+        // Display all computed values in the text fields
+        basicPayTF.setText(String.format("₱%,.2f", model.getSemiMonthlyBasicPay()));
+        overtimeTF.setText(String.format("₱%,.2f", attendance.regularOTHours * model.getHourlyRate() * 1.25));
+        absencesTF.setText(String.format("₱%,.2f", attendance.daysAbsent * model.getGrossDailyRate()));
+        numAbsencesTF.setText(String.valueOf(attendance.daysAbsent));
+
+        // Computed contributions
+        sssContributionTF.setText(String.format("₱%,.2f", model.getSSSContribution()));
+        phicContributionTF.setText(String.format("₱%,.2f", model.getPHICContribution()));
+
+        // *** UPDATED: Show Pag-IBIG with visual indicator ***
+        double hdmf = model.getHDMFContribution();
+        if (hdmf > 0) {
+            hdmfContributionTF.setText(String.format("₱%,.2f ✓", hdmf));
+            hdmfContributionTF.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+        } else {
+            hdmfContributionTF.setText("₱0.00 (Not deducted)");
+            hdmfContributionTF.setStyle("-fx-text-fill: gray;");
+        }
+
+        // Computed tax
+        withholdingTaxTF.setText(String.format("₱%,.2f", model.getWithholdingTax()));
+
+        // Summary
+        grossPayTF.setText(String.format("₱%,.2f", model.getSemiMonthlyGrossPay()));
+        totalDeductionTF.setText(String.format("₱%,.2f", model.getTotalDeductions()));
+        netPayTF.setText(String.format("₱%,.2f", model.getNetPay()));
+
+        // Console output for debugging
+        System.out.println("\n=== COMPUTED PAYROLL ===");
+        System.out.println("Period: " + selectedStartDate + " to " + selectedEndDate);
+        System.out.println("SSS: " + String.format("₱%,.2f", model.getSSSContribution()));
+        System.out.println("PHIC: " + String.format("₱%,.2f", model.getPHICContribution()));
+        System.out.println("HDMF: " + String.format("₱%,.2f", model.getHDMFContribution()) +
+                (hdmf > 0 ? " ✓ DEDUCTED" : " ✗ NOT DEDUCTED"));
+        System.out.println("Overtime: " + String.format("₱%,.2f", attendance.regularOTHours * model.getHourlyRate() * 1.25));
+        System.out.println("Absences: " + String.format("₱%,.2f", attendance.daysAbsent * model.getGrossDailyRate()));
+        System.out.println("Tax: " + String.format("₱%,.2f", model.getWithholdingTax()));
+        System.out.println("Gross Pay: " + String.format("₱%,.2f", model.getSemiMonthlyGrossPay()));
+        System.out.println("Total Deductions: " + String.format("₱%,.2f", model.getTotalDeductions()));
+        System.out.println("Net Pay: " + String.format("₱%,.2f", model.getNetPay()));
+        System.out.println("========================\n");
+    }
+
+    @FXML
+    private void clearPayrollFields() {
+        payrollemployeeName.clear();
+        payrollEmployeeID.clear();
+        telecoAllowance.clear();
+        travelAllowance.clear();
+        riceSubsidy.clear();
+        nonTaxableTF.clear();
+        perDeimTF.clear();
+        perDeimCountTF.clear();
+        sssLoanTF.clear();
+
+        // *** UPDATED: Clear period selection ***
+        if (payrollPeriodComboBox != null) {
+            payrollPeriodComboBox.getSelectionModel().clearSelection();
+        }
+        selectedStartDate = null;
+        selectedEndDate = null;
+        selectedPeriodId = 0;
+
+        // Clear computed fields
+        basicPayTF.clear();
+        overtimeTF.clear();
+        absencesTF.clear();
+        numAbsencesTF.clear();
+        sssContributionTF.clear();
+        phicContributionTF.clear();
+        hdmfContributionTF.clear();
+        withholdingTaxTF.clear();
+        grossPayTF.clear();
+        totalDeductionTF.clear();
+        netPayTF.clear();
+
+        errorLabelManagePayroll.setText("");
+    }
+
+    @FXML
     private void onSearchEmployee() {
         PayrollDAO payrollDAO = new PayrollDAO();
         String searchID = searchIDManager.getText().trim();
@@ -202,13 +352,14 @@ public class admin2Controller {
 
         payrollemployeeName.setText(empInfo.employeeName);
         payrollEmployeeID.setText(empInfo.employeeId);
+        basicPayTF.setText(String.format("₱%,.2f", empInfo.basicMonthlyPay / 2));
 
         if (config != null) {
-            telecoAllowance.setText(String.valueOf(config.telecomAllowance));
-            travelAllowance.setText(String.valueOf(config.travelAllowance));
-            riceSubsidy.setText(String.valueOf(config.riceSubsidy));
-            nonTaxableTF.setText(String.valueOf(config.nonTaxableSalary));
-            perDeimTF.setText(String.valueOf(config.perDiem));
+            telecoAllowance.setText(String.format("%.2f", config.telecomAllowance));
+            travelAllowance.setText(String.format("%.2f", config.travelAllowance));
+            riceSubsidy.setText(String.format("%.2f", config.riceSubsidy));
+            nonTaxableTF.setText(String.format("%.2f", config.nonTaxableSalary));
+            perDeimTF.setText(String.format("%.2f", config.perDiem));
             perDeimCountTF.setText(String.valueOf(config.perDiemCount));
         } else {
             telecoAllowance.setText("0.00");
@@ -219,79 +370,31 @@ public class admin2Controller {
             perDeimCountTF.setText("0");
         }
 
+        // Get SSS Loan
+        PayrollDAO.DeductionData deductions = payrollDAO.getDeductions(searchID);
+        if (deductions != null) {
+            sssLoanTF.setText(String.format("%.2f", deductions.sssLoan));
+        } else {
+            sssLoanTF.setText("0.00");
+        }
+
+        // Clear computed fields
+        overtimeTF.clear();
+        absencesTF.clear();
+        numAbsencesTF.clear();
+        sssContributionTF.clear();
+        phicContributionTF.clear();
+        hdmfContributionTF.clear();
+        withholdingTaxTF.clear();
+        grossPayTF.clear();
+        totalDeductionTF.clear();
+        netPayTF.clear();
+
         errorLabelManagePayroll.setText("");
         errorLabelManagePayroll.setStyle("-fx-text-fill: green;");
-        errorLabelManagePayroll.setText("Employee data loaded successfully");
-    }
+        errorLabelManagePayroll.setText("✓ Employee data loaded successfully");
 
-    @FXML
-    private void savePayrollConfig() {
-        String empId = payrollEmployeeID.getText().trim();
-
-        if (empId.isEmpty()) {
-            errorLabelManagePayroll.setText("Please search for an employee first");
-            return;
-        }
-
-        try {
-            double telecom = Double.parseDouble(telecoAllowance.getText().trim());
-            double travel = Double.parseDouble(travelAllowance.getText().trim());
-            double rice = Double.parseDouble(riceSubsidy.getText().trim());
-            double nonTaxable = Double.parseDouble(nonTaxableTF.getText().trim());
-            double perDiem = Double.parseDouble(perDeimTF.getText().trim());
-            int perDiemCount = Integer.parseInt(perDeimCountTF.getText().trim());
-            LocalDate startDate = startingDatePicker.getValue();
-            LocalDate endDate = endDatePicker.getValue();
-
-            if (startDate == null || endDate == null) {
-                errorLabelManagePayroll.setText("Please select start and end dates");
-                return;
-            }
-
-            // Save to salary_config table
-            String query = """
-                INSERT INTO salary_config 
-                (employee_Id, telecom_Allowance, travel_Allowance, rice_Subsidy, 
-                 non_Taxable_Salary, per_Diem, per_Diem_Count, starting_Date, end_Date)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE
-                telecom_Allowance = VALUES(telecom_Allowance),
-                travel_Allowance = VALUES(travel_Allowance),
-                rice_Subsidy = VALUES(rice_Subsidy),
-                non_Taxable_Salary = VALUES(non_Taxable_Salary),
-                per_Diem = VALUES(per_Diem),
-                per_Diem_Count = VALUES(per_Diem_Count),
-                starting_Date = VALUES(starting_Date),
-                end_Date = VALUES(end_Date)
-            """;
-
-            DatabaseConnector db = new DatabaseConnector();
-            var stmt = db.prepareStatement(query);
-            stmt.setString(1, empId);
-            stmt.setDouble(2, telecom);
-            stmt.setDouble(3, travel);
-            stmt.setDouble(4, rice);
-            stmt.setDouble(5, nonTaxable);
-            stmt.setDouble(6, perDiem);
-            stmt.setInt(7, perDiemCount);
-            stmt.setDate(8, java.sql.Date.valueOf(startDate));
-            stmt.setDate(9, java.sql.Date.valueOf(endDate));
-
-            int result = stmt.executeUpdate();
-
-            if (result > 0) {
-                errorLabelManagePayroll.setStyle("-fx-text-fill: green;");
-                errorLabelManagePayroll.setText("Payroll configuration saved successfully!");
-            } else {
-                errorLabelManagePayroll.setText("Failed to save configuration");
-            }
-
-        } catch (NumberFormatException e) {
-            errorLabelManagePayroll.setText("Please enter valid numeric values");
-        } catch (SQLException e) {
-            errorLabelManagePayroll.setText("Database error: " + e.getMessage());
-            e.printStackTrace();
-        }
+        payrollDAO.close();
     }
 
     @FXML
@@ -300,28 +403,36 @@ public class admin2Controller {
 
         if (empId.isEmpty()) {
             errorLabelManagePayroll.setText("Please search for an employee first");
+            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
             return;
         }
 
-        LocalDate startDate = startingDatePicker.getValue();
-        LocalDate endDate = endDatePicker.getValue();
-
-        if (startDate == null || endDate == null) {
-            errorLabelManagePayroll.setText("Please select payroll period dates");
+        // *** UPDATED: Check if period is selected from ComboBox ***
+        if (selectedStartDate == null || selectedEndDate == null) {
+            errorLabelManagePayroll.setText("Please select a payroll period from the dropdown");
+            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
             return;
         }
 
         try {
+            // Parse inputs
+            double perDiemInput = perDeimTF.getText().trim().isEmpty() ? 0.0 :
+                    Double.parseDouble(perDeimTF.getText().trim());
+            int perDiemCountInput = perDeimCountTF.getText().trim().isEmpty() ? 0 :
+                    Integer.parseInt(perDeimCountTF.getText().trim());
+            double sssLoanInput = sssLoanTF.getText().trim().isEmpty() ? 0.0 :
+                    Double.parseDouble(sssLoanTF.getText().trim());
+
             PayrollDAO dao = new PayrollDAO();
 
             // Get all required data
             PayrollDAO.EmployeeInfo empInfo = dao.getEmployeeInfo(empId);
             PayrollDAO.SalaryConfig config = dao.getSalaryConfig(empId);
-            PayrollDAO.AttendanceData attendance = dao.getAttendanceData(empId, startDate, endDate);
-            PayrollDAO.DeductionData deductions = dao.getDeductions(empId);
+            PayrollDAO.AttendanceData attendance = dao.getAttendanceData(empId, selectedStartDate, selectedEndDate);
 
             if (empInfo == null) {
                 errorLabelManagePayroll.setText("Employee not found");
+                errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
                 return;
             }
 
@@ -336,9 +447,15 @@ public class admin2Controller {
                     empInfo.workingHoursPerDay
             );
 
-            // Set payroll period
-            boolean isFirstHalf = startDate.getDayOfMonth() <= 15;
-            model.setPayrollPeriod(startDate, endDate, isFirstHalf);
+            // *** CRITICAL: Determine if first period (11-25) or second period (26-10) ***
+            boolean isFirstPeriod = selectedStartDate.getDayOfMonth() >= 11 &&
+                    selectedStartDate.getDayOfMonth() <= 25;
+
+            String periodType = isFirstPeriod ? "FIRST PERIOD (11-25)" : "SECOND PERIOD (26-10)";
+            System.out.println("Computing for: " + periodType);
+
+            // Set payroll period with correct flag
+            model.setPayrollPeriod(selectedStartDate, selectedEndDate, isFirstPeriod);
 
             // Set attendance data
             model.setAttendanceData(
@@ -361,41 +478,39 @@ public class admin2Controller {
                         config.travelAllowance,
                         config.riceSubsidy,
                         config.nonTaxableSalary,
-                        config.perDiem,
-                        config.perDiemCount
+                        perDiemInput,
+                        perDiemCountInput
                 );
             } else {
-                model.setAllowances(0, 0, 0, 0, 0, 0);
+                model.setAllowances(0, 0, 0, 0, perDiemInput, perDiemCountInput);
             }
 
             // Set deductions
-            if (deductions != null) {
-                model.setDeductions(deductions.sssLoan);
-            } else {
-                model.setDeductions(0);
-            }
+            model.setDeductions(sssLoanInput);
 
             // Compute payroll
             model.computePayroll();
 
-            // Optional: Save to database (you need to provide periodId)
-            // For now, we'll just display the results
-            // int periodId = 1; // Get this from a payroll period selector
-            // dao.savePayroll(empId, periodId, model, config, attendance);
+            // Display computed values
+            displayComputedPayroll(model, config, attendance, perDiemInput, perDiemCountInput);
 
-            // Display results
-            String summary = model.generatePayslipSummary();
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Payroll Computation Result");
-            alert.setHeaderText("Payroll computed successfully");
-            alert.setContentText(summary);
-            alert.showAndWait();
-
+            // Show success message
             errorLabelManagePayroll.setStyle("-fx-text-fill: green;");
-            errorLabelManagePayroll.setText("Payroll computed! Net Pay: ₱" +
-                    String.format("%,.2f", model.getNetPay()));
+            errorLabelManagePayroll.setText(String.format(
+                    "✓ Payroll computed! Period: %s | Net Pay: ₱%,.2f | Pag-IBIG: ₱%,.2f",
+                    periodType,
+                    model.getNetPay(),
+                    model.getHDMFContribution()
+            ));
 
+            dao.close();
+
+        } catch (NumberFormatException e) {
+            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
+            errorLabelManagePayroll.setText("Please enter valid numeric values");
+            e.printStackTrace();
         } catch (Exception e) {
+            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
             errorLabelManagePayroll.setText("Error computing payroll: " + e.getMessage());
             e.printStackTrace();
         }
@@ -407,28 +522,30 @@ public class admin2Controller {
 
         if (empId.isEmpty()) {
             errorLabelManagePayroll.setText("Please compute payroll first");
+            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
             return;
         }
 
-        LocalDate startDate = startingDatePicker.getValue();
-        LocalDate endDate = endDatePicker.getValue();
-
-        if (startDate == null || endDate == null) {
-            errorLabelManagePayroll.setText("Please select payroll period dates");
+        // *** UPDATED: Use selected period ***
+        if (selectedStartDate == null || selectedEndDate == null) {
+            errorLabelManagePayroll.setText("Please select a payroll period");
+            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
             return;
         }
 
         try {
             PayrollDAO dao = new PayrollDAO();
 
-            // Get all required data (recompute)
+            // Get all required data
             PayrollDAO.EmployeeInfo empInfo = dao.getEmployeeInfo(empId);
             PayrollDAO.SalaryConfig config = dao.getSalaryConfig(empId);
-            PayrollDAO.AttendanceData attendance = dao.getAttendanceData(empId, startDate, endDate);
+            PayrollDAO.AttendanceData attendance = dao.getAttendanceData(empId, selectedStartDate, selectedEndDate);
             PayrollDAO.DeductionData deductions = dao.getDeductions(empId);
 
             if (empInfo == null) {
                 errorLabelManagePayroll.setText("Employee not found");
+                errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
+                dao.close();
                 return;
             }
 
@@ -443,8 +560,11 @@ public class admin2Controller {
                     empInfo.workingHoursPerDay
             );
 
-            boolean isFirstHalf = startDate.getDayOfMonth() <= 15;
-            model.setPayrollPeriod(startDate, endDate, isFirstHalf);
+            // Determine period type
+            boolean isFirstPeriod = selectedStartDate.getDayOfMonth() >= 11 &&
+                    selectedStartDate.getDayOfMonth() <= 25;
+            model.setPayrollPeriod(selectedStartDate, selectedEndDate, isFirstPeriod);
+
             model.setAttendanceData(
                     attendance.daysWorked, attendance.daysAbsent,
                     attendance.regularOTHours, attendance.nightDifferentialOTHours,
@@ -453,36 +573,53 @@ public class admin2Controller {
                     attendance.restDayNightDiffOTHours, attendance.undertimeHours
             );
 
+            double perDiem = config != null ? config.perDiem : 0.0;
+            int perDiemCount = config != null ? config.perDiemCount : 0;
+
             if (config != null) {
                 model.setAllowances(
                         config.telecomAllowance, config.travelAllowance,
                         config.riceSubsidy, config.nonTaxableSalary,
-                        config.perDiem, config.perDiemCount
+                        perDiem, perDiemCount
                 );
             } else {
-                model.setAllowances(0, 0, 0, 0, 0, 0);
+                model.setAllowances(0, 0, 0, 0, perDiem, perDiemCount);
             }
 
-            if (deductions != null) {
-                model.setDeductions(deductions.sssLoan);
-            } else {
-                model.setDeductions(0);
-            }
+            double sssLoan = deductions != null ? deductions.sssLoan : 0.0;
+            model.setDeductions(sssLoan);
 
             model.computePayroll();
 
-            // Save to database (using period ID 1 as default, you may want to add a selector)
-            int periodId = 1; // You should get this from a ComboBox or determine it automatically
-            boolean saved = dao.savePayroll(empId, periodId, model, config, attendance);
+            // *** UPDATED: Use selected period ID directly (no need to get/create) ***
+            boolean saved = dao.savePayroll(
+                    empId,
+                    selectedPeriodId,
+                    model,
+                    config,
+                    attendance,
+                    perDiem,
+                    perDiemCount,
+                    sssLoan
+            );
 
             if (saved) {
+                String periodType = isFirstPeriod ? "FIRST (11-25)" : "SECOND (26-10)";
                 errorLabelManagePayroll.setStyle("-fx-text-fill: green;");
-                errorLabelManagePayroll.setText("Payroll saved successfully to database!");
+                errorLabelManagePayroll.setText(String.format(
+                        "✓ Payroll saved! Period: %s | ID: %d | Net Pay: ₱%,.2f",
+                        periodType, selectedPeriodId, model.getNetPay()
+                ));
+                System.out.println("Payroll saved for employee " + empId + " in period " + selectedPeriodId);
             } else {
+                errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
                 errorLabelManagePayroll.setText("Failed to save payroll to database");
             }
 
+            dao.close();
+
         } catch (Exception e) {
+            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
             errorLabelManagePayroll.setText("Error saving payroll: " + e.getMessage());
             e.printStackTrace();
         }
@@ -679,16 +816,58 @@ public class admin2Controller {
         removeJobLabel.setText("Job Title:");
     }
 
-    private void clearPayrollFields() {
-        payrollemployeeName.clear();
-        payrollEmployeeID.clear();
-        telecoAllowance.clear();
-        travelAllowance.clear();
-        riceSubsidy.clear();
-        nonTaxableTF.clear();
-        perDeimTF.clear();
-        perDeimCountTF.clear();
-        startingDatePicker.setValue(null);
-        endDatePicker.setValue(null);
+    /**
+     * Optional: Set current period based on today's date
+     * Add this if you have a "Set Current Period" button in FXML
+     */
+    @FXML
+    private void setCurrentPeriod() {
+        LocalDate now = LocalDate.now();
+        int day = now.getDayOfMonth();
+
+        // Find the appropriate period in the ComboBox
+        PayrollPeriodItem currentPeriod = null;
+
+        for (PayrollPeriodItem item : payrollPeriodComboBox.getItems()) {
+            LocalDate start = item.getPeriod().startDate;
+            LocalDate end = item.getPeriod().endDate;
+
+            // Check if today falls within this period
+            if (!now.isBefore(start) && !now.isAfter(end)) {
+                currentPeriod = item;
+                break;
+            }
+        }
+
+        if (currentPeriod != null) {
+            payrollPeriodComboBox.getSelectionModel().select(currentPeriod);
+            errorLabelManagePayroll.setStyle("-fx-text-fill: blue;");
+            errorLabelManagePayroll.setText("✓ Current period selected automatically");
+        } else {
+            errorLabelManagePayroll.setStyle("-fx-text-fill: orange;");
+            errorLabelManagePayroll.setText("No active period found for current date");
+        }
+    }
+
+    /**
+     * Inner class to represent a period item in the ComboBox
+     */
+    public static class PayrollPeriodItem {
+        private PayrollDAO.PayrollPeriod period;
+
+        public PayrollPeriodItem(PayrollDAO.PayrollPeriod period) {
+            this.period = period;
+        }
+
+        public PayrollDAO.PayrollPeriod getPeriod() {
+            return period;
+        }
+
+        @Override
+        public String toString() {
+            // This is what displays in the ComboBox
+            // Format: "October 2025 - First Period (26-10)"
+            return period.periodName;
+        }
     }
 }

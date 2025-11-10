@@ -19,6 +19,7 @@ public class Employee {
     private String Title;
    private LocalDate dateHired;
    public boolean active;
+    private boolean isActive;
 
 
 
@@ -63,4 +64,9 @@ public class Employee {
     public boolean isActive() {
         return active;
     }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
 }

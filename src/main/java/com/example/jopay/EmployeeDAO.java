@@ -109,6 +109,7 @@ public class EmployeeDAO {
         return false;
     }
 
+
     public boolean validateLogin(String employeeId, String password) throws SQLException {
         String valiDate = "SELECT employee_password FROM employee_account WHERE employee_Id=?";
         try (PreparedStatement stmt = connect.prepareStatement(valiDate)) {
