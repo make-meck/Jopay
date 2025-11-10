@@ -293,7 +293,7 @@
                   </Label>
                     </children>
                 </AnchorPane>
-                <AnchorPane fx:id="removeEmpPane" layoutX="55.0" layoutY="82.0" prefHeight="285.0" prefWidth="940.0" style="-fx-background-color: #dfdfdf;">
+                <AnchorPane fx:id="removeEmpPane" layoutX="55.0" layoutY="82.0" prefHeight="285.0" prefWidth="940.0" style="-fx-background-color: #dfdfdf;" visible="false">
                     <children>
                         <VBox layoutX="72.0" layoutY="116.0" prefHeight="139.0" prefWidth="273.0" spacing="9.0">
                             <children>
