@@ -309,7 +309,24 @@ public class EmployeeDAO {
         }
     }
 
+    public int getActiveEmployeeCount() {
+        System.out.println("getActiveEmployeeCount called"); // Add this
+        System.out.println("Connection: " + connect); // Check if connection is null
 
+        String query = "SELECT COUNT(*) AS employee_count FROM employee_info WHERE is_Active = 1";
+        try (PreparedStatement stmt = connect.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                int count = rs.getInt("employee_count");
+                System.out.println("Count from DB: " + count); // Add this
+                return count;
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL Error: " + e.getMessage()); // Better error message
+            e.printStackTrace();
+        }
+        return 0;
+    }
 
 
 }

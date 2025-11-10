@@ -102,7 +102,7 @@ public class PayrollService {
             int perDiemCount = salaryConfig.perDiemCount;
             double sssLoan = (deductions != null) ? deductions.sssLoan : 0.0;
 
-            boolean saved = dao.savePayroll(employeeId, periodId, payroll, salaryConfig, attendance, perDiem, perDiemCount, sssLoan);
+            boolean saved = dao.savePayroll(employeeId, periodId, payroll, salaryConfig, attendance);
             if (!saved) {
                 System.err.println("Warning: Failed to save payroll to database");
             } else {

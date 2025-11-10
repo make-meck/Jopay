@@ -1,5 +1,6 @@
 package com.example.jopay;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -96,13 +97,13 @@ public class admin2Controller {
     @FXML Button savePayrollButton;
     @FXML Button clearPayrollButton;
 
-    // *** NEW: Period ComboBox (replaces DatePickers) ***
     @FXML ComboBox<PayrollPeriodItem> payrollPeriodComboBox;
 
     // Store selected period information
     private LocalDate selectedStartDate;
     private LocalDate selectedEndDate;
     private int selectedPeriodId;
+    private EmployeeDAO employeeDAO;
 
     // Employee Table
     @FXML private TableView<Employee> employeeTable;
@@ -112,6 +113,10 @@ public class admin2Controller {
     @FXML private TableColumn<Employee, String> colStatus;
     @FXML private TextField searchEmployeeID;
 
+    //report analysis
+    @FXML private Label headCountLabel;
+
+
     private ObservableList<Employee> employeeList = FXCollections.observableArrayList();
 
     // Admin credentials
@@ -120,6 +125,11 @@ public class admin2Controller {
 
     @FXML
     public void initialize() {
+         employeeDAO = new EmployeeDAO();
+        employeeDAO = new EmployeeDAO();
+
+        System.out.println("headCountLabel is null? " + (headCountLabel == null));
+
         if (employeeTable != null) {
             setupEmployeeTable();
         }
@@ -128,6 +138,10 @@ public class admin2Controller {
         if (payrollPeriodComboBox != null) {
             setupPeriodComboBox();
         }
+        Platform.runLater(() -> {
+            displayActiveEmployees();
+        });
+
     }
 
     /**
@@ -640,6 +654,13 @@ public class admin2Controller {
         reportAnalysisLabel.setVisible(true);
         payrollLabel.setVisible(false);
         manageEmpLabel.setVisible(false);
+    }
+
+
+    private void displayActiveEmployees() {
+
+        int total = employeeDAO.getActiveEmployeeCount();
+        headCountLabel.setText(String.valueOf(total));
     }
 
     @FXML
