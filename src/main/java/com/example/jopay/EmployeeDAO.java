@@ -10,15 +10,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /*this class will handle the employees of the company
 transactions like delete, add, update and so on
  */
 public class EmployeeDAO {
-    private static DatabaseConnector connect;
+    static DatabaseConnector connect;
 
 
     public EmployeeDAO() {
@@ -38,12 +36,12 @@ public class EmployeeDAO {
     // find the employee by their employee_ID
     public Optional<Employee> findEmployeeId(String employeeId) throws SQLException {
         String findEmp = """
-        SELECT ea.employee_Id, ea.employee_password, ei.employee_FirstName, 
-               ei.employee_LastName, ei.is_Active
-        FROM employee_account ea
-        JOIN employee_info ei ON ea.employee_Id = ei.employee_Id
-        WHERE ea.employee_Id = ?
-    """;
+                    SELECT ea.employee_Id, ea.employee_password, ei.employee_FirstName, 
+                           ei.employee_LastName, ei.is_Active
+                    FROM employee_account ea
+                    JOIN employee_info ei ON ea.employee_Id = ei.employee_Id
+                    WHERE ea.employee_Id = ?
+                """;
 
         try (PreparedStatement stmt = connect.prepareStatement(findEmp)) {
             stmt.setString(1, employeeId);
@@ -196,99 +194,37 @@ public class EmployeeDAO {
     }
 
 
-
-    // Update the addEmployee method in EmployeeDAO.java
-
     public static void addEmployee(Employee employee, String password) throws SQLException {
         connect.setAutoCommit(false);
 
-        try {
-            // Insert employee info
-            String insertEmployee = "INSERT INTO employee_info " +
-                    "(employee_Id, employee_FirstName, employee_LastName, employee_MiddleName, employee_DOB, " +
-                    "employee_department, employee_Title, basic_Salary, employment_Status, date_Hired) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            PreparedStatement stmt = connect.prepareStatement(insertEmployee);
-            stmt.setString(1, employee.getEmployeeId());
-            stmt.setString(2, employee.getFirstName());
-            stmt.setString(3, employee.getLastName());
-            stmt.setString(4, employee.getMiddleName());
-            stmt.setDate(5, java.sql.Date.valueOf(employee.getDOB()));
-            stmt.setString(6, employee.getDepartment());
-            stmt.setString(7, employee.getTitle());
-            stmt.setDouble(8, employee.getBasicSalary());
-            stmt.setString(9, employee.getStatus());
-            stmt.setDate(10, java.sql.Date.valueOf(employee.getDateHired()));
-            stmt.executeUpdate();
+        String insertEmployee = "INSERT INTO employee_info " +
+                "(employee_Id, employee_FirstName, employee_LastName,employee_MiddleName, employee_DOB,employee_department, " +
+                "employee_Title, basic_Salary, employment_Status, date_Hired) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            // Insert account
-            String insertAccount = "INSERT INTO employee_account (employee_id, employee_password) VALUES (?, ?)";
-            PreparedStatement accountStmt = connect.prepareStatement(insertAccount);
-            accountStmt.setInt(1, Integer.parseInt(employee.getEmployeeId()));
-            accountStmt.setString(2, password);
-            accountStmt.executeUpdate();
+        PreparedStatement stmt = connect.prepareStatement(insertEmployee);
+        stmt.setString(1, employee.getEmployeeId());
+        stmt.setString(2, employee.getFirstName());
+        stmt.setString(3, employee.getLastName());
+        stmt.setString(4, employee.getMiddleName());
+        stmt.setDate(5, java.sql.Date.valueOf(employee.getDOB()));
+        stmt.setString(6, employee.getDepartment());
+        stmt.setString(7, employee.getTitle());
+        stmt.setDouble(8, employee.getBasicSalary());
+        stmt.setString(9, employee.getStatus());
+        stmt.setDate(10, java.sql.Date.valueOf(employee.getDateHired()));
 
-            // *** NEW: Auto-compute and save contributions ***
-            PayrollDAO payrollDAO = new PayrollDAO();
-            boolean contributionsComputed = payrollDAO.autoComputeAndSaveContributions(
-                    employee.getEmployeeId(),
-                    employee.getBasicSalary()
-            );
+        stmt.executeUpdate();
 
-            if (contributionsComputed) {
-                System.out.println("✓ Contributions auto-computed for new employee: " + employee.getEmployeeId());
-            } else {
-                System.err.println("⚠ Warning: Failed to compute contributions for employee: " + employee.getEmployeeId());
-            }
 
-            connect.commit();
+        String insertAccount = "INSERT INTO employee_account (employee_id, employee_password) VALUES (?, ?)";
+        PreparedStatement accountStmt = connect.prepareStatement(insertAccount);
+        accountStmt.setInt(1, Integer.parseInt(employee.getEmployeeId()));
+        accountStmt.setString(2, password);
+        accountStmt.executeUpdate();
 
-        } catch (SQLException e) {
-            connect.rollback();
-            throw e;
-        } finally {
-            connect.setAutoCommit(true);
-        }
-    }
-
-    // Add a new method to update employee salary and auto-recompute contributions
-    public static boolean updateEmployeeSalary(String employeeId, double newSalary) throws SQLException {
-        connect.setAutoCommit(false);
-
-        try {
-            // Update salary
-            String updateQuery = "UPDATE employee_info SET basic_Salary = ? WHERE employee_Id = ?";
-            PreparedStatement stmt = connect.prepareStatement(updateQuery);
-            stmt.setDouble(1, newSalary);
-            stmt.setString(2, employeeId);
-            int result = stmt.executeUpdate();
-
-            if (result > 0) {
-                // Auto-recompute contributions
-                PayrollDAO payrollDAO = new PayrollDAO();
-                boolean recomputed = payrollDAO.autoComputeAndSaveContributions(employeeId, newSalary);
-
-                if (recomputed) {
-                    System.out.println("✓ Salary updated and contributions recomputed for: " + employeeId);
-                    connect.commit();
-                    return true;
-                } else {
-                    System.err.println("⚠ Salary updated but failed to recompute contributions");
-                    connect.rollback();
-                    return false;
-                }
-            }
-
-            connect.rollback();
-            return false;
-
-        } catch (SQLException e) {
-            connect.rollback();
-            throw e;
-        } finally {
-            connect.setAutoCommit(true);
-        }
+        connect.commit();
     }
 
     public static int getNextEmployeeId() throws SQLException {
@@ -371,24 +307,88 @@ public class EmployeeDAO {
     }
 
     public int getActiveEmployeeCount() {
-        System.out.println("getActiveEmployeeCount called"); // Add this
-        System.out.println("Connection: " + connect); // Check if connection is null
+        System.out.println("getActiveEmployeeCount called");
+        System.out.println("Connection: " + connect);
 
         String query = "SELECT COUNT(*) AS employee_count FROM employee_info WHERE is_Active = 1";
         try (PreparedStatement stmt = connect.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 int count = rs.getInt("employee_count");
-                System.out.println("Count from DB: " + count); // Add this
+                System.out.println("Count from DB: " + count);
                 return count;
             }
         } catch (SQLException e) {
-            System.err.println("SQL Error: " + e.getMessage()); // Better error message
+            System.err.println("SQL Error: " + e.getMessage());
             e.printStackTrace();
         }
         return 0;
     }
 
+    public Map<String, Integer> getEmployeeDepartmentCounts() {
+        Map<String, Integer> deptCounts = new HashMap<>();
+
+        try {
+
+            String deptQuery = "SELECT DISTINCT employee_Department FROM employee_info";
+            try (PreparedStatement deptStmt = connect.prepareStatement(deptQuery);
+                 ResultSet deptRs = deptStmt.executeQuery()) {
+                while (deptRs.next()) {
+                    String dept = deptRs.getString("employee_Department");
+                    deptCounts.put(dept, 0); // default 0 count
+                }
+            }
+
+
+            String countQuery = """
+                        SELECT employee_Department, COUNT(*) AS count
+                        FROM employee_info
+                        WHERE is_Active = 1
+                        GROUP BY employee_Department
+                    """;
+
+            try (PreparedStatement countStmt = connect.prepareStatement(countQuery);
+                 ResultSet countRs = countStmt.executeQuery()) {
+                while (countRs.next()) {
+                    String dept = countRs.getString("employee_Department");
+                    int count = countRs.getInt("count");
+                    deptCounts.put(dept, count);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return deptCounts;
+    }
+
+    public Map<String, Integer> getWeeklyAttendanceSummary() {
+        Map<String, Integer> summary = new HashMap<>();
+
+        String query = """
+        SELECT status, COUNT(*) AS count
+        FROM time_log
+        WHERE log_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        GROUP BY status
+    """;
+
+        try (PreparedStatement stmt = connect.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                String status = rs.getString("status");
+                int count = rs.getInt("count");
+                summary.put(status, count);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("Weekly attendance summary: " + summary);
+        return summary;
+    }
 
 }
 

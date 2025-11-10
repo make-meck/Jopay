@@ -6,6 +6,9 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.PieChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
@@ -13,9 +16,15 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static com.example.jopay.EmployeeDAO.connect;
 
 public class admin2Controller {
 
@@ -115,6 +124,8 @@ public class admin2Controller {
 
     //report analysis
     @FXML private Label headCountLabel;
+    @FXML BarChart<String, Number> departmentWiseCount;
+    @FXML PieChart attendancePieChart;
 
 
     private ObservableList<Employee> employeeList = FXCollections.observableArrayList();
@@ -125,7 +136,7 @@ public class admin2Controller {
 
     @FXML
     public void initialize() {
-         employeeDAO = new EmployeeDAO();
+
         employeeDAO = new EmployeeDAO();
 
         System.out.println("headCountLabel is null? " + (headCountLabel == null));
@@ -138,9 +149,16 @@ public class admin2Controller {
         if (payrollPeriodComboBox != null) {
             setupPeriodComboBox();
         }
+
+        if (departmentWiseCount != null && employeeDAO != null) {
+
+        }
         Platform.runLater(() -> {
             displayActiveEmployees();
+            loadDepartmentChart();
+            loadWeeklyAttendanceChart();
         });
+
 
     }
 
@@ -263,18 +281,17 @@ public class admin2Controller {
     @FXML
     private void displayComputedPayroll(PayrollModel model, PayrollDAO.SalaryConfig config,
                                         PayrollDAO.AttendanceData attendance, double perDiem, int perDiemCount) {
-        // Display all computed values
+        // Display all computed values in the text fields
         basicPayTF.setText(String.format("₱%,.2f", model.getSemiMonthlyBasicPay()));
         overtimeTF.setText(String.format("₱%,.2f", attendance.regularOTHours * model.getHourlyRate() * 1.25));
-
-        // Display absence deduction and count
         absencesTF.setText(String.format("₱%,.2f", attendance.daysAbsent * model.getGrossDailyRate()));
-        numAbsencesTF.setText(String.valueOf(attendance.daysAbsent));  // Shows number of absences
+        numAbsencesTF.setText(String.valueOf(attendance.daysAbsent));
 
-        // Contributions
+        // Computed contributions
         sssContributionTF.setText(String.format("₱%,.2f", model.getSSSContribution()));
         phicContributionTF.setText(String.format("₱%,.2f", model.getPHICContribution()));
 
+        // *** UPDATED: Show Pag-IBIG with visual indicator ***
         double hdmf = model.getHDMFContribution();
         if (hdmf > 0) {
             hdmfContributionTF.setText(String.format("₱%,.2f ✓", hdmf));
@@ -284,17 +301,27 @@ public class admin2Controller {
             hdmfContributionTF.setStyle("-fx-text-fill: gray;");
         }
 
+        // Computed tax
         withholdingTaxTF.setText(String.format("₱%,.2f", model.getWithholdingTax()));
+
+        // Summary
         grossPayTF.setText(String.format("₱%,.2f", model.getSemiMonthlyGrossPay()));
         totalDeductionTF.setText(String.format("₱%,.2f", model.getTotalDeductions()));
         netPayTF.setText(String.format("₱%,.2f", model.getNetPay()));
 
-        // Console output
+        // Console output for debugging
         System.out.println("\n=== COMPUTED PAYROLL ===");
         System.out.println("Period: " + selectedStartDate + " to " + selectedEndDate);
-        System.out.println("Days Worked: " + attendance.daysWorked);
-        System.out.println("Days Absent: " + attendance.daysAbsent);
-        System.out.println("Absence Deduction: " + String.format("₱%,.2f", attendance.daysAbsent * model.getGrossDailyRate()));
+        System.out.println("SSS: " + String.format("₱%,.2f", model.getSSSContribution()));
+        System.out.println("PHIC: " + String.format("₱%,.2f", model.getPHICContribution()));
+        System.out.println("HDMF: " + String.format("₱%,.2f", model.getHDMFContribution()) +
+                (hdmf > 0 ? " ✓ DEDUCTED" : " ✗ NOT DEDUCTED"));
+        System.out.println("Overtime: " + String.format("₱%,.2f", attendance.regularOTHours * model.getHourlyRate() * 1.25));
+        System.out.println("Absences: " + String.format("₱%,.2f", attendance.daysAbsent * model.getGrossDailyRate()));
+        System.out.println("Tax: " + String.format("₱%,.2f", model.getWithholdingTax()));
+        System.out.println("Gross Pay: " + String.format("₱%,.2f", model.getSemiMonthlyGrossPay()));
+        System.out.println("Total Deductions: " + String.format("₱%,.2f", model.getTotalDeductions()));
+        System.out.println("Net Pay: " + String.format("₱%,.2f", model.getNetPay()));
         System.out.println("========================\n");
     }
 
@@ -341,7 +368,6 @@ public class admin2Controller {
 
         if (searchID.isEmpty()) {
             errorLabelManagePayroll.setText("Please enter an Employee ID");
-            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
             return;
         }
 
@@ -350,20 +376,16 @@ public class admin2Controller {
         if (empInfo == null) {
             clearPayrollFields();
             errorLabelManagePayroll.setText("Employee not found");
-            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
-            payrollDAO.close();
             return;
         }
 
-        // Display employee basic info
+        // Get salary config
+        PayrollDAO.SalaryConfig config = payrollDAO.getSalaryConfig(searchID);
+
         payrollemployeeName.setText(empInfo.employeeName);
         payrollEmployeeID.setText(empInfo.employeeId);
+        basicPayTF.setText(String.format("₱%,.2f", empInfo.basicMonthlyPay / 2));
 
-        // Calculate semi-monthly basic pay
-        double semiMonthlyPay = empInfo.basicMonthlyPay / 2;
-        basicPayTF.setText(String.format("₱%,.2f", semiMonthlyPay));
-
-        PayrollDAO.SalaryConfig config = payrollDAO.getSalaryConfig(searchID);
         if (config != null) {
             telecoAllowance.setText(String.format("%.2f", config.telecomAllowance));
             travelAllowance.setText(String.format("%.2f", config.travelAllowance));
@@ -371,11 +393,6 @@ public class admin2Controller {
             nonTaxableTF.setText(String.format("%.2f", config.nonTaxableSalary));
             perDeimTF.setText(String.format("%.2f", config.perDiem));
             perDeimCountTF.setText(String.valueOf(config.perDiemCount));
-
-            sssContributionTF.setText(String.format("₱%,.2f", config.sssContribution));
-            phicContributionTF.setText(String.format("₱%,.2f", config.phicContribution));
-            hdmfContributionTF.setText(String.format("₱%,.2f", config.hdmfContribution));
-
         } else {
             telecoAllowance.setText("0.00");
             travelAllowance.setText("0.00");
@@ -383,37 +400,7 @@ public class admin2Controller {
             nonTaxableTF.setText("0.00");
             perDeimTF.setText("0.00");
             perDeimCountTF.setText("0");
-            sssContributionTF.setText("0.00");
-            phicContributionTF.setText("0.00");
-            hdmfContributionTF.setText("0.00");
         }
-
-        PayrollModel previewModel = new PayrollModel();
-        previewModel.PayrollComputation(
-                empInfo.employeeId,
-                empInfo.employeeName,
-                empInfo.basicMonthlyPay,
-                empInfo.employmentStatus,
-                empInfo.dateHired,
-                empInfo.workingHoursPerDay
-        );
-
-        PayrollDAO.AbsenceInfo absenceInfo = payrollDAO.getRecentAbsenceInfo(searchID);
-
-        double absenceDeduction = previewModel.calculateAbsentDeduction(absenceInfo.absenceCount);
-        double grossDailyRate = previewModel.getGrossDailyRate();
-
-        numAbsencesTF.setText(String.valueOf(absenceInfo.absenceCount));
-
-        absencesTF.setText(String.format("₱%,.2f", absenceDeduction));
-
-        System.out.println("\n=== EMPLOYEE ABSENCE CALCULATION (via PayrollModel) ===");
-        System.out.println("Employee: " + empInfo.employeeName + " (" + searchID + ")");
-        System.out.println("Basic Monthly Salary: ₱" + String.format("%,.2f", empInfo.basicMonthlyPay));
-        System.out.println("Gross Daily Rate (from PayrollModel): ₱" + String.format("%,.2f", grossDailyRate));
-        System.out.println("Absences This Month: " + absenceInfo.absenceCount);
-        System.out.println("Absence Deduction (from PayrollModel): ₱" + String.format("%,.2f", absenceDeduction));
-        System.out.println("========================================================\n");
 
         // Get SSS Loan
         PayrollDAO.DeductionData deductions = payrollDAO.getDeductions(searchID);
@@ -423,20 +410,21 @@ public class admin2Controller {
             sssLoanTF.setText("0.00");
         }
 
-        // Clear other computed fields (these will be filled during payroll computation)
+        // Clear computed fields
         overtimeTF.clear();
+        absencesTF.clear();
+        numAbsencesTF.clear();
+        sssContributionTF.clear();
+        phicContributionTF.clear();
+        hdmfContributionTF.clear();
         withholdingTaxTF.clear();
         grossPayTF.clear();
         totalDeductionTF.clear();
         netPayTF.clear();
 
+        errorLabelManagePayroll.setText("");
         errorLabelManagePayroll.setStyle("-fx-text-fill: green;");
-        errorLabelManagePayroll.setText(String.format(
-                "✓ Employee loaded | Absences: %d (₱%,.2f) | Daily Rate: ₱%,.2f",
-                absenceInfo.absenceCount,
-                absenceDeduction,
-                grossDailyRate
-        ));
+        errorLabelManagePayroll.setText("✓ Employee data loaded successfully");
 
         payrollDAO.close();
     }
@@ -451,6 +439,7 @@ public class admin2Controller {
             return;
         }
 
+        // *** UPDATED: Check if period is selected from ComboBox ***
         if (selectedStartDate == null || selectedEndDate == null) {
             errorLabelManagePayroll.setText("Please select a payroll period from the dropdown");
             errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
@@ -458,6 +447,7 @@ public class admin2Controller {
         }
 
         try {
+            // Parse inputs
             double perDiemInput = perDeimTF.getText().trim().isEmpty() ? 0.0 :
                     Double.parseDouble(perDeimTF.getText().trim());
             int perDiemCountInput = perDeimCountTF.getText().trim().isEmpty() ? 0 :
@@ -475,14 +465,6 @@ public class admin2Controller {
             if (empInfo == null) {
                 errorLabelManagePayroll.setText("Employee not found");
                 errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
-                dao.close();
-                return;
-            }
-
-            if (config == null) {
-                errorLabelManagePayroll.setText("Salary configuration not found. Please set up salary first.");
-                errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
-                dao.close();
                 return;
             }
 
@@ -497,11 +479,14 @@ public class admin2Controller {
                     empInfo.workingHoursPerDay
             );
 
-            // Determine period type
+            // *** CRITICAL: Determine if first period (11-25) or second period (26-10) ***
             boolean isFirstPeriod = selectedStartDate.getDayOfMonth() >= 11 &&
                     selectedStartDate.getDayOfMonth() <= 25;
-            String periodType = isFirstPeriod ? "FIRST PERIOD (11-25)" : "SECOND PERIOD (26-10)";
 
+            String periodType = isFirstPeriod ? "FIRST PERIOD (11-25)" : "SECOND PERIOD (26-10)";
+            System.out.println("Computing for: " + periodType);
+
+            // Set payroll period with correct flag
             model.setPayrollPeriod(selectedStartDate, selectedEndDate, isFirstPeriod);
 
             // Set attendance data
@@ -519,24 +504,21 @@ public class admin2Controller {
             );
 
             // Set allowances
-            model.setAllowances(
-                    config.telecomAllowance,
-                    config.travelAllowance,
-                    config.riceSubsidy,
-                    config.nonTaxableSalary,
-                    perDiemInput,
-                    perDiemCountInput
-            );
+            if (config != null) {
+                model.setAllowances(
+                        config.telecomAllowance,
+                        config.travelAllowance,
+                        config.riceSubsidy,
+                        config.nonTaxableSalary,
+                        perDiemInput,
+                        perDiemCountInput
+                );
+            } else {
+                model.setAllowances(0, 0, 0, 0, perDiemInput, perDiemCountInput);
+            }
 
             // Set deductions
             model.setDeductions(sssLoanInput);
-
-            // *** USE CONTRIBUTIONS FROM SALARY_CONFIG ***
-            model.setPreComputedContributions(
-                    config.sssContribution,
-                    config.phicContribution,
-                    isFirstPeriod ? config.hdmfContribution : 0.0
-            );
 
             // Compute payroll
             model.computePayroll();
@@ -544,6 +526,7 @@ public class admin2Controller {
             // Display computed values
             displayComputedPayroll(model, config, attendance, perDiemInput, perDiemCountInput);
 
+            // Show success message
             errorLabelManagePayroll.setStyle("-fx-text-fill: green;");
             errorLabelManagePayroll.setText(String.format(
                     "✓ Payroll computed! Period: %s | Net Pay: ₱%,.2f | Pag-IBIG: ₱%,.2f",
@@ -640,7 +623,7 @@ public class admin2Controller {
 
             model.computePayroll();
 
-            // *** UPDATED: Use selected period ID directly (no need to get/create) ***
+            // *** FIXED: Call savePayroll with correct 5 parameters ***
             boolean saved = dao.savePayroll(
                     empId,
                     selectedPeriodId,
@@ -691,11 +674,58 @@ public class admin2Controller {
         manageEmpLabel.setVisible(false);
     }
 
-
+    @FXML
+    private void reportAnalysisLoad(){
+        displayActiveEmployees();
+        loadDepartmentChart();
+    }
     private void displayActiveEmployees() {
 
         int total = employeeDAO.getActiveEmployeeCount();
         headCountLabel.setText(String.valueOf(total));
+    }
+    public void loadDepartmentChart() {
+        System.out.println("departmentWiseCount is null? " + (departmentWiseCount == null)); // ADD THIS
+
+        if (departmentWiseCount == null) {
+            System.out.println("ERROR: Chart is null!");
+            return;
+        }
+        Map<String, Integer> deptCounts = employeeDAO.getEmployeeDepartmentCounts();
+
+        // ADD THESE DEBUG LINES:
+        System.out.println("Department counts: " + deptCounts);
+        System.out.println("Number of departments: " + deptCounts.size());
+
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName("Active Employees");
+
+        deptCounts.forEach((dept, count) -> {
+            System.out.println("Adding to chart: " + dept + " = " + count);
+            series.getData().add(new XYChart.Data<>(dept, count));
+        });
+
+        System.out.println("Series data size: " + series.getData().size());
+
+
+        departmentWiseCount.getData().clear();
+        departmentWiseCount.getData().add(series);
+        departmentWiseCount.setTitle("Department Wise Headcount");
+
+        System.out.println("Chart data added!");
+    }
+
+    public void loadWeeklyAttendanceChart() {
+        Map<String, Integer> summary = employeeDAO.getWeeklyAttendanceSummary();
+
+        ObservableList<PieChart.Data> pieData = FXCollections.observableArrayList();
+
+        summary.forEach((status, count) -> {
+            pieData.add(new PieChart.Data(status + " (" + count + ")", count));
+        });
+
+        attendancePieChart.setData(pieData);
+        attendancePieChart.setTitle("Weekly Attendance Summary");
     }
 
     @FXML
