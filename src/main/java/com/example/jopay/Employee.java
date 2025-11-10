@@ -18,6 +18,7 @@ public class Employee {
     private Double basicSalary;
     private String Title;
    private LocalDate dateHired;
+   public boolean active;
 
 
 
@@ -33,6 +34,7 @@ public class Employee {
     public String getTitle(){return Title;}
     public double getBasicSalary() { return basicSalary; }
     public LocalDate getDateHired(){return dateHired; }
+    public boolean getIsactive() {return active; }
 
 
 
@@ -52,12 +54,13 @@ public class Employee {
 
 
 
+
     public String getFullName() {
         return firstName + " " + lastName;
     }
 
 
-
-
-
+    public boolean isActive() {
+        return active;
+    }
 }

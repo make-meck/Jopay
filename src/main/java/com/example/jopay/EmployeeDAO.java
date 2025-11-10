@@ -38,11 +38,12 @@ public class EmployeeDAO {
     // find the employee by their employee_ID
     public Optional<Employee> findEmployeeId(String employeeId) throws SQLException {
         String findEmp = """
-                    SELECT ea.employee_Id, ea.employee_password, ei.employee_FirstName, ei.employee_LastName
-                    FROM employee_account ea
-                    JOIN employee_info ei ON ea.employee_Id = ei.employee_Id
-                    WHERE ea.employee_Id = ?
-                """;
+        SELECT ea.employee_Id, ea.employee_password, ei.employee_FirstName, 
+               ei.employee_LastName, ei.is_Active
+        FROM employee_account ea
+        JOIN employee_info ei ON ea.employee_Id = ei.employee_Id
+        WHERE ea.employee_Id = ?
+    """;
 
         try (PreparedStatement stmt = connect.prepareStatement(findEmp)) {
             stmt.setString(1, employeeId);
@@ -54,6 +55,7 @@ public class EmployeeDAO {
                 employee.setPassword(rs.getString("employee_password"));
                 employee.setFirstName(rs.getString("employee_FirstName"));
                 employee.setLastName(rs.getString("employee_LastName"));
+                employee.setActive(rs.getBoolean("is_Active"));
                 return Optional.of(employee);
             }
         }

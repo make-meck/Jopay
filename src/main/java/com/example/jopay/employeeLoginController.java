@@ -69,10 +69,17 @@ public class employeeLoginController {
             return;
         }
 
+
         Optional<Employee> employee = authService.authenticate(employeeId, password);
 
 
         if (employee.isPresent()) {
+            Employee emp = employee.get();
+
+                if (!emp.isActive()) {
+                    error.setText("Your account is inactive. Please contact admin.");
+                    return;
+                }
             try {
 
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
