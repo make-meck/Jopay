@@ -1,9 +1,17 @@
 package com.example.jopay;
 
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /*this class will handle the employees of the company
@@ -63,22 +71,22 @@ public class EmployeeDAO {
     }
 
     //makes the employee inactive
-    public static void deactivateEmployee(int employeeId) throws SQLException{
+    public static void deactivateEmployee(int employeeId) throws SQLException {
         String sql = "UPDATE employee_info SET is_Active = 0 WHERE employee_Id= ?";
-        PreparedStatement active= connect.prepareStatement(sql);
+        PreparedStatement active = connect.prepareStatement(sql);
         active.setInt(1, employeeId);
-        int updateRows= active.executeUpdate();
+        int updateRows = active.executeUpdate();
         active.close();
 
-        if(updateRows == 0){
+        if (updateRows == 0) {
             throw new SQLException("No employee found with ID" + employeeId);
         }
     }
 
     //makes the account inactive
-    public static void deactivateAccount(int employeeId) throws SQLException{
+    public static void deactivateAccount(int employeeId) throws SQLException {
         String sql = "UPDATE employee_account SET employee_password = NULL WHERE employee_Id =?";
-        PreparedStatement deactivate= connect.prepareStatement(sql);
+        PreparedStatement deactivate = connect.prepareStatement(sql);
         deactivate.setInt(1, employeeId);
         deactivate.executeUpdate();
         deactivate.close();
@@ -114,30 +122,79 @@ public class EmployeeDAO {
         return false;
     }
 
-    /*public List<Employee> searchEmployee(String query){
-        List<Employee> employees= new ArrayList<>();
-        String sql ="SELECT * FROM employee_info WHERE employee_Id LIKE ? OR employee_FirstName LIKE  ? OR employee_LastName LIKE ?";
-        try(PreparedStatement stmt = connect.prepareStatement(sql)){
-            try{
-                int id= Integer.parseInt(query);
-                stmt.setInt(1, "employee_Id");
-            } catch(NumberFormatException e){
-                stmt.setInt(1,-1);
+    public static List<Employee> getAllEmployees() {
+        List<Employee> employees = new ArrayList<>();
+        String query = "SELECT * FROM employee_info ORDER BY employee_id";
+
+        try (PreparedStatement stmt = connect.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Employee emp = new Employee();
+                emp.setEmployeeId(rs.getString("employee_id"));
+                emp.setFirstName(rs.getString("employee_FirstName"));
+                emp.setLastName(rs.getString("employee_LastName"));
+                emp.setDepartment(rs.getString("employee_Department"));
+                emp.setEmploymentStatus(rs.getString("employment_Status"));
+                employees.add(emp);
             }
-            stmt.setString(2, "%", + query + "%");
-            stmt.setString(2, "%", + query + "%");
-            try(ResultSet rs = stmt.executeQuery()){
-                while(rs.next()){
-                    em
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return employees;
+    }
+
+    public static List<Employee> searchEmployees(String keyword) {
+        List<Employee> employees = new ArrayList<>();
+
+        // If keyword is empty, return all employees
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getAllEmployees();
+        }
+
+        String query = "SELECT * FROM employee_info WHERE " +
+                "employee_id LIKE ? OR " +
+                "first_name LIKE ? OR " +
+                "last_name LIKE ? OR " +
+                "department LIKE ? OR " +
+                "CONCAT(first_name, ' ', last_name) LIKE ? " +
+                "ORDER BY employee_id";
+
+        try (PreparedStatement pstmt = connect.prepareStatement(query)) {
+
+            String searchTerm = "%" + keyword + "%";
+            pstmt.setString(1, searchTerm);
+            pstmt.setString(2, searchTerm);
+            pstmt.setString(3, searchTerm);
+            pstmt.setString(4, searchTerm);
+            pstmt.setString(5, searchTerm);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Employee emp = new Employee();
+                    emp.setEmployeeId(rs.getString("employee_id"));
+                    emp.setFirstName(rs.getString("employee_FirstName"));
+                    emp.setLastName(rs.getString("employee_LastName"));
+                    emp.setDepartment(rs.getString("employee_Department"));
+                    emp.setEmploymentStatus(rs.getString("employment_Status"));
+                    employees.add(emp);
                 }
             }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-    }*/
+
+        return employees;
+    }
+
 
     public static void addEmployee(Employee employee, String password) throws SQLException {
         connect.setAutoCommit(false);
 
-        // 1️⃣ Insert Employee (without RETURN_GENERATED_KEYS)
+
         String insertEmployee = "INSERT INTO employee_info " +
                 "(employee_Id, employee_FirstName, employee_LastName,employee_MiddleName, employee_DOB,employee_department, " +
                 "employee_Title, basic_Salary, employment_Status, date_Hired) " +
@@ -167,30 +224,31 @@ public class EmployeeDAO {
         connect.commit();
     }
 
-            public static int getNextEmployeeId () throws SQLException {
-                String query = "SELECT MAX(employee_Id) AS maxId FROM employee_info";
-                PreparedStatement stmt = connect.prepareStatement(query);
-                ResultSet rs = stmt.executeQuery();
+    public static int getNextEmployeeId() throws SQLException {
+        String query = "SELECT MAX(employee_Id) AS maxId FROM employee_info";
+        PreparedStatement stmt = connect.prepareStatement(query);
+        ResultSet rs = stmt.executeQuery();
 
 
-                int nextId = 6700002;
-                if (rs.next()) {
-                    int maxId = rs.getInt("maxId"); // get the MAX value from the query
-                    if (maxId != 0) {
-                        nextId = maxId + 1;
-                    }
-                }
-                rs.close();
-                stmt.close();
-                return nextId;
+        int nextId = 6700002;
+        if (rs.next()) {
+            int maxId = rs.getInt("maxId"); // get the MAX value from the query
+            if (maxId != 0) {
+                nextId = maxId + 1;
             }
+        }
+        rs.close();
+        stmt.close();
+        return nextId;
+    }
+
     public static Employee getEmployeeById(int employeeId) throws SQLException {
         String query = """
-        SELECT employee_Id, employee_FirstName, employee_LastName, 
-               employee_department, employee_Title, employment_Status
-        FROM employee_info
-        WHERE employee_Id = ? AND is_Active = 1
-        """;
+                SELECT employee_Id, employee_FirstName, employee_LastName, 
+                       employee_department, employee_Title, employment_Status
+                FROM employee_info
+                WHERE employee_Id = ? AND is_Active = 1
+                """;
 
         PreparedStatement stmt = connect.prepareStatement(query);
         stmt.setInt(1, employeeId);
@@ -200,7 +258,7 @@ public class EmployeeDAO {
         if (rs.next()) {
             employee = new Employee();
             employee.setEmployeeId(String.valueOf(rs.getInt("employee_Id")));
-            employee.setFirstName(rs.getString("employee_FirstName" ));
+            employee.setFirstName(rs.getString("employee_FirstName"));
             employee.setLastName(rs.getString("employee_LastName"));
             employee.setDepartment(rs.getString("employee_department"));
             employee.setTitle(rs.getString("employee_Title"));
@@ -211,6 +269,43 @@ public class EmployeeDAO {
         stmt.close();
         return employee;
     }
+
+    public static void updateEmploymentStatus() {
+        String query = "SELECT employee_id, date_hired, status FROM employee_info";
+        String updateQuery = "UPDATE employee_info SET status = ? WHERE employee_id = ?";
+        try (
+                PreparedStatement stmt = connect.prepareStatement(query);
+                ResultSet rs = stmt.executeQuery(query);
+                PreparedStatement pstmt = connect.prepareStatement(updateQuery)) {
+
+            LocalDate today = LocalDate.now();
+
+            while (rs.next()) {
+                int id = rs.getInt("employee_id");
+                LocalDate dateHired = rs.getDate("date_hired").toLocalDate();
+                String currentStatus = rs.getString("status");
+
+                long monthsWorked = ChronoUnit.MONTHS.between(dateHired, today);
+
+                String newStatus = (monthsWorked >= 6) ? "Regular" : "Probationary";
+
+                if (!currentStatus.equalsIgnoreCase(newStatus)) {
+                    pstmt.setString(1, newStatus);
+                    pstmt.setInt(2, id);
+                    pstmt.executeUpdate();
+                    System.out.println("Employee " + id + " updated to " + newStatus);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+
         }
+    }
+
+
+
+
+}
 
 

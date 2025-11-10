@@ -104,11 +104,11 @@
             </HBox>
          </children>
       </AnchorPane>
-        <AnchorPane fx:id="pane1" layoutX="1.0" layoutY="208.0" prefHeight="436.0" prefWidth="1200.0" visible="false">
+        <AnchorPane fx:id="pane1" layoutX="1.0" layoutY="208.0" prefHeight="436.0" prefWidth="1200.0">
             <children>
                 <HBox fx:id="searchHBox" layoutX="54.0" layoutY="12.0" prefHeight="49.0" prefWidth="651.0">
                     <children>
-                        <TextField prefHeight="49.0" prefWidth="602.0" promptText="Search employee" style="-fx-background-color: white; -fx-border-color: #a8a8a8; -fx-padding: 0 0 0 20; -fx-border-width: 1.7; -fx-prompt-text-fill: #bbbbbb;">
+                        <TextField fx:id="searchEmployeeID" onAction="#setupEmployeeTable" prefHeight="49.0" prefWidth="602.0" promptText="Search employee" style="-fx-background-color: white; -fx-border-color: #a8a8a8; -fx-padding: 0 0 0 20; -fx-border-width: 1.7; -fx-prompt-text-fill: #bbbbbb;">
                             <font>
                                 <Font name="System Bold" size="12.0" />
                             </font>
@@ -124,14 +124,14 @@
                   </Button>
                     </children>
                 </HBox>
-                <AnchorPane fx:id="employeeTablePane" layoutX="57.0" layoutY="81.0" prefHeight="200.0" prefWidth="200.0" visible="false">
+                <AnchorPane fx:id="employeeTablePane" layoutX="57.0" layoutY="81.0" prefHeight="200.0" prefWidth="200.0">
                     <children>
-                        <TableView prefHeight="273.0" prefWidth="1082.0" style="-fx-border-color: #0a625b; -fx-border-width: 1.7; -fx-background-color: white;" stylesheets="@admin2style.css">
+                        <TableView fx:id="employeeTable" onSort="#setupEmployeeTable" prefHeight="273.0" prefWidth="1082.0" style="-fx-border-color: #0a625b; -fx-border-width: 1.7; -fx-background-color: white;" stylesheets="@admin2style.css">
                             <columns>
-                                <TableColumn prefWidth="173.99999618530273" style="-fx-background-color: white;" text="ID" />
-                                <TableColumn prefWidth="357.33335876464844" style="-fx-background-color: white;" text="Name" />
-                                <TableColumn prefWidth="303.33349609375" style="-fx-background-color: white;" styleClass="name-column" text="Department" />
-                                <TableColumn prefWidth="245.33319091796875" style="-fx-background-color: white;" text="Employment Status" />
+                                <TableColumn fx:id="colId" prefWidth="173.99999618530273" style="-fx-background-color: white;" text="ID" />
+                                <TableColumn fx:id="colName" prefWidth="357.33335876464844" style="-fx-background-color: white;" text="Name" />
+                                <TableColumn fx:id="colDept" prefWidth="303.33349609375" style="-fx-background-color: white;" styleClass="name-column" text="Department" />
+                                <TableColumn fx:id="colStatus" prefWidth="245.33319091796875" style="-fx-background-color: white;" text="Employment Status" />
                             </columns>
                         </TableView>
                     </children>
@@ -164,7 +164,7 @@
                         </HBox>
                     </graphic>
             </Button>
-                <AnchorPane fx:id="addEmpPane" layoutX="54.0" layoutY="83.0" prefHeight="285.0" prefWidth="1088.0" style="-fx-background-color: #dfdfdf;">
+                <AnchorPane fx:id="addEmpPane" layoutX="54.0" layoutY="83.0" prefHeight="285.0" prefWidth="1088.0" style="-fx-background-color: #dfdfdf;" visible="false">
                     <children>
                         <VBox layoutX="61.0" layoutY="39.0" prefHeight="178.0" prefWidth="169.0" spacing="14.0">
                             <children>
@@ -242,7 +242,7 @@
                         <VBox layoutX="747.0" layoutY="37.0" prefHeight="178.0" prefWidth="233.0" spacing="10.0">
                             <children>
                                 <TextField fx:id="department" style="-fx-background-color: white;" />
-                                <TextField fx:id="employmentStatus" style="-fx-background-color: white;" />
+                                <TextField fx:id="employmentStatus" editable="false" style="-fx-background-color: white;" text="Probitionary" />
                         <DatePicker fx:id="dateHired" prefHeight="25.0" prefWidth="251.0" />
                                 <TextField fx:id="jobTitle" style="-fx-background-color: white;" />
                                 <TextField fx:id="basicSalary" style="-fx-background-color: white;" />
@@ -367,7 +367,7 @@
                 </AnchorPane>
             </children>
         </AnchorPane>
-      <AnchorPane id="managePayrollPane" fx:id="managePayrollPane" layoutX="-2.0" layoutY="178.0" onMouseClicked="#managePayrollClick" prefHeight="472.0" prefWidth="1183.0" stylesheets="@admin2style.css">
+      <AnchorPane id="managePayrollPane" fx:id="managePayrollPane" layoutX="-2.0" layoutY="178.0" onMouseClicked="#managePayrollClick" prefHeight="472.0" prefWidth="1183.0" stylesheets="@admin2style.css" visible="false">
          <children>
             <Rectangle id="manageEmpPane" arcHeight="5.0" arcWidth="5.0" fill="#dfdfdf" height="361.0" layoutX="14.0" layoutY="99.0" smooth="false" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="1000.0" />
             <VBox id="manageEmpLabelPane1" alignment="TOP_CENTER" layoutX="27.0" layoutY="114.0" prefHeight="346.0" prefWidth="160.0">

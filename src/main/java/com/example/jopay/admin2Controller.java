@@ -1,10 +1,13 @@
 package com.example.jopay;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
@@ -17,6 +20,8 @@ import javafx.stage.Stage;
 import javax.swing.*;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 public class admin2Controller {
 
@@ -145,6 +150,22 @@ public class admin2Controller {
     @FXML
     Label errorLabelManagePayroll;
 
+    // search employee in the manage employee
+    @FXML
+    private TableView<Employee> employeeTable;
+    @FXML
+    private TableColumn <Employee, String> colId;
+    @FXML
+    private TableColumn <Employee, String> colName;
+    @FXML
+    private TableColumn <Employee, String> colDept;
+    @FXML
+    private TableColumn <Employee, String> colStatus;
+    @FXML
+    private TextField searchEmployeeID;
+
+    private ObservableList<Employee> employeeList = FXCollections.observableArrayList();
+
 
 
 
@@ -152,6 +173,38 @@ public class admin2Controller {
     // Temporary admin login inputs
     private int adminID = 11111;
     private String password = "0000";
+
+    @FXML
+    public void setupEmployeeTable() {
+        // Setup table columns
+        colId.setCellValueFactory(new PropertyValueFactory<>("employeeId"));
+        colName.setCellValueFactory(new PropertyValueFactory<>("fullName"));
+        colDept.setCellValueFactory(new PropertyValueFactory<>("department"));
+        colStatus.setCellValueFactory(new PropertyValueFactory<>("employmentStatus"));
+
+        // Update employment status based on resignation dates
+        EmployeeDAO.updateEmploymentStatus();
+
+        // Load all employees
+        loadEmployeeTable();
+
+        // Setup dynamic search - filters as you type!
+        searchEmployeeID.textProperty().addListener((obs, oldValue, newValue) -> {
+            searchEmployee(newValue);
+        });
+    }
+
+    private void loadEmployeeTable() {
+        employeeList.clear();
+        employeeList.addAll(EmployeeDAO.getAllEmployees());
+        employeeTable.setItems(employeeList);
+    }
+
+    private void searchEmployee(String keyword) {
+        employeeList.clear();
+        employeeList.addAll(EmployeeDAO.searchEmployees(keyword));
+        employeeTable.setItems(employeeList);
+    }
 
 
     @FXML
@@ -305,13 +358,22 @@ public class admin2Controller {
             emp.setDepartment(department.getText());
             emp.setTitle(jobTitle.getText()); // if Title is same as jobTitle
             emp.setBasicSalary(Double.parseDouble(basicSalary.getText()));
-            emp.setEmploymentStatus(employmentStatus.getText());
             emp.setDateHired(String.valueOf(dateHired.getValue()));
+            emp.setEmploymentStatus("Probationary");
+
+           /* LocalDate hireDate = dateHired.getValue();
+            emp.setDateHired(String.valueOf(hireDate));
+            //compares the months between the date today and the date they were hired
+            LocalDate today = LocalDate.now();
+            long monthsWorked = ChronoUnit.MONTHS.between(hireDate,today);
+            String status = (monthsWorked >=6) ? "Regular" : "Probationary";
+            emp.setEmploymentStatus(status);*/
+
 
             String tempPass = tempPassword.getText();
-
             EmployeeDAO.addEmployee(emp, tempPass);
 
+            //EmployeeDAO.updateEmploymentStatus();;
 
             addEmpPaneErrorLabel.setText("Employee added successfully!");
             clearClick();
