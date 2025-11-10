@@ -517,30 +517,136 @@ public class admin2Controller {
     }
 
     @FXML
-    private void saveComputedPayroll() {
+    private void savePayrollConfig() {
         String empId = payrollEmployeeID.getText().trim();
 
         if (empId.isEmpty()) {
-            errorLabelManagePayroll.setText("Please compute payroll first");
+            errorLabelManagePayroll.setText("Please search for an employee first");
             errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
             return;
         }
 
-        // *** UPDATED: Use selected period ***
-        if (selectedStartDate == null || selectedEndDate == null) {
-            errorLabelManagePayroll.setText("Please select a payroll period");
+        try {
+            double telecom = Double.parseDouble(telecoAllowance.getText().trim());
+            double travel = Double.parseDouble(travelAllowance.getText().trim());
+            double rice = Double.parseDouble(riceSubsidy.getText().trim());
+            double nonTaxable = Double.parseDouble(nonTaxableTF.getText().trim());
+            double perDiem = Double.parseDouble(perDeimTF.getText().trim());
+            int perDiemCount = Integer.parseInt(perDeimCountTF.getText().trim());
+
+            // Check if period is selected
+            if (selectedStartDate == null || selectedEndDate == null) {
+                errorLabelManagePayroll.setText("Please select start and end dates from period dropdown");
+                errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
+                return;
+            }
+
+            PayrollDAO dao = new PayrollDAO();
+
+            // Get employee info BEFORE saving
+            PayrollDAO.EmployeeInfo empInfo = dao.getEmployeeInfo(empId);
+            if (empInfo == null) {
+                errorLabelManagePayroll.setText("Employee not found");
+                errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
+                dao.close();
+                return;
+            }
+
+            // Compute what the contributions will be
+            PayrollModel previewModel = new PayrollModel();
+            previewModel.PayrollComputation(
+                    empInfo.employeeId,
+                    empInfo.employeeName,
+                    empInfo.basicMonthlyPay,
+                    empInfo.employmentStatus,
+                    empInfo.dateHired,
+                    empInfo.workingHoursPerDay
+            );
+            previewModel.setPayrollPeriod(LocalDate.now(), LocalDate.now(), true);
+            previewModel.setAllowances(0, 0, 0, 0, 0, 0);
+            previewModel.setDeductions(0);
+            previewModel.computePayroll();
+
+            double monthlySSS = previewModel.getSSSContribution() * 2;
+            double monthlyPHIC = previewModel.getPHICContribution() * 2;
+            double monthlyHDMF = previewModel.getHDMFContribution();
+
+            // Save with auto-computed contributions
+            boolean saved = dao.saveSalaryConfig(
+                    empId,
+                    telecom,
+                    travel,
+                    rice,
+                    nonTaxable,
+                    perDiem,
+                    perDiemCount,
+                    selectedStartDate,
+                    selectedEndDate
+            );
+
+            if (saved) {
+                errorLabelManagePayroll.setStyle("-fx-text-fill: green;");
+                errorLabelManagePayroll.setText(String.format(
+                        "✓ Saved! Auto-computed: SSS=₱%.2f, PHIC=₱%.2f, HDMF=₱%.2f (monthly)",
+                        monthlySSS,
+                        monthlyPHIC,
+                        monthlyHDMF
+                ));
+
+                // Show a detailed alert
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Payroll Configuration Saved");
+                alert.setHeaderText("Success! Contributions Auto-Computed");
+                alert.setContentText(String.format(
+                        "Employee: %s\n" +
+                                "Basic Salary: ₱%,.2f/month\n\n" +
+                                "AUTO-COMPUTED CONTRIBUTIONS (Monthly):\n" +
+                                "SSS: ₱%,.2f\n" +
+                                "PhilHealth: ₱%,.2f\n" +
+                                "Pag-IBIG: ₱%,.2f\n\n" +
+                                "These contributions have been saved to both\n" +
+                                "salary_config and deduction_config tables.",
+                        empInfo.employeeName,
+                        empInfo.basicMonthlyPay,
+                        monthlySSS,
+                        monthlyPHIC,
+                        monthlyHDMF
+                ));
+                alert.showAndWait();
+            } else {
+                errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
+                errorLabelManagePayroll.setText("Failed to save configuration");
+            }
+
+            dao.close();
+
+        } catch (NumberFormatException e) {
+            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
+            errorLabelManagePayroll.setText("Please enter valid numeric values");
+        } catch (Exception e) {
+            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
+            errorLabelManagePayroll.setText("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * NEW: Show computed contributions for current employee
+     * Add this as a new button action in your FXML
+     */
+    @FXML
+    private void showComputedContributions() {
+        String empId = payrollEmployeeID.getText().trim();
+
+        if (empId.isEmpty()) {
+            errorLabelManagePayroll.setText("Please search for an employee first");
             errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
             return;
         }
 
         try {
             PayrollDAO dao = new PayrollDAO();
-
-            // Get all required data
             PayrollDAO.EmployeeInfo empInfo = dao.getEmployeeInfo(empId);
-            PayrollDAO.SalaryConfig config = dao.getSalaryConfig(empId);
-            PayrollDAO.AttendanceData attendance = dao.getAttendanceData(empId, selectedStartDate, selectedEndDate);
-            PayrollDAO.DeductionData deductions = dao.getDeductions(empId);
 
             if (empInfo == null) {
                 errorLabelManagePayroll.setText("Employee not found");
@@ -549,9 +655,9 @@ public class admin2Controller {
                 return;
             }
 
-            // Initialize and compute PayrollModel
-            PayrollModel model = new PayrollModel();
-            model.PayrollComputation(
+            // Compute contributions
+            PayrollModel tempModel = new PayrollModel();
+            tempModel.PayrollComputation(
                     empInfo.employeeId,
                     empInfo.employeeName,
                     empInfo.basicMonthlyPay,
@@ -560,82 +666,42 @@ public class admin2Controller {
                     empInfo.workingHoursPerDay
             );
 
-            // Determine period type
-            boolean isFirstPeriod = selectedStartDate.getDayOfMonth() >= 11 &&
-                    selectedStartDate.getDayOfMonth() <= 25;
-            model.setPayrollPeriod(selectedStartDate, selectedEndDate, isFirstPeriod);
+            tempModel.setPayrollPeriod(LocalDate.now(), LocalDate.now(), true);
+            tempModel.setAllowances(0, 0, 0, 0, 0, 0);
+            tempModel.setDeductions(0);
+            tempModel.computePayroll();
 
-            model.setAttendanceData(
-                    attendance.daysWorked, attendance.daysAbsent,
-                    attendance.regularOTHours, attendance.nightDifferentialOTHours,
-                    attendance.specialHolidaysWorked, attendance.regularHolidaysWorked,
-                    attendance.restDaysWorked, attendance.restDayOTHours,
-                    attendance.restDayNightDiffOTHours, attendance.undertimeHours
-            );
+            double monthlySSS = tempModel.getSSSContribution() * 2;
+            double monthlyPHIC = tempModel.getPHICContribution() * 2;
+            double monthlyHDMF = tempModel.getHDMFContribution();
 
-            double perDiem = config != null ? config.perDiem : 0.0;
-            int perDiemCount = config != null ? config.perDiemCount : 0;
-
-            if (config != null) {
-                model.setAllowances(
-                        config.telecomAllowance, config.travelAllowance,
-                        config.riceSubsidy, config.nonTaxableSalary,
-                        perDiem, perDiemCount
-                );
-            } else {
-                model.setAllowances(0, 0, 0, 0, perDiem, perDiemCount);
-            }
-
-            double sssLoan = deductions != null ? deductions.sssLoan : 0.0;
-            model.setDeductions(sssLoan);
-
-            model.computePayroll();
-
-            // *** NEW: Update deduction_config with computed contributions ***
-            boolean contributionsUpdated = dao.updateDeductionContributions(
-                    empId,
-                    model.getSSSContribution() * 2,    // Store monthly (semi * 2)
-                    model.getPHICContribution() * 2,   // Store monthly (semi * 2)
-                    model.getHDMFContribution()        // Already monthly (only first period)
-            );
-
-            if (!contributionsUpdated) {
-                System.err.println("Warning: Failed to update deduction contributions");
-            }
-
-            // Save payroll record
-            boolean saved = dao.savePayroll(
-                    empId,
-                    selectedPeriodId,
-                    model,
-                    config,
-                    attendance,
-                    perDiem,
-                    perDiemCount,
-                    sssLoan
-            );
-
-            if (saved) {
-                String periodType = isFirstPeriod ? "FIRST (11-25)" : "SECOND (26-10)";
-                errorLabelManagePayroll.setStyle("-fx-text-fill: green;");
-                errorLabelManagePayroll.setText(String.format(
-                        "✓ Payroll & Contributions saved! Period: %s | ID: %d | Net Pay: ₱%,.2f",
-                        periodType, selectedPeriodId, model.getNetPay()
-                ));
-                System.out.println("Payroll saved for employee " + empId + " in period " + selectedPeriodId);
-                System.out.println("Contributions updated: SSS=₱" + (model.getSSSContribution()*2) +
-                        ", PHIC=₱" + (model.getPHICContribution()*2) +
-                        ", HDMF=₱" + model.getHDMFContribution());
-            } else {
-                errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
-                errorLabelManagePayroll.setText("Failed to save payroll to database");
-            }
+            // Show in alert
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Computed Contributions");
+            alert.setHeaderText("Government Contributions for " + empInfo.employeeName);
+            alert.setContentText(String.format(
+                    "Basic Monthly Salary: ₱%,.2f\n\n" +
+                            "COMPUTED MONTHLY CONTRIBUTIONS:\n" +
+                            "SSS: ₱%,.2f (semi: ₱%,.2f)\n" +
+                            "PhilHealth: ₱%,.2f (semi: ₱%,.2f)\n" +
+                            "Pag-IBIG: ₱%,.2f (1st period only)\n\n" +
+                            "Total Monthly: ₱%,.2f\n" +
+                            "Per Semi-Monthly: ₱%,.2f (1st) / ₱%,.2f (2nd)",
+                    empInfo.basicMonthlyPay,
+                    monthlySSS, tempModel.getSSSContribution(),
+                    monthlyPHIC, tempModel.getPHICContribution(),
+                    monthlyHDMF,
+                    monthlySSS + monthlyPHIC + monthlyHDMF,
+                    tempModel.getSSSContribution() + tempModel.getPHICContribution() + monthlyHDMF,
+                    tempModel.getSSSContribution() + tempModel.getPHICContribution()
+            ));
+            alert.showAndWait();
 
             dao.close();
 
         } catch (Exception e) {
             errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
-            errorLabelManagePayroll.setText("Error saving payroll: " + e.getMessage());
+            errorLabelManagePayroll.setText("Error: " + e.getMessage());
             e.printStackTrace();
         }
     }
