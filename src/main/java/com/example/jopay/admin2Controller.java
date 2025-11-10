@@ -591,16 +591,13 @@ public class admin2Controller {
 
             model.computePayroll();
 
-            // *** UPDATED: Use selected period ID directly (no need to get/create) ***
+            // *** FIXED: Call savePayroll with correct 5 parameters ***
             boolean saved = dao.savePayroll(
                     empId,
                     selectedPeriodId,
                     model,
                     config,
-                    attendance,
-                   perDiem,
-                    perDiemCount,
-                    sssLoan
+                    attendance
             );
 
             if (saved) {
