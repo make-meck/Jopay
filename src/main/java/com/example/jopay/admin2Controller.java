@@ -591,7 +591,19 @@ public class admin2Controller {
 
             model.computePayroll();
 
-            // *** UPDATED: Use selected period ID directly (no need to get/create) ***
+            // *** NEW: Update deduction_config with computed contributions ***
+            boolean contributionsUpdated = dao.updateDeductionContributions(
+                    empId,
+                    model.getSSSContribution() * 2,    // Store monthly (semi * 2)
+                    model.getPHICContribution() * 2,   // Store monthly (semi * 2)
+                    model.getHDMFContribution()        // Already monthly (only first period)
+            );
+
+            if (!contributionsUpdated) {
+                System.err.println("Warning: Failed to update deduction contributions");
+            }
+
+            // Save payroll record
             boolean saved = dao.savePayroll(
                     empId,
                     selectedPeriodId,
@@ -607,10 +619,13 @@ public class admin2Controller {
                 String periodType = isFirstPeriod ? "FIRST (11-25)" : "SECOND (26-10)";
                 errorLabelManagePayroll.setStyle("-fx-text-fill: green;");
                 errorLabelManagePayroll.setText(String.format(
-                        "✓ Payroll saved! Period: %s | ID: %d | Net Pay: ₱%,.2f",
+                        "✓ Payroll & Contributions saved! Period: %s | ID: %d | Net Pay: ₱%,.2f",
                         periodType, selectedPeriodId, model.getNetPay()
                 ));
                 System.out.println("Payroll saved for employee " + empId + " in period " + selectedPeriodId);
+                System.out.println("Contributions updated: SSS=₱" + (model.getSSSContribution()*2) +
+                        ", PHIC=₱" + (model.getPHICContribution()*2) +
+                        ", HDMF=₱" + model.getHDMFContribution());
             } else {
                 errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
                 errorLabelManagePayroll.setText("Failed to save payroll to database");

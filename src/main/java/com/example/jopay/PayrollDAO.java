@@ -240,6 +240,92 @@ public class PayrollDAO {
         }
     }
 
+    public boolean updateDeductionContributions(String employeeId, double monthlySSS,
+                                                double monthlyPHIC, double monthlyHDMF) {
+        String query = """
+        INSERT INTO deduction_config 
+        (employee_Id, sss_contribution, philhealth_contribution, pagibig_contribution, sss_loan)
+        VALUES (?, ?, ?, ?, 0.00)
+        ON DUPLICATE KEY UPDATE
+        sss_contribution = VALUES(sss_contribution),
+        philhealth_contribution = VALUES(philhealth_contribution),
+        pagibig_contribution = VALUES(pagibig_contribution)
+    """;
+
+        try (PreparedStatement stmt = connect.getConnection().prepareStatement(query)) {
+            stmt.setString(1, employeeId);
+            stmt.setDouble(2, monthlySSS);
+            stmt.setDouble(3, monthlyPHIC);
+            stmt.setDouble(4, monthlyHDMF);
+
+            int result = stmt.executeUpdate();
+
+            if (result > 0) {
+                System.out.println("✓ Deduction contributions updated for employee " + employeeId);
+                System.out.println("  Monthly SSS: ₱" + String.format("%,.2f", monthlySSS));
+                System.out.println("  Monthly PHIC: ₱" + String.format("%,.2f", monthlyPHIC));
+                System.out.println("  Monthly HDMF: ₱" + String.format("%,.2f", monthlyHDMF));
+            }
+
+            return result > 0;
+        } catch (SQLException e) {
+            System.err.println("Error updating deduction contributions: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public int updateAllEmployeeContributions() {
+        List<String> employeeIds = getAllEmployeeIds();
+        int successCount = 0;
+
+        System.out.println("Updating contributions for all employees...");
+
+        for (String empId : employeeIds) {
+            try {
+                EmployeeInfo empInfo = getEmployeeInfo(empId);
+                if (empInfo == null) continue;
+
+                // Create temporary PayrollModel to compute contributions
+                PayrollModel tempModel = new PayrollModel();
+                tempModel.PayrollComputation(
+                        empInfo.employeeId,
+                        empInfo.employeeName,
+                        empInfo.basicMonthlyPay,
+                        empInfo.employmentStatus,
+                        empInfo.dateHired,
+                        empInfo.workingHoursPerDay
+                );
+
+                // Set dummy period (first period to get HDMF)
+                tempModel.setPayrollPeriod(LocalDate.now(), LocalDate.now(), true);
+                tempModel.setAllowances(0, 0, 0, 0, 0, 0);
+                tempModel.setDeductions(0);
+                tempModel.computePayroll();
+
+                // Update deductions (multiply semi-monthly by 2 to get monthly)
+                boolean updated = updateDeductionContributions(
+                        empId,
+                        tempModel.getSSSContribution() * 2,
+                        tempModel.getPHICContribution() * 2,
+                        tempModel.getHDMFContribution() // Already monthly
+                );
+
+                if (updated) {
+                    successCount++;
+                    System.out.println("✓ Updated: " + empInfo.employeeName + " (₱" +
+                            String.format("%,.2f", empInfo.basicMonthlyPay) + ")");
+                }
+
+            } catch (Exception e) {
+                System.err.println("✗ Failed to update employee " + empId + ": " + e.getMessage());
+            }
+        }
+
+        System.out.println("\nBulk update complete: " + successCount + "/" + employeeIds.size() + " employees updated");
+        return successCount;
+    }
+
     public boolean savePayroll(String employeeId, int periodId, PayrollModel model,
                                SalaryConfig config, AttendanceData attendance,
                                double perDiem, int perDiemCount, double sssLoan) {
