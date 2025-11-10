@@ -76,7 +76,7 @@ public class employeeLoginController {
         if (employee.isPresent()) {
             Employee emp = employee.get();
 
-                if (!emp.isActive()) {
+                if (emp.isActive()) {
                     error.setText("Your account is inactive. Please contact admin.");
                     return;
                 }
