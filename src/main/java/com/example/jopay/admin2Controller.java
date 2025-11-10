@@ -598,7 +598,7 @@ public class admin2Controller {
                     model,
                     config,
                     attendance,
-                    perDiem,
+                   perDiem,
                     perDiemCount,
                     sssLoan
             );

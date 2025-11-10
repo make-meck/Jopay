@@ -7,6 +7,7 @@ import java.time.LocalDate;
  */
 public class PayrollService {
     private PayrollDAO dao;
+    private double perDiem;
 
     public PayrollService() {
         this.dao = new PayrollDAO();
@@ -96,7 +97,12 @@ public class PayrollService {
 
             payroll.computePayroll();
 
-            boolean saved = dao.savePayroll(employeeId, periodId, payroll, salaryConfig, attendance);
+
+            double perDiem = salaryConfig.perDiem;
+            int perDiemCount = salaryConfig.perDiemCount;
+            double sssLoan = (deductions != null) ? deductions.sssLoan : 0.0;
+
+            boolean saved = dao.savePayroll(employeeId, periodId, payroll, salaryConfig, attendance, perDiem, perDiemCount, sssLoan);
             if (!saved) {
                 System.err.println("Warning: Failed to save payroll to database");
             } else {
