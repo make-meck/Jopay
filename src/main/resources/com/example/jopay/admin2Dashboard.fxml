@@ -566,12 +566,13 @@
                   </Button>
                </children>
             </VBox>
-            <TextField id="manageEmpSearchBar" fx:id="searchIDManager" layoutX="27.0" layoutY="37.0" prefHeight="46.0" prefWidth="382.0" promptText="Employee ID " />
-            <ImageView id="manageEmpSearchIcon" fitHeight="40.0" fitWidth="41.0" layoutX="361.0" layoutY="41.0" pickOnBounds="true" preserveRatio="true">
+            <TextField id="manageEmpSearchBar" fx:id="searchIDManager" layoutX="27.0" layoutY="40.0" onAction="#onSearchEmployee" prefHeight="46.0" prefWidth="382.0" promptText="Employee ID " />
+            <ImageView id="manageEmpSearchIcon" fitHeight="40.0" fitWidth="41.0" layoutX="361.0" layoutY="44.0" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@searchIconManagePayroll.png" />
                </image>
             </ImageView>
+            <Label fx:id="errorLabelManagePayroll" layoutX="416.0" layoutY="52.0" prefHeight="22.0" prefWidth="362.0" />
          </children>
       </AnchorPane>
       <Label id="reportAnalysisLabel" fx:id="reportAnalysisLabel" layoutX="47.0" layoutY="84.0" prefHeight="62.0" prefWidth="334.0" text="Report Analysis " textFill="#0a625b" visible="false">

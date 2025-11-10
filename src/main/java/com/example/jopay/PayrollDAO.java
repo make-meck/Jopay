@@ -12,9 +12,9 @@ public class PayrollDAO {
     public Payroll getEmployeePayroll(String employeeId){
         String query = """
             SELECT e.employee_id, 
-                   CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
+                CONCAT(e.employee_FirstName, ' ', e.employee_LastName) AS employee_name,
                    s.basic_Pay, s.telecom_Allowance, s.travel_Allowance,
-                   s.rice_Subsidy, s.non_Taxable_Salary, s.per_Diem, s.per_Deim_Count,
+                   s.rice_Subsidy, s.non_Taxable_Salary, s.per_Diem, s.per_Diem_Count,
                    s.starting_Date, s.end_Date
             FROM employee_info e
             JOIN salary_config s ON e.employee_id = s.employee_Id
@@ -36,7 +36,7 @@ public class PayrollDAO {
                 info.setRice(rs.getDouble("rice_Subsidy"));
                 info.setNonTaxable(rs.getDouble("non_Taxable_Salary"));
                 info.setPerDiem(rs.getDouble("per_Diem"));
-                info.setPerDiemCount(rs.getInt("per_Deim_Count"));
+                info.setPerDiemCount(rs.getInt("per_Diem_Count"));
                 info.setStartDate(rs.getDate("starting_Date").toLocalDate());
                 info.setEndDate(rs.getDate("end_Date").toLocalDate());
                 return info;
