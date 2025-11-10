@@ -42,7 +42,7 @@ public class PayrollService {
             payroll.PayrollComputation(
                     empInfo.employeeId,
                     empInfo.employeeName,
-                    salaryConfig.basicPay,  // Use basic_Pay from salary_config
+                    salaryConfig.basicPay,
                     empInfo.employmentStatus,
                     empInfo.dateHired,
                     empInfo.workingHoursPerDay
@@ -96,7 +96,15 @@ public class PayrollService {
 
             payroll.computePayroll();
 
+            // Get perDiem and perDiemCount from salaryConfig
+            double perDiem = salaryConfig != null ? salaryConfig.perDiem : 0.0;
+            int perDiemCount = salaryConfig != null ? salaryConfig.perDiemCount : 0;
+
+            // Get sssLoan from deductions (you already fetched this earlier)
+            double sssLoan = deductions != null ? deductions.sssLoan : 0.0;
+
             boolean saved = dao.savePayroll(employeeId, periodId, payroll, salaryConfig, attendance);
+
             if (!saved) {
                 System.err.println("Warning: Failed to save payroll to database");
             } else {
