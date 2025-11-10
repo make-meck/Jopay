@@ -176,7 +176,9 @@ public class PayrollModel {
         double perDiemPay = calculatePerDiem();
 
         totalEarnings = basicPayForPeriod - absentDeduction - undertimeDeduction
-                + regularOTPay + nightDiffOTPay + specialHolidayPay
+                + telecomAllowance +travelAllowance + riceSubsidy
+                + perDiemPay + otherNonTaxable + regularOTPay
+                + nightDiffOTPay + specialHolidayPay
                 + regularHolidayPay + restDayPay + restDayOTPay
                 + restDayNightDiffOTPay + vlPay + slPay;
 

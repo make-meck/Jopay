@@ -98,6 +98,7 @@ public class admin2Controller {
     @FXML TextField sssContributionTF;
     @FXML TextField phicContributionTF;
     @FXML TextField hdmfContributionTF;
+    @FXML TextField taxablePayTF;
     @FXML TextField withholdingTaxTF;
     @FXML TextField grossPayTF;
     @FXML TextField totalDeductionTF;
@@ -288,7 +289,6 @@ public class admin2Controller {
         sssContributionTF.setText(String.format("₱%,.2f", model.getSSSContribution()));
         phicContributionTF.setText(String.format("₱%,.2f", model.getPHICContribution()));
 
-        // *** UPDATED: Show Pag-IBIG with visual indicator ***
         double hdmf = model.getHDMFContribution();
         if (hdmf > 0) {
             hdmfContributionTF.setText(String.format("₱%,.2f ✓", hdmf));
@@ -298,10 +298,9 @@ public class admin2Controller {
             hdmfContributionTF.setStyle("-fx-text-fill: gray;");
         }
 
-        // Computed tax
+        taxablePayTF.setText(String.format("₱%,.2f", model.getTaxableIncome()));
         withholdingTaxTF.setText(String.format("₱%,.2f", model.getWithholdingTax()));
 
-        // Summary
         grossPayTF.setText(String.format("₱%,.2f", model.getSemiMonthlyGrossPay()));
         totalDeductionTF.setText(String.format("₱%,.2f", model.getTotalDeductions()));
         netPayTF.setText(String.format("₱%,.2f", model.getNetPay()));
@@ -309,14 +308,19 @@ public class admin2Controller {
         // Console output for debugging
         System.out.println("\n=== COMPUTED PAYROLL ===");
         System.out.println("Period: " + selectedStartDate + " to " + selectedEndDate);
+        System.out.println("Basic Pay: " + String.format("₱%,.2f", model.getSemiMonthlyBasicPay()));
+        System.out.println("Gross Pay: " + String.format("₱%,.2f", model.getSemiMonthlyGrossPay()));
         System.out.println("SSS: " + String.format("₱%,.2f", model.getSSSContribution()));
         System.out.println("PHIC: " + String.format("₱%,.2f", model.getPHICContribution()));
         System.out.println("HDMF: " + String.format("₱%,.2f", model.getHDMFContribution()) +
                 (hdmf > 0 ? " ✓ DEDUCTED" : " ✗ NOT DEDUCTED"));
         System.out.println("Overtime: " + String.format("₱%,.2f", attendance.regularOTHours * model.getHourlyRate() * 1.25));
         System.out.println("Absences: " + String.format("₱%,.2f", attendance.daysAbsent * model.getGrossDailyRate()));
-        System.out.println("Tax: " + String.format("₱%,.2f", model.getWithholdingTax()));
-        System.out.println("Gross Pay: " + String.format("₱%,.2f", model.getSemiMonthlyGrossPay()));
+
+        // *** ADD THESE LINES: Console output for tax info ***
+        System.out.println("Taxable Income: " + String.format("₱%,.2f", model.getTaxableIncome()));
+        System.out.println("Withholding Tax: " + String.format("₱%,.2f", model.getWithholdingTax()));
+
         System.out.println("Total Deductions: " + String.format("₱%,.2f", model.getTotalDeductions()));
         System.out.println("Net Pay: " + String.format("₱%,.2f", model.getNetPay()));
         System.out.println("========================\n");
@@ -334,7 +338,6 @@ public class admin2Controller {
         perDeimCountTF.clear();
         sssLoanTF.clear();
 
-        // *** UPDATED: Clear period selection ***
         if (payrollPeriodComboBox != null) {
             payrollPeriodComboBox.getSelectionModel().clearSelection();
         }
@@ -350,6 +353,7 @@ public class admin2Controller {
         sssContributionTF.clear();
         phicContributionTF.clear();
         hdmfContributionTF.clear();
+        taxablePayTF.clear();  // *** ADD THIS LINE ***
         withholdingTaxTF.clear();
         grossPayTF.clear();
         totalDeductionTF.clear();
@@ -390,33 +394,29 @@ public class admin2Controller {
         // Get salary config
         PayrollDAO.SalaryConfig config = payrollDAO.getSalaryConfig(searchID);
         if (config != null) {
-            telecoAllowance.setText(String.format("%.2f", config.telecomAllowance));
-            travelAllowance.setText(String.format("%.2f", config.travelAllowance));
-            riceSubsidy.setText(String.format("%.2f", config.riceSubsidy));
-            nonTaxableTF.setText(String.format("%.2f", config.nonTaxableSalary));
-            perDeimTF.setText(String.format("%.2f", config.perDiem));
+            telecoAllowance.setText(String.format("₱%.2f", config.telecomAllowance));
+            travelAllowance.setText(String.format("₱%.2f", config.travelAllowance));
+            riceSubsidy.setText(String.format("₱%.2f", config.riceSubsidy));
+            nonTaxableTF.setText(String.format("₱%.2f", config.nonTaxableSalary));
+            perDeimTF.setText(String.format("₱%.2f", config.perDiem));
             perDeimCountTF.setText(String.valueOf(config.perDiemCount));
 
             sssContributionTF.setText(String.format("₱%,.2f", config.sssContribution));
             phicContributionTF.setText(String.format("₱%,.2f", config.phicContribution));
             hdmfContributionTF.setText(String.format("₱%,.2f", config.hdmfContribution));
         } else {
-            telecoAllowance.setText("0.00");
-            travelAllowance.setText("0.00");
-            riceSubsidy.setText("0.00");
-            nonTaxableTF.setText("0.00");
-            perDeimTF.setText("0.00");
+            telecoAllowance.setText("₱0.00");
+            travelAllowance.setText("₱0.00");
+            riceSubsidy.setText("₱0.00");
+            nonTaxableTF.setText("₱0.00");
+            perDeimTF.setText("₱0.00");
             perDeimCountTF.setText("0");
-            sssContributionTF.setText("0.00");
-            phicContributionTF.setText("0.00");
-            hdmfContributionTF.setText("0.00");
+            sssContributionTF.setText("₱0.00");
+            phicContributionTF.setText("₱0.00");
+            hdmfContributionTF.setText("₱0.00");
         }
 
-        LocalDate now = LocalDate.now();
-        LocalDate startOfMonth = now.withDayOfMonth(1);
-        PayrollDAO.AttendanceData recentAttendance = payrollDAO.getAttendanceData(searchID, startOfMonth, now);
-
-        // Create PayrollModel to calculate overtime pay
+        // *** CREATE A PREVIEW PAYROLL MODEL TO COMPUTE TAX ***
         PayrollModel previewModel = new PayrollModel();
         previewModel.PayrollComputation(
                 empInfo.employeeId,
@@ -427,50 +427,74 @@ public class admin2Controller {
                 empInfo.workingHoursPerDay
         );
 
+        // Set as first period to show HDMF (you can adjust this based on current date if needed)
+        LocalDate now = LocalDate.now();
+        boolean isFirstPeriod = now.getDayOfMonth() >= 11 && now.getDayOfMonth() <= 25;
+        previewModel.setPayrollPeriod(now, now, isFirstPeriod);
+
+        // Set allowances to calculate accurate gross pay and taxable income
         if (config != null) {
             previewModel.setAllowances(
                     config.telecomAllowance,
                     config.travelAllowance,
                     config.riceSubsidy,
                     config.nonTaxableSalary,
-                    0.0,
-                    0
+                    config.perDiem,
+                    config.perDiemCount
             );
         } else {
             previewModel.setAllowances(0, 0, 0, 0, 0, 0);
         }
 
-        // Calculate and display overtime
-        double overtimePay = previewModel.calculateRegularOT(recentAttendance.regularOTHours);
-        overtimeTF.setText(String.format("₱%,.2f", overtimePay, recentAttendance.regularOTHours));
-
-        // Get absence info
-        PayrollDAO.AbsenceInfo absenceInfo = payrollDAO.getRecentAbsenceInfo(searchID);
-        double absenceDeduction = previewModel.calculateAbsentDeduction(absenceInfo.absenceCount);
-
-        numAbsencesTF.setText(String.valueOf(absenceInfo.absenceCount));
-        absencesTF.setText(String.format("₱%,.2f", absenceDeduction));
-
         // Get SSS Loan
         PayrollDAO.DeductionData deductions = payrollDAO.getDeductions(searchID);
+        double sssLoan = 0.0;
         if (deductions != null) {
-            sssLoanTF.setText(String.format("%.2f", deductions.sssLoan));
+            sssLoan = deductions.sssLoan;
+            sssLoanTF.setText(String.format("%.2f", sssLoan));
         } else {
             sssLoanTF.setText("0.00");
         }
 
-        // Clear computed fields
-        withholdingTaxTF.clear();
-        grossPayTF.clear();
-        totalDeductionTF.clear();
-        netPayTF.clear();
+        previewModel.setDeductions(sssLoan);
 
-        errorLabelManagePayroll.setStyle("-fx-text-fill: green;");
-        errorLabelManagePayroll.setText(String.format(
-                "✓ Employee loaded | Current month OT: %.1f hrs (₱%,.2f)",
+        // Get recent attendance data (current month)
+        LocalDate startOfMonth = now.withDayOfMonth(1);
+        PayrollDAO.AttendanceData recentAttendance = payrollDAO.getAttendanceData(searchID, startOfMonth, now);
+
+        previewModel.setAttendanceData(
+                recentAttendance.daysWorked,
+                recentAttendance.daysAbsent,
                 recentAttendance.regularOTHours,
-                overtimePay
-        ));
+                recentAttendance.nightDifferentialOTHours,
+                recentAttendance.specialHolidaysWorked,
+                recentAttendance.regularHolidaysWorked,
+                recentAttendance.restDaysWorked,
+                recentAttendance.restDayOTHours,
+                recentAttendance.restDayNightDiffOTHours,
+                recentAttendance.undertimeHours
+        );
+
+        previewModel.computePayroll();
+
+        // display overtime
+        double overtimePay = recentAttendance.regularOTHours * previewModel.getHourlyRate() * 1.25;
+        overtimeTF.setText(String.format("₱%,.2f (%.1f hrs)", overtimePay, recentAttendance.regularOTHours));
+
+        // display absences
+        PayrollDAO.AbsenceInfo absenceInfo = payrollDAO.getRecentAbsenceInfo(searchID);
+        double absenceDeduction = previewModel.calculateAbsentDeduction(absenceInfo.absenceCount);
+        numAbsencesTF.setText(String.valueOf(absenceInfo.absenceCount));
+        absencesTF.setText(String.format("₱%,.2f", absenceDeduction));
+
+        // display taxable pay and witholding tax
+        taxablePayTF.setText(String.format("₱%,.2f", previewModel.getTaxableIncome()));
+        withholdingTaxTF.setText(String.format("₱%,.2f", previewModel.getWithholdingTax()));
+
+        // display gross pay, total deductions, and net pay
+        grossPayTF.setText(String.format("₱%,.2f", previewModel.getSemiMonthlyGrossPay()));
+        totalDeductionTF.setText(String.format("₱%,.2f", previewModel.getTotalDeductions()));
+        netPayTF.setText(String.format("₱%,.2f", previewModel.getNetPay()));
 
         payrollDAO.close();
     }
@@ -485,7 +509,6 @@ public class admin2Controller {
             return;
         }
 
-        // *** UPDATED: Check if period is selected from ComboBox ***
         if (selectedStartDate == null || selectedEndDate == null) {
             errorLabelManagePayroll.setText("Please select a payroll period from the dropdown");
             errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
@@ -493,7 +516,6 @@ public class admin2Controller {
         }
 
         try {
-            // Parse inputs
             double perDiemInput = perDeimTF.getText().trim().isEmpty() ? 0.0 :
                     Double.parseDouble(perDeimTF.getText().trim());
             int perDiemCountInput = perDeimCountTF.getText().trim().isEmpty() ? 0 :
@@ -995,7 +1017,6 @@ public class admin2Controller {
         @Override
         public String toString() {
             // This is what displays in the ComboBox
-            // Format: "October 2025 - First Period (26-10)"
             return period.periodName;
         }
     }

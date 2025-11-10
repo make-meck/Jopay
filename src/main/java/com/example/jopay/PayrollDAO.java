@@ -8,9 +8,7 @@ import java.util.List;
 public class PayrollDAO {
     private DatabaseConnector connect = new DatabaseConnector();
 
-    /**
-     * Get complete employee information for PayrollModel
-     */
+    // retrieve employee info
     public EmployeeInfo getEmployeeInfo(String employeeId) {
         String query = """
             SELECT e.employee_Id, 
@@ -43,12 +41,7 @@ public class PayrollDAO {
         return null;
     }
 
-    // Add these methods to PayrollDAO.java
-
-    /**
-     * Automatically compute and save SSS, PHIC, HDMF contributions for an employee
-     * This should be called whenever employee basic salary is updated
-     */
+    // computes sss, phic, hdmf
     public boolean autoComputeAndSaveContributions(String employeeId, double basicMonthlySalary) {
         try {
             // Create a temporary PayrollModel instance to use its computation methods
@@ -101,17 +94,13 @@ public class PayrollDAO {
         }
     }
 
-    /**
-     * Compute monthly SSS contribution using PayrollModel's logic
-     */
+    // sss
     private double computeSSSMonthly(double basicMonthlySalary) {
         // Use the same SSS table logic from PayrollModel
         return getSSSEmployeeShare(basicMonthlySalary);
     }
 
-    /**
-     * Compute monthly PHIC contribution using PayrollModel's logic
-     */
+    // phic formula
     private double computePHICMonthly(double basicMonthlySalary) {
         final double PHIC_RATE = 0.025;
         final double PHIC_MIN = 500.00;
@@ -131,9 +120,7 @@ public class PayrollDAO {
         return monthlyContribution;
     }
 
-    /**
-     * SSS contribution table (matches PayrollModel)
-     */
+    // sss table
     private double getSSSEmployeeShare(double monthlySalary) {
         if (monthlySalary < 5250) return 250.00;
         else if (monthlySalary >= 5250 && monthlySalary <= 5749.99) return 275.00;
@@ -198,9 +185,7 @@ public class PayrollDAO {
         else return 1800.00; // Maximum
     }
 
-    /**
-     * Get stored contributions from database
-     */
+    // retrieve contributions (sss, phic, hdmf)
     public ContributionData getContributions(String employeeId) {
         String query = """
         SELECT employee_Id, basic_monthly_salary, sss_contribution, 
@@ -231,10 +216,7 @@ public class PayrollDAO {
         return null;
     }
 
-    /**
-     * Recalculate contributions for all employees
-     * Call this when salary changes or periodically
-     */
+    // when salary changes
     public void recalculateAllContributions() {
         String query = "SELECT employee_Id, basic_Salary FROM employee_info WHERE is_Active = 1";
 
@@ -259,10 +241,7 @@ public class PayrollDAO {
         }
     }
 
-    /**
-     * Helper method to load pre-computed contributions into PayrollModel
-     * Call this before computePayroll() to use database values
-     */
+
     public void loadContributionsIntoPayrollModel(String employeeId, PayrollModel payrollModel, boolean isFirstHalf) {
         ContributionData data = getContributions(employeeId);
 
@@ -339,9 +318,7 @@ public class PayrollDAO {
         return config;
     }
 
-    /**
-     * Get attendance data for payroll period from time_log
-     */
+    // get attendance (absent/present) data
     public AttendanceData getAttendanceData(String employeeId, LocalDate startDate, LocalDate endDate) {
         String query = """
             SELECT 
@@ -380,9 +357,7 @@ public class PayrollDAO {
         return new AttendanceData();
     }
 
-    /**
-     * Get absence information for display (current/recent month)
-     */
+    // retrieve absence inf0
     public AbsenceInfo getRecentAbsenceInfo(String employeeId) {
         AbsenceInfo info = new AbsenceInfo();
 
@@ -410,9 +385,7 @@ public class PayrollDAO {
         return info;
     }
 
-    /**
-     * Inner class to hold absence information
-     */
+    // act as container
     public static class AbsenceInfo {
         public int absenceCount;
     }
@@ -450,12 +423,6 @@ public class PayrollDAO {
     }
 
 
-    /**
-     * Save or update salary configuration
-     */
-    /**
-     * Save salary config AND automatically compute and update contributions
-     */
     public boolean saveSalaryConfig(String employeeId, double telecom, double travel,
                                     double rice, double nonTaxable, double perDiem,
                                     int perDiemCount, LocalDate startDate, LocalDate endDate) {
@@ -605,9 +572,7 @@ public class PayrollDAO {
         }
     }
 
-    /**
-     * Update deduction_config with monthly contributions
-     */
+
     public boolean updateDeductionContributions(String employeeId, double monthlySSS,
                                                 double monthlyPHIC, double monthlyHDMF) {
         String query = """
@@ -643,9 +608,7 @@ public class PayrollDAO {
         }
     }
 
-    /**
-     * Save computed payroll to payroll_records table
-     */
+
     public boolean savePayroll(String employeeId, int periodId, PayrollModel model,
                                SalaryConfig config, AttendanceData attendance) {
         String query = """
@@ -723,9 +686,7 @@ public class PayrollDAO {
         }
     }
 
-    /**
-     * Get all active employee IDs
-     */
+
     public List<String> getAllEmployeeIds() {
         List<String> employeeIds = new ArrayList<>();
         String query = "SELECT employee_Id FROM employee_info WHERE is_Active = 1";
@@ -743,9 +704,7 @@ public class PayrollDAO {
         return employeeIds;
     }
 
-    /**
-     * Get payroll period information
-     */
+
     public PayrollPeriod getPayrollPeriod(int periodId) {
         String query = """
             SELECT period_ID, period_name, start_Date, end_Date, pay_Date, status
@@ -774,9 +733,7 @@ public class PayrollDAO {
         return null;
     }
 
-    /**
-     * Get all payroll periods
-     */
+
     public List<PayrollPeriod> getAllPayrollPeriods() {
         List<PayrollPeriod> periods = new ArrayList<>();
         String query = """
@@ -805,9 +762,8 @@ public class PayrollDAO {
         return periods;
     }
 
-    /**
-     * Get absence count from absences_table
-     */
+
+    // retrieve absence count
     public int getAbsenceCount(String employeeId, LocalDate startDate, LocalDate endDate) {
         String query = """
             SELECT COUNT(*) as absence_count
@@ -832,10 +788,7 @@ public class PayrollDAO {
         return 0;
     }
 
-    /**
-     * Get leave data for employee from leave_balance
-     * Note: Adjust column names based on your actual schema
-     */
+    // get leave data
     public LeaveData getLeaveData(String employeeId, int year) {
         String query = """
             SELECT 
