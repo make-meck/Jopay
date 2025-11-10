@@ -6,6 +6,9 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.PieChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
@@ -13,9 +16,15 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static com.example.jopay.EmployeeDAO.connect;
 
 public class admin2Controller {
 
@@ -115,6 +124,8 @@ public class admin2Controller {
 
     //report analysis
     @FXML private Label headCountLabel;
+    @FXML BarChart<String, Number> departmentWiseCount;
+    @FXML PieChart attendancePieChart;
 
 
     private ObservableList<Employee> employeeList = FXCollections.observableArrayList();
@@ -125,7 +136,7 @@ public class admin2Controller {
 
     @FXML
     public void initialize() {
-         employeeDAO = new EmployeeDAO();
+
         employeeDAO = new EmployeeDAO();
 
         System.out.println("headCountLabel is null? " + (headCountLabel == null));
@@ -138,9 +149,16 @@ public class admin2Controller {
         if (payrollPeriodComboBox != null) {
             setupPeriodComboBox();
         }
+
+        if (departmentWiseCount != null && employeeDAO != null) {
+
+        }
         Platform.runLater(() -> {
             displayActiveEmployees();
+            loadDepartmentChart();
+            loadWeeklyAttendanceChart();
         });
+
 
     }
 
@@ -656,11 +674,57 @@ public class admin2Controller {
         manageEmpLabel.setVisible(false);
     }
 
-
+    @FXML
+    private void reportAnalysisLoad(){
+        displayActiveEmployees();
+        loadDepartmentChart();
+    }
     private void displayActiveEmployees() {
 
         int total = employeeDAO.getActiveEmployeeCount();
         headCountLabel.setText(String.valueOf(total));
+    }
+    public void loadDepartmentChart() {
+        System.out.println("departmentWiseCount is null? " + (departmentWiseCount == null)); // ADD THIS
+
+        if (departmentWiseCount == null) {
+            System.out.println("ERROR: Chart is null!");
+            return;
+        }
+        Map<String, Integer> deptCounts = employeeDAO.getEmployeeDepartmentCounts();
+
+        // ADD THESE DEBUG LINES:
+        System.out.println("Department counts: " + deptCounts);
+        System.out.println("Number of departments: " + deptCounts.size());
+
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        //series.setName("Active Employees");
+
+        deptCounts.forEach((dept, count) -> {
+            System.out.println("Adding to chart: " + dept + " = " + count); // ADD THIS
+            series.getData().add(new XYChart.Data<>(dept, count));
+        });
+
+        System.out.println("Series data size: " + series.getData().size()); // ADD THIS
+
+
+        departmentWiseCount.getData().clear();
+        departmentWiseCount.getData().add(series);
+
+        System.out.println("Chart data added!"); // ADD THIS
+    }
+
+    public void loadWeeklyAttendanceChart() {
+        Map<String, Integer> summary = employeeDAO.getWeeklyAttendanceSummary();
+
+        ObservableList<PieChart.Data> pieData = FXCollections.observableArrayList();
+
+        summary.forEach((status, count) -> {
+            pieData.add(new PieChart.Data(status + " (" + count + ")", count));
+        });
+
+        attendancePieChart.setData(pieData);
+        attendancePieChart.setTitle("Weekly Attendance Summary");
     }
 
     @FXML

@@ -10,15 +10,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /*this class will handle the employees of the company
 transactions like delete, add, update and so on
  */
 public class EmployeeDAO {
-    private static DatabaseConnector connect;
+    static DatabaseConnector connect;
 
 
     public EmployeeDAO() {
@@ -38,12 +36,12 @@ public class EmployeeDAO {
     // find the employee by their employee_ID
     public Optional<Employee> findEmployeeId(String employeeId) throws SQLException {
         String findEmp = """
-        SELECT ea.employee_Id, ea.employee_password, ei.employee_FirstName, 
-               ei.employee_LastName, ei.is_Active
-        FROM employee_account ea
-        JOIN employee_info ei ON ea.employee_Id = ei.employee_Id
-        WHERE ea.employee_Id = ?
-    """;
+                    SELECT ea.employee_Id, ea.employee_password, ei.employee_FirstName, 
+                           ei.employee_LastName, ei.is_Active
+                    FROM employee_account ea
+                    JOIN employee_info ei ON ea.employee_Id = ei.employee_Id
+                    WHERE ea.employee_Id = ?
+                """;
 
         try (PreparedStatement stmt = connect.prepareStatement(findEmp)) {
             stmt.setString(1, employeeId);
@@ -196,7 +194,6 @@ public class EmployeeDAO {
     }
 
 
-
     public static void addEmployee(Employee employee, String password) throws SQLException {
         connect.setAutoCommit(false);
 
@@ -328,6 +325,70 @@ public class EmployeeDAO {
         return 0;
     }
 
+    public Map<String, Integer> getEmployeeDepartmentCounts() {
+        Map<String, Integer> deptCounts = new HashMap<>();
+
+        try {
+            // Step 1: Get all distinct departments
+            String deptQuery = "SELECT DISTINCT employee_Department FROM employee_info";
+            try (PreparedStatement deptStmt = connect.prepareStatement(deptQuery);
+                 ResultSet deptRs = deptStmt.executeQuery()) {
+                while (deptRs.next()) {
+                    String dept = deptRs.getString("employee_Department");
+                    deptCounts.put(dept, 0); // default 0 count
+                }
+            }
+
+            // Step 2: Count active employees per department
+            String countQuery = """
+                        SELECT employee_Department, COUNT(*) AS count
+                        FROM employee_info
+                        WHERE is_Active = 1
+                        GROUP BY employee_Department
+                    """;
+
+            try (PreparedStatement countStmt = connect.prepareStatement(countQuery);
+                 ResultSet countRs = countStmt.executeQuery()) {
+                while (countRs.next()) {
+                    String dept = countRs.getString("employee_Department"); // <-- use correct column name
+                    int count = countRs.getInt("count");
+                    deptCounts.put(dept, count); // overwrite 0 with actual count
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return deptCounts;
+    }
+
+    public Map<String, Integer> getWeeklyAttendanceSummary() {
+        Map<String, Integer> summary = new HashMap<>();
+
+        String query = """
+        SELECT status, COUNT(*) AS count
+        FROM time_log
+        WHERE log_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        GROUP BY status
+    """;
+
+        try (PreparedStatement stmt = connect.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                String status = rs.getString("status");
+                int count = rs.getInt("count");
+                summary.put(status, count);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("Weekly attendance summary: " + summary); // Debug line
+        return summary;
+    }
 
 }
 
