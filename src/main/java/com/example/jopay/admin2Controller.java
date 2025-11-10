@@ -710,6 +710,7 @@ public class admin2Controller {
 
         departmentWiseCount.getData().clear();
         departmentWiseCount.getData().add(series);
+        departmentWiseCount.setTitle("Department Wise Headcount");
 
         System.out.println("Chart data added!");
     }

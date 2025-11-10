@@ -307,7 +307,7 @@ public class EmployeeDAO {
     }
 
     public int getActiveEmployeeCount() {
-        System.out.println("getActiveEmployeeCount called"); 
+        System.out.println("getActiveEmployeeCount called");
         System.out.println("Connection: " + connect);
 
         String query = "SELECT COUNT(*) AS employee_count FROM employee_info WHERE is_Active = 1";
