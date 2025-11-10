@@ -44,7 +44,7 @@
          <image>
             <Image url="@JopayLogo.png" />
          </image></ImageView>
-      <AnchorPane id="reportAnalysisPane" fx:id="reportAnalysisPane" layoutX="3.0" layoutY="217.0" onMouseClicked="#reportAnalysisClick" onMousePressed="#reportAnalysisClick" prefHeight="390.0" prefWidth="1200.0" visible="false">
+      <AnchorPane id="reportAnalysisPane" fx:id="reportAnalysisPane" layoutX="3.0" layoutY="217.0" onMouseClicked="#reportAnalysisClick" onMousePressed="#reportAnalysisClick" prefHeight="390.0" prefWidth="1200.0">
          <children>
             <HBox layoutX="31.0" layoutY="29.0" prefHeight="307.0" prefWidth="1166.0" spacing="20.0">
                <children>
@@ -57,7 +57,7 @@
                            </font>
                         </Label>
                         <Circle fill="#fdfeff" layoutX="144.0" layoutY="154.0" radius="100.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" />
-                        <Label layoutX="87.0" layoutY="108.0" prefHeight="64.0" prefWidth="115.0" text="200">
+                        <Label fx:id="HeadcountLabel" layoutX="87.0" layoutY="108.0" prefHeight="64.0" prefWidth="115.0" textAlignment="CENTER">
                            <font>
                               <Font size="63.0" />
                            </font>
@@ -104,7 +104,7 @@
             </HBox>
          </children>
       </AnchorPane>
-        <AnchorPane fx:id="pane1" layoutX="1.0" layoutY="208.0" prefHeight="436.0" prefWidth="1200.0">
+        <AnchorPane fx:id="pane1" layoutX="1.0" layoutY="208.0" prefHeight="436.0" prefWidth="1200.0" visible="false">
             <children>
                 <HBox fx:id="searchHBox" layoutX="54.0" layoutY="12.0" prefHeight="49.0" prefWidth="651.0">
                     <children>
