@@ -68,7 +68,6 @@ public class PayrollDAO {
                 config.perDiem = rs.getDouble("per_Diem");
                 config.perDiemCount = rs.getInt("per_Diem_Count");
 
-                // Contributions
                 config.sssContribution = rs.getDouble("sss_Contribution");
                 config.phicContribution = rs.getDouble("philc_contribution");
                 config.hdmfContribution = rs.getDouble("hdmf_Contribution");
