@@ -104,7 +104,7 @@
             </HBox>
          </children>
       </AnchorPane>
-        <AnchorPane fx:id="pane1" layoutX="1.0" layoutY="208.0" prefHeight="436.0" prefWidth="1200.0">
+        <AnchorPane fx:id="pane1" layoutX="1.0" layoutY="208.0" prefHeight="436.0" prefWidth="1200.0" visible="false">
             <children>
                 <HBox fx:id="searchHBox" layoutX="54.0" layoutY="12.0" prefHeight="49.0" prefWidth="651.0">
                     <children>
@@ -367,7 +367,7 @@
                 </AnchorPane>
             </children>
         </AnchorPane>
-      <AnchorPane id="managePayrollPane" fx:id="managePayrollPane" layoutX="-2.0" layoutY="178.0" onMouseClicked="#managePayrollClick" prefHeight="472.0" prefWidth="1183.0" stylesheets="@admin2style.css" visible="false">
+      <AnchorPane id="managePayrollPane" fx:id="managePayrollPane" layoutX="-2.0" layoutY="178.0" onMouseClicked="#managePayrollClick" prefHeight="472.0" prefWidth="1183.0" stylesheets="@admin2style.css">
          <children>
             <Rectangle id="manageEmpPane" arcHeight="5.0" arcWidth="5.0" fill="#dfdfdf" height="361.0" layoutX="14.0" layoutY="99.0" smooth="false" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="1000.0" />
             <VBox id="manageEmpLabelPane1" alignment="TOP_CENTER" layoutX="27.0" layoutY="114.0" prefHeight="346.0" prefWidth="160.0">
@@ -439,18 +439,18 @@
             </VBox>
             <VBox id="manageEmpTextfieldPane1" layoutX="174.0" layoutY="116.0" prefHeight="346.0" prefWidth="242.0">
                <children>
-                  <TextField prefHeight="12.0" prefWidth="169.0" />
-                  <TextField>
+                  <TextField fx:id="payrollemployeeName" prefHeight="12.0" prefWidth="169.0" />
+                  <TextField fx:id="payrollEmployeeID">
                      <VBox.margin>
                         <Insets bottom="10.0" />
                      </VBox.margin>
                   </TextField>
-                  <TextField layoutX="11.0" layoutY="44.0" />
-                  <TextField layoutX="11.0" layoutY="78.0" />
-                  <TextField layoutX="11.0" layoutY="112.0" />
-                  <TextField layoutX="11.0" layoutY="145.0" />
-                  <TextField layoutX="11.0" layoutY="179.0" />
-                  <TextField layoutX="11.0" layoutY="212.0">
+                  <TextField fx:id="telecoAllowance" layoutX="11.0" layoutY="44.0" />
+                  <TextField fx:id="travelAllowance" layoutX="11.0" layoutY="78.0" />
+                  <TextField fx:id="riceSubsidy" layoutX="11.0" layoutY="112.0" />
+                  <TextField fx:id="nonTaxableTF" layoutX="11.0" layoutY="145.0" />
+                  <TextField fx:id="perDeimTF" layoutX="11.0" layoutY="179.0" />
+                  <TextField fx:id="perDeimCountTF" layoutX="11.0" layoutY="212.0">
                      <VBox.margin>
                         <Insets bottom="10.0" />
                      </VBox.margin>
@@ -528,15 +528,15 @@
                   </Label>
                </children>
             </VBox>
-            <VBox id="manageEmpTextfieldPane2" layoutX="648.0" layoutY="119.0" prefHeight="346.0" prefWidth="242.0">
+            <VBox id="manageEmpTextfieldPane2" layoutX="648.0" layoutY="119.0" prefHeight="346.0" prefWidth="242.0" spacing="1.0">
                <children>
                   <TextField prefHeight="12.0" prefWidth="169.0" />
-                  <TextField />
-                  <TextField layoutX="11.0" layoutY="44.0">
+                  <DatePicker fx:id="startingDatePicker" prefHeight="26.0" prefWidth="250.0" />
+                  <DatePicker fx:id="endDatePicker" prefHeight="26.0" prefWidth="253.0">
                      <VBox.margin>
-                        <Insets bottom="10.0" />
+                        <Insets bottom="3.0" />
                      </VBox.margin>
-                  </TextField>
+                  </DatePicker>
                   <TextField layoutX="11.0" layoutY="78.0" />
                   <TextField layoutX="11.0" layoutY="112.0" />
                   <TextField layoutX="11.0" layoutY="145.0" />
@@ -566,7 +566,7 @@
                   </Button>
                </children>
             </VBox>
-            <TextField id="manageEmpSearchBar" layoutX="27.0" layoutY="37.0" prefHeight="46.0" prefWidth="382.0" promptText="Employee ID " />
+            <TextField id="manageEmpSearchBar" fx:id="searchIDManager" layoutX="27.0" layoutY="37.0" prefHeight="46.0" prefWidth="382.0" promptText="Employee ID " />
             <ImageView id="manageEmpSearchIcon" fitHeight="40.0" fitWidth="41.0" layoutX="361.0" layoutY="41.0" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@searchIconManagePayroll.png" />

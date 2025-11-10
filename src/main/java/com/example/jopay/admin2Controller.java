@@ -119,6 +119,34 @@ public class admin2Controller {
     @FXML
     Label removeJobLabel;
 
+    //manage payroll
+    @FXML
+    TextField payrollemployeeName;
+    @FXML
+    TextField payrollEmployeeID;
+    @FXML
+    TextField telecoAllowance;
+    @FXML
+    TextField travelAllowance;
+    @FXML
+    TextField riceSubsidy;
+    @FXML
+    TextField nonTaxableTF;
+    @FXML
+    TextField perDeimTF;
+    @FXML
+    TextField perDeimCountTF;
+    @FXML
+    DatePicker startingDatePicker;
+    @FXML
+    DatePicker endDatePicker;
+    @FXML
+    TextField searchIDManager;
+    @FXML
+    Label errorLabelManagePayroll;
+
+
+
 
 
     // Temporary admin login inputs
@@ -176,6 +204,35 @@ public class admin2Controller {
     }
 
     @FXML
+    private void onSearchEmployee(){
+        PayrollDAO payrollDAO = new PayrollDAO();
+
+        String searchID= searchIDManager.getText().trim();
+        if(searchID.isEmpty()){
+            errorLabelManagePayroll.setText("Please enter an Employee ID");
+            return;
+        }
+
+        Payroll info = payrollDAO.getEmployeePayroll(searchID);
+        if(info != null) {
+            payrollemployeeName.setText(info.getEmployeeName());
+            payrollEmployeeID.setText(String.valueOf(info.getEmployeeId()));
+            telecoAllowance.setText(info.getTelecom());
+            travelAllowance.setText(String.valueOf(info.getTravel()));
+            riceSubsidy.setText(String.valueOf(info.getRice()));
+            nonTaxableTF.setText(String.valueOf(info.getNonTaxable()));
+            perDeimTF.setText(String.valueOf(info.getPerDiem()));
+            perDeimCountTF.setText(String.valueOf(info.getPerDiemCount()));
+            startingDatePicker.setValue(info.getStartDate());
+            endDatePicker.setValue(info.getEndDate());
+
+        } else {
+            clearFields;
+            errorLabelManagePayroll.setText("Employee not found");
+        }
+    }
+
+    @FXML
     private void managePayrollClick() {
         pane1.setVisible(false);
         managePayrollPane.setVisible(true);
@@ -186,6 +243,8 @@ public class admin2Controller {
 
 
     }
+
+
 
     @FXML
     private void reportAnalysisClick() {
@@ -372,6 +431,17 @@ public class admin2Controller {
         removeDeptLabel.setText("Department:");
         removeEmployLabel.setText("Employment Status:");
         removeJobLabel.setText("Job Title:");
+    }
+    private void clearFields(){
+        payrollemployeeName.clear();
+        payrollEmployeeID.clear();
+        travelAllowance.clear();
+        riceSubsidy.clear();
+        nonTaxableTF.clear();
+        perDeimTF.clear();
+        perDeimCountTF.clear();
+        startingDatePicker.setValue(null);
+        endDatePicker.setValue(null);
     }
 
 }
