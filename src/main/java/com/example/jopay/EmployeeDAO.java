@@ -307,19 +307,19 @@ public class EmployeeDAO {
     }
 
     public int getActiveEmployeeCount() {
-        System.out.println("getActiveEmployeeCount called"); // Add this
-        System.out.println("Connection: " + connect); // Check if connection is null
+        System.out.println("getActiveEmployeeCount called"); 
+        System.out.println("Connection: " + connect);
 
         String query = "SELECT COUNT(*) AS employee_count FROM employee_info WHERE is_Active = 1";
         try (PreparedStatement stmt = connect.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 int count = rs.getInt("employee_count");
-                System.out.println("Count from DB: " + count); // Add this
+                System.out.println("Count from DB: " + count);
                 return count;
             }
         } catch (SQLException e) {
-            System.err.println("SQL Error: " + e.getMessage()); // Better error message
+            System.err.println("SQL Error: " + e.getMessage());
             e.printStackTrace();
         }
         return 0;
@@ -329,7 +329,7 @@ public class EmployeeDAO {
         Map<String, Integer> deptCounts = new HashMap<>();
 
         try {
-            // Step 1: Get all distinct departments
+
             String deptQuery = "SELECT DISTINCT employee_Department FROM employee_info";
             try (PreparedStatement deptStmt = connect.prepareStatement(deptQuery);
                  ResultSet deptRs = deptStmt.executeQuery()) {
@@ -339,7 +339,7 @@ public class EmployeeDAO {
                 }
             }
 
-            // Step 2: Count active employees per department
+
             String countQuery = """
                         SELECT employee_Department, COUNT(*) AS count
                         FROM employee_info
@@ -350,9 +350,9 @@ public class EmployeeDAO {
             try (PreparedStatement countStmt = connect.prepareStatement(countQuery);
                  ResultSet countRs = countStmt.executeQuery()) {
                 while (countRs.next()) {
-                    String dept = countRs.getString("employee_Department"); // <-- use correct column name
+                    String dept = countRs.getString("employee_Department");
                     int count = countRs.getInt("count");
-                    deptCounts.put(dept, count); // overwrite 0 with actual count
+                    deptCounts.put(dept, count);
                 }
             }
 
@@ -386,7 +386,7 @@ public class EmployeeDAO {
             e.printStackTrace();
         }
 
-        System.out.println("Weekly attendance summary: " + summary); // Debug line
+        System.out.println("Weekly attendance summary: " + summary);
         return summary;
     }
 

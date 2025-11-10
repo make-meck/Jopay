@@ -698,20 +698,20 @@ public class admin2Controller {
         System.out.println("Number of departments: " + deptCounts.size());
 
         XYChart.Series<String, Number> series = new XYChart.Series<>();
-        //series.setName("Active Employees");
+        series.setName("Active Employees");
 
         deptCounts.forEach((dept, count) -> {
-            System.out.println("Adding to chart: " + dept + " = " + count); // ADD THIS
+            System.out.println("Adding to chart: " + dept + " = " + count);
             series.getData().add(new XYChart.Data<>(dept, count));
         });
 
-        System.out.println("Series data size: " + series.getData().size()); // ADD THIS
+        System.out.println("Series data size: " + series.getData().size());
 
 
         departmentWiseCount.getData().clear();
         departmentWiseCount.getData().add(series);
 
-        System.out.println("Chart data added!"); // ADD THIS
+        System.out.println("Chart data added!");
     }
 
     public void loadWeeklyAttendanceChart() {
