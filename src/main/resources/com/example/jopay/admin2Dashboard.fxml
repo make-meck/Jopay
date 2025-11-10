@@ -20,6 +20,7 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
+<?import javafx.scene.control.ComboBox?>
 <AnchorPane prefHeight="604.0" prefWidth="1248.0" stylesheets="@admin2style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.jopay.admin2Controller">
     <children>
         <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#a4cfb7" height="655.0" layoutX="-18.0" layoutY="-10.0" stroke="#a4cfb7" strokeType="OUTSIDE" width="1266.0" />
@@ -461,6 +462,9 @@
                         <TextField layoutX="11.0" layoutY="280.0" />
                     </children>
                 </VBox>
+                <Label layoutX="648" layoutY="175"
+                       text="Examples: Nov 11-25 (1st) | Nov 26-Dec 10 (2nd)"
+                       style="-fx-font-size: 10; -fx-text-fill: #666;" />
                 <VBox id="manageEmpLabelPane2" layoutX="458.0" layoutY="116.0" prefHeight="353.0" prefWidth="182.0">
                     <children>
                         <Label prefHeight="18.0" prefWidth="182.0" text="Basic Pay: ">
@@ -468,16 +472,15 @@
                                 <Insets bottom="5.0" top="5.0" />
                             </VBox.margin>
                         </Label>
-                        <Label prefHeight="18.0" prefWidth="192.0" text="Starting Period:">
+
+                        <!-- CHANGED: Single label for Cut-off Period -->
+                        <Label prefHeight="18.0" prefWidth="192.0" text="Cut-off Period:">
                             <VBox.margin>
-                                <Insets bottom="5.0" top="5.0" />
+                                <Insets bottom="35.0" top="5.0" />
                             </VBox.margin>
                         </Label>
-                        <Label prefHeight="18.0" prefWidth="184.0" text="Ending Period: ">
-                            <VBox.margin>
-                                <Insets bottom="10.0" />
-                            </VBox.margin>
-                        </Label>
+
+                        <!-- Rest of your labels remain the same -->
                         <Label prefHeight="18.0" prefWidth="178.0" text="Taxable Pay: ">
                             <padding>
                                 <Insets bottom="3.0" top="8.0" />
@@ -530,26 +533,33 @@
                 </VBox>
                 <VBox id="manageEmpTextfieldPane2" layoutX="648.0" layoutY="119.0" prefHeight="346.0" prefWidth="242.0" spacing="1.0">
                     <children>
-                        <TextField prefHeight="12.0" prefWidth="169.0" />
-                        <DatePicker fx:id="startingDatePicker" prefHeight="26.0" prefWidth="250.0" />
-                        <DatePicker fx:id="endDatePicker" prefHeight="26.0" prefWidth="253.0">
+                        <TextField fx:id="basicPayTF" prefHeight="12.0" prefWidth="169.0" editable="false" />
+
+                        <!-- CHANGED: Single ComboBox for period selection -->
+                        <ComboBox fx:id="payrollPeriodComboBox"
+                                  prefHeight="26.0"
+                                  prefWidth="250.0"
+                                  promptText="Select Payroll Period"
+                                  style="-fx-font-size: 11;">
                             <VBox.margin>
-                                <Insets bottom="3.0" />
+                                <Insets bottom="15.0" />
                             </VBox.margin>
-                        </DatePicker>
-                        <TextField layoutX="11.0" layoutY="78.0" />
-                        <TextField layoutX="11.0" layoutY="112.0" />
-                        <TextField layoutX="11.0" layoutY="145.0" />
-                        <TextField layoutX="11.0" layoutY="179.0" />
-                        <TextField layoutX="11.0" layoutY="212.0" />
-                        <TextField layoutX="11.0" layoutY="246.0">
+                        </ComboBox>
+
+                        <!-- Rest of your textfields remain the same -->
+                        <TextField fx:id="taxablePayTF" layoutX="11.0" layoutY="78.0" editable="false" />
+                        <TextField fx:id="withholdingTaxTF" layoutX="11.0" layoutY="112.0" editable="false" />
+                        <TextField fx:id="overtimeTF" layoutX="11.0" layoutY="145.0" editable="false" />
+                        <TextField fx:id="authorizedLeaveTF" layoutX="11.0" layoutY="179.0" editable="false" />
+                        <TextField fx:id="absencesTF" layoutX="11.0" layoutY="212.0" editable="false" />
+                        <TextField fx:id="numAbsencesTF" layoutX="11.0" layoutY="246.0" editable="false">
                             <VBox.margin>
                                 <Insets bottom="12.0" />
                             </VBox.margin>
                         </TextField>
-                        <TextField layoutX="11.0" layoutY="280.0" />
-                        <TextField layoutX="11.0" layoutY="246.0" />
-                        <TextField layoutX="11.0" layoutY="280.0" />
+                        <TextField fx:id="grossPayTF" layoutX="11.0" layoutY="280.0" editable="false" />
+                        <TextField fx:id="totalDeductionTF" layoutX="11.0" layoutY="246.0" editable="false" />
+                        <TextField fx:id="netPayTF" layoutX="11.0" layoutY="280.0" editable="false" />
                     </children>
                 </VBox>
                 <VBox id="manageEmpButtons" layoutX="1033.0" layoutY="293.0" prefHeight="147.0" prefWidth="160.0" spacing="20.0">
