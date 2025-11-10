@@ -7,7 +7,6 @@ import java.time.LocalDate;
  */
 public class PayrollService {
     private PayrollDAO dao;
-    private double perDiem;
 
     public PayrollService() {
         this.dao = new PayrollDAO();
@@ -50,6 +49,9 @@ public class PayrollService {
             );
 
             payroll.setPayrollPeriod(startDate, endDate, isFirstPeriod);
+
+            // *** NEW: Load pre-computed contributions from database ***
+            dao.loadContributionsIntoPayrollModel(employeeId, payroll, isFirstPeriod);
 
             PayrollDAO.AttendanceData attendance = dao.getAttendanceData(employeeId, startDate, endDate);
             if (attendance != null) {
@@ -95,13 +97,10 @@ public class PayrollService {
                 );
             }
 
+            // Compute payroll (will use pre-computed contributions if available)
             payroll.computePayroll();
 
-
-            double perDiem = salaryConfig.perDiem;
-            int perDiemCount = salaryConfig.perDiemCount;
-            double sssLoan = (deductions != null) ? deductions.sssLoan : 0.0;
-
+            // Save payroll with the correct method signature
             boolean saved = dao.savePayroll(employeeId, periodId, payroll, salaryConfig, attendance);
             if (!saved) {
                 System.err.println("Warning: Failed to save payroll to database");
@@ -158,6 +157,35 @@ public class PayrollService {
         }
     }
 
+    /**
+     * Utility method to auto-compute and save contributions for an employee
+     * Call this when an employee's salary is updated
+     */
+    public boolean updateEmployeeContributions(String employeeId) {
+        try {
+            PayrollDAO.SalaryConfig salaryConfig = dao.getSalaryConfig(employeeId);
+            if (salaryConfig == null) {
+                System.err.println("Salary configuration not found for employee: " + employeeId);
+                return false;
+            }
+
+            return dao.autoComputeAndSaveContributions(employeeId, salaryConfig.basicPay);
+        } catch (Exception e) {
+            System.err.println("Error updating contributions: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Utility method to recalculate contributions for all active employees
+     */
+    public void recalculateAllEmployeeContributions() {
+        System.out.println("=== RECALCULATING CONTRIBUTIONS FOR ALL EMPLOYEES ===");
+        dao.recalculateAllContributions();
+        System.out.println("=== RECALCULATION COMPLETE ===\n");
+    }
+
     public static void main(String[] args) {
         PayrollService service = new PayrollService();
 
@@ -167,10 +195,14 @@ public class PayrollService {
         db.testConnection();
         System.out.println();
 
+        // Optional: Recalculate contributions for all employees first
+        System.out.println("=== STEP 1: RECALCULATE CONTRIBUTIONS ===");
+        service.recalculateAllEmployeeContributions();
+
         // Example 1: Process payroll for a single employee
         System.out.println("=== EXAMPLE 1: Single Employee Payroll ===");
         String employeeId = "6700001"; // Employee ID from your database
-        int periodId = 1; // Period ID from payroll_period table (you need to create this)
+        int periodId = 1; // Period ID from payroll_period table
 
         PayrollModel payroll = service.processPayroll(employeeId, periodId);
 
