@@ -157,12 +157,6 @@ public class PayrollModel {
         this.preComputedSSS = sss;
         this.preComputedPHIC = phic;
         this.preComputedHDMF = hdmf;
-
-        System.out.println("\n*** USING PRE-COMPUTED CONTRIBUTIONS FROM DATABASE ***");
-        System.out.println("  SSS (semi-monthly): ₱" + String.format("%,.2f", sss));
-        System.out.println("  PHIC (semi-monthly): ₱" + String.format("%,.2f", phic));
-        System.out.println("  HDMF (semi-monthly): ₱" + String.format("%,.2f", hdmf));
-        System.out.println("**************************************************\n");
     }
 
     public void computePayroll() {
@@ -170,7 +164,7 @@ public class PayrollModel {
         double basicPayForPeriod = calculateBasicPay();
         double absentDeduction = calculateAbsentDeduction(daysAbsent);
         double undertimeDeduction = calculateUndertimeDeduction();
-        double regularOTPay = calculateRegularOT();
+        double regularOTPay = calculateRegularOT(regularOTHours);
         double nightDiffOTPay = calculateNightDifferentialOT();
         double specialHolidayPay = calculateSpecialHolidayPay();
         double regularHolidayPay = calculateRegularHolidayPay();
@@ -244,7 +238,7 @@ public class PayrollModel {
         return undertimeHours * hourlyRate * OT_RATE;
     }
 
-    private double calculateRegularOT() {
+    public double calculateRegularOT(double regularOTHours) {
         return regularOTHours * hourlyRate * OT_RATE;
     }
 
