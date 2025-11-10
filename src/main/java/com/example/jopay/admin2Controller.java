@@ -217,7 +217,7 @@ public class admin2Controller {
         if(info != null) {
             payrollemployeeName.setText(info.getEmployeeName());
             payrollEmployeeID.setText(String.valueOf(info.getEmployeeId()));
-            telecoAllowance.setText(info.getTelecom());
+            telecoAllowance.setText(String.valueOf(info.getTelecom()));
             travelAllowance.setText(String.valueOf(info.getTravel()));
             riceSubsidy.setText(String.valueOf(info.getRice()));
             nonTaxableTF.setText(String.valueOf(info.getNonTaxable()));
@@ -227,7 +227,7 @@ public class admin2Controller {
             endDatePicker.setValue(info.getEndDate());
 
         } else {
-            clearFields;
+            clearFields();
             errorLabelManagePayroll.setText("Employee not found");
         }
     }

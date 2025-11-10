@@ -19,7 +19,7 @@ import java.time.LocalDate;
         public double getBasicPay() { return basicPay; }
         public void setBasicPay(double basicPay) { this.basicPay = basicPay; }
 
-        public String getTelecom() { return telecom; }
+        public double getTelecom() { return telecom; }
         public void setTelecom(double telecom) { this.telecom = telecom; }
 
         public double getTravel() { return travel; }
