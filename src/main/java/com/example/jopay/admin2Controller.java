@@ -180,7 +180,7 @@ public class admin2Controller {
         colId.setCellValueFactory(new PropertyValueFactory<>("employeeId"));
         colName.setCellValueFactory(new PropertyValueFactory<>("fullName"));
         colDept.setCellValueFactory(new PropertyValueFactory<>("department"));
-        colStatus.setCellValueFactory(new PropertyValueFactory<>("employmentStatus"));
+        colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
 
         // Update employment status based on resignation dates
         EmployeeDAO.updateEmploymentStatus();
@@ -195,7 +195,7 @@ public class admin2Controller {
     }
 
     private void loadEmployeeTable() {
-        employeeList.clear();
+       // employeeList.clear();
         employeeList.addAll(EmployeeDAO.getAllEmployees());
         employeeTable.setItems(employeeList);
     }

@@ -156,10 +156,11 @@ public class EmployeeDAO {
 
         String query = "SELECT * FROM employee_info WHERE " +
                 "employee_id LIKE ? OR " +
-                "first_name LIKE ? OR " +
-                "last_name LIKE ? OR " +
-                "department LIKE ? OR " +
-                "CONCAT(first_name, ' ', last_name) LIKE ? " +
+                "employee_FirstName LIKE ? OR " +
+                "employee_LastName LIKE ? OR " +
+                "employee_Department LIKE ? OR " +
+                "employment_Status LIKE ? OR " +
+                "CONCAT(employee_FirstName, ' ', employee_LastName) LIKE ? " +
                 "ORDER BY employee_id";
 
         try (PreparedStatement pstmt = connect.prepareStatement(query)) {
@@ -170,6 +171,7 @@ public class EmployeeDAO {
             pstmt.setString(3, searchTerm);
             pstmt.setString(4, searchTerm);
             pstmt.setString(5, searchTerm);
+            pstmt.setString(6, searchTerm); // add this for CONCAT
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
@@ -189,6 +191,7 @@ public class EmployeeDAO {
 
         return employees;
     }
+
 
 
     public static void addEmployee(Employee employee, String password) throws SQLException {
@@ -271,8 +274,8 @@ public class EmployeeDAO {
     }
 
     public static void updateEmploymentStatus() {
-        String query = "SELECT employee_id, date_hired, status FROM employee_info";
-        String updateQuery = "UPDATE employee_info SET status = ? WHERE employee_id = ?";
+        String query = "SELECT employee_Id, date_Hired, employment_Status FROM employee_info";
+        String updateQuery = "UPDATE employee_info SET employment_Status = ? WHERE employee_Id = ?";
         try (
                 PreparedStatement stmt = connect.prepareStatement(query);
                 ResultSet rs = stmt.executeQuery(query);
@@ -281,9 +284,9 @@ public class EmployeeDAO {
             LocalDate today = LocalDate.now();
 
             while (rs.next()) {
-                int id = rs.getInt("employee_id");
-                LocalDate dateHired = rs.getDate("date_hired").toLocalDate();
-                String currentStatus = rs.getString("status");
+                int id = rs.getInt("employee_Id");
+                LocalDate dateHired = rs.getDate("date_Hired").toLocalDate();
+                String currentStatus = rs.getString("employment_Status");
 
                 long monthsWorked = ChronoUnit.MONTHS.between(dateHired, today);
 
