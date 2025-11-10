@@ -197,37 +197,98 @@ public class EmployeeDAO {
 
 
 
+    // Update the addEmployee method in EmployeeDAO.java
+
     public static void addEmployee(Employee employee, String password) throws SQLException {
         connect.setAutoCommit(false);
 
+        try {
+            // Insert employee info
+            String insertEmployee = "INSERT INTO employee_info " +
+                    "(employee_Id, employee_FirstName, employee_LastName, employee_MiddleName, employee_DOB, " +
+                    "employee_department, employee_Title, basic_Salary, employment_Status, date_Hired) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        String insertEmployee = "INSERT INTO employee_info " +
-                "(employee_Id, employee_FirstName, employee_LastName,employee_MiddleName, employee_DOB,employee_department, " +
-                "employee_Title, basic_Salary, employment_Status, date_Hired) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement stmt = connect.prepareStatement(insertEmployee);
+            stmt.setString(1, employee.getEmployeeId());
+            stmt.setString(2, employee.getFirstName());
+            stmt.setString(3, employee.getLastName());
+            stmt.setString(4, employee.getMiddleName());
+            stmt.setDate(5, java.sql.Date.valueOf(employee.getDOB()));
+            stmt.setString(6, employee.getDepartment());
+            stmt.setString(7, employee.getTitle());
+            stmt.setDouble(8, employee.getBasicSalary());
+            stmt.setString(9, employee.getStatus());
+            stmt.setDate(10, java.sql.Date.valueOf(employee.getDateHired()));
+            stmt.executeUpdate();
 
-        PreparedStatement stmt = connect.prepareStatement(insertEmployee);
-        stmt.setString(1, employee.getEmployeeId());
-        stmt.setString(2, employee.getFirstName());
-        stmt.setString(3, employee.getLastName());
-        stmt.setString(4, employee.getMiddleName());
-        stmt.setDate(5, java.sql.Date.valueOf(employee.getDOB()));
-        stmt.setString(6, employee.getDepartment());
-        stmt.setString(7, employee.getTitle());
-        stmt.setDouble(8, employee.getBasicSalary());
-        stmt.setString(9, employee.getStatus());
-        stmt.setDate(10, java.sql.Date.valueOf(employee.getDateHired()));
+            // Insert account
+            String insertAccount = "INSERT INTO employee_account (employee_id, employee_password) VALUES (?, ?)";
+            PreparedStatement accountStmt = connect.prepareStatement(insertAccount);
+            accountStmt.setInt(1, Integer.parseInt(employee.getEmployeeId()));
+            accountStmt.setString(2, password);
+            accountStmt.executeUpdate();
 
-        stmt.executeUpdate();
+            // *** NEW: Auto-compute and save contributions ***
+            PayrollDAO payrollDAO = new PayrollDAO();
+            boolean contributionsComputed = payrollDAO.autoComputeAndSaveContributions(
+                    employee.getEmployeeId(),
+                    employee.getBasicSalary()
+            );
 
+            if (contributionsComputed) {
+                System.out.println("✓ Contributions auto-computed for new employee: " + employee.getEmployeeId());
+            } else {
+                System.err.println("⚠ Warning: Failed to compute contributions for employee: " + employee.getEmployeeId());
+            }
 
-        String insertAccount = "INSERT INTO employee_account (employee_id, employee_password) VALUES (?, ?)";
-        PreparedStatement accountStmt = connect.prepareStatement(insertAccount);
-        accountStmt.setInt(1, Integer.parseInt(employee.getEmployeeId()));
-        accountStmt.setString(2, password);
-        accountStmt.executeUpdate();
+            connect.commit();
 
-        connect.commit();
+        } catch (SQLException e) {
+            connect.rollback();
+            throw e;
+        } finally {
+            connect.setAutoCommit(true);
+        }
+    }
+
+    // Add a new method to update employee salary and auto-recompute contributions
+    public static boolean updateEmployeeSalary(String employeeId, double newSalary) throws SQLException {
+        connect.setAutoCommit(false);
+
+        try {
+            // Update salary
+            String updateQuery = "UPDATE employee_info SET basic_Salary = ? WHERE employee_Id = ?";
+            PreparedStatement stmt = connect.prepareStatement(updateQuery);
+            stmt.setDouble(1, newSalary);
+            stmt.setString(2, employeeId);
+            int result = stmt.executeUpdate();
+
+            if (result > 0) {
+                // Auto-recompute contributions
+                PayrollDAO payrollDAO = new PayrollDAO();
+                boolean recomputed = payrollDAO.autoComputeAndSaveContributions(employeeId, newSalary);
+
+                if (recomputed) {
+                    System.out.println("✓ Salary updated and contributions recomputed for: " + employeeId);
+                    connect.commit();
+                    return true;
+                } else {
+                    System.err.println("⚠ Salary updated but failed to recompute contributions");
+                    connect.rollback();
+                    return false;
+                }
+            }
+
+            connect.rollback();
+            return false;
+
+        } catch (SQLException e) {
+            connect.rollback();
+            throw e;
+        } finally {
+            connect.setAutoCommit(true);
+        }
     }
 
     public static int getNextEmployeeId() throws SQLException {

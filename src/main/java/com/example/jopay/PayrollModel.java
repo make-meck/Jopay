@@ -22,13 +22,13 @@ public class PayrollModel {
     private String employeeId;
     private String employeeName;
     private double basicMonthlyPay;
-    private String employmentStatus; // "Regular", "Probationary", "Project-based"
+    private String employmentStatus;
     private LocalDate dateHired;
     private int workingHoursPerDay;
 
     private LocalDate startDate;
     private LocalDate endDate;
-    private boolean isFirstHalf; // true = 1st-15th, false = 16th-end
+    private boolean isFirstHalf;
 
     // Attendance Data
     private int daysWorked;
@@ -42,7 +42,7 @@ public class PayrollModel {
     private double restDayNightDiffOTHours;
     private double undertimeHours;
 
-    // (Non-taxable)
+    // Allowances (Non-taxable)
     private double telecomAllowance;
     private double travelAllowance;
     private double riceSubsidy;
@@ -73,6 +73,12 @@ public class PayrollModel {
     private double taxableIncome;
     private double withholdingTax;
     private double netPay;
+
+    // *** NEW: Fields for pre-computed contributions ***
+    private boolean usePreComputedContributions = false;
+    private double preComputedSSS = 0.0;
+    private double preComputedPHIC = 0.0;
+    private double preComputedHDMF = 0.0;
 
     // Constructor
     public void PayrollComputation(String employeeId, String employeeName, double basicMonthlyPay,
@@ -137,6 +143,28 @@ public class PayrollModel {
         this.slBalance = slBalance;
     }
 
+    /**
+     * *** NEW METHOD ***
+     * Set pre-computed contributions from database
+     * This bypasses the formula calculation
+     *
+     * @param sss Semi-monthly SSS contribution from database
+     * @param phic Semi-monthly PHIC contribution from database
+     * @param hdmf Semi-monthly HDMF contribution from database (0 if second period)
+     */
+    public void setPreComputedContributions(double sss, double phic, double hdmf) {
+        this.usePreComputedContributions = true;
+        this.preComputedSSS = sss;
+        this.preComputedPHIC = phic;
+        this.preComputedHDMF = hdmf;
+
+        System.out.println("\n*** USING PRE-COMPUTED CONTRIBUTIONS FROM DATABASE ***");
+        System.out.println("  SSS (semi-monthly): ₱" + String.format("%,.2f", sss));
+        System.out.println("  PHIC (semi-monthly): ₱" + String.format("%,.2f", phic));
+        System.out.println("  HDMF (semi-monthly): ₱" + String.format("%,.2f", hdmf));
+        System.out.println("**************************************************\n");
+    }
+
     public void computePayroll() {
         // Calculate Earnings/Gross Pay
         double basicPayForPeriod = calculateBasicPay();
@@ -160,10 +188,27 @@ public class PayrollModel {
 
         semiMonthlyGrossPay = totalEarnings;
 
-        // Calculate Mandatory Contributions
-        sssContribution = calculateSSS();
-        phicContribution = calculatePHIC();
-        hdmfContribution = calculateHDMF();
+        // *** MODIFIED: Use pre-computed contributions if available ***
+        if (usePreComputedContributions) {
+            sssContribution = preComputedSSS;
+            phicContribution = preComputedPHIC;
+            hdmfContribution = preComputedHDMF;
+
+            System.out.println("✓ Using PRE-COMPUTED contributions from database");
+            System.out.println("  SSS: ₱" + String.format("%,.2f", sssContribution));
+            System.out.println("  PHIC: ₱" + String.format("%,.2f", phicContribution));
+            System.out.println("  HDMF: ₱" + String.format("%,.2f", hdmfContribution));
+        } else {
+            // Calculate Mandatory Contributions using formulas (fallback)
+            sssContribution = calculateSSS();
+            phicContribution = calculatePHIC();
+            hdmfContribution = calculateHDMF();
+
+            System.out.println("⚠ Using FORMULA-COMPUTED contributions (no pre-computed values found)");
+            System.out.println("  SSS: ₱" + String.format("%,.2f", sssContribution));
+            System.out.println("  PHIC: ₱" + String.format("%,.2f", phicContribution));
+            System.out.println("  HDMF: ₱" + String.format("%,.2f", hdmfContribution));
+        }
 
         // Calculate Total Non-taxable
         double totalNonTaxable = telecomAllowance + travelAllowance + riceSubsidy
@@ -182,6 +227,9 @@ public class PayrollModel {
 
         // Calculate Net Pay
         netPay = totalEarnings + totalNonTaxable - totalDeductions;
+
+        // Reset flag for next computation
+        usePreComputedContributions = false;
     }
 
     private double calculateBasicPay() {
@@ -224,12 +272,10 @@ public class PayrollModel {
         return restDayNightDiffOTHours * hourlyRate * REST_DAY_RATE * REST_DAY_RATE * NIGHT_DIFFERENTIAL;
     }
 
-    // (Non-taxable)
     private double calculateVLPay() {
         return vlUsed * basicDailyRate;
     }
 
-    // (Taxable)
     private double calculateSLPay() {
         return slUsed * basicDailyRate;
     }
@@ -304,7 +350,7 @@ public class PayrollModel {
         else if (monthlySalary >= 33250 && monthlySalary <= 33749.99) return 1675.00;
         else if (monthlySalary >= 33750 && monthlySalary <= 34249.99) return 1700.00;
         else if (monthlySalary >= 34250 && monthlySalary <= 34749.99) return 1725.00;
-        else return 1800.00; // Maximum
+        else return 1800.00;
     }
 
     private double calculatePHIC() {
@@ -318,7 +364,6 @@ public class PayrollModel {
             monthlyContribution = (basicMonthlyPay * PHIC_RATE) / 2;
         }
         double semiMonthlyContribution = monthlyContribution / 2;
-
 
         if (semiMonthlyContribution < 250 && isFirstHalf) {
             return 250.00;
@@ -367,7 +412,6 @@ public class PayrollModel {
         return tableTax + ((semiMonthlyTaxableIncome - bracket) * over);
     }
 
-    // VL Accrual
     public double calculateVLAccrual(int monthsWorked) {
         if (!employmentStatus.equalsIgnoreCase("Regular")) {
             return 0;
@@ -381,11 +425,10 @@ public class PayrollModel {
 
     public static double calculate13thMonthTax(double thirteenthMonthPay, double annualTaxableIncome) {
         if (thirteenthMonthPay <= NON_TAXABLE_13TH_MONTH_MAX) {
-            return 0; // No tax
+            return 0;
         }
 
         double taxableAmount = thirteenthMonthPay - NON_TAXABLE_13TH_MONTH_MAX;
-
         double taxRate = getAnnualTaxRate(annualTaxableIncome);
 
         return taxableAmount * taxRate;
@@ -400,6 +443,7 @@ public class PayrollModel {
         else return 0.35;
     }
 
+    // Getters
     public double getGrossMonthlyPay() { return grossMonthlyPay; }
     public double getGrossDailyRate() { return grossDailyRate; }
     public double getBasicDailyRate() { return basicDailyRate; }
@@ -415,7 +459,6 @@ public class PayrollModel {
     public double getPHICContribution() { return phicContribution; }
     public double getHDMFContribution() { return hdmfContribution; }
 
-    // Generate Payslip Summary
     public String generatePayslipSummary() {
         StringBuilder sb = new StringBuilder();
         sb.append("=== PAYSLIP ===\n");
