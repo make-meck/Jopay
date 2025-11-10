@@ -88,48 +88,198 @@ public class PayrollDAO {
         return config;
     }
 
-    /**
-     * Get attendance data for payroll period from time_log
-     */
     public AttendanceData getAttendanceData(String employeeId, LocalDate startDate, LocalDate endDate) {
-        String query = """
-            SELECT 
-                COALESCE(SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END), 0) as days_worked,
-                COALESCE(SUM(CASE WHEN status = 'Absent' THEN 1 ELSE 0 END), 0) as days_absent,
-                COALESCE(SUM(CASE WHEN total_hours > 8 THEN total_hours - 8 ELSE 0 END), 0) as regular_ot_hours
-            FROM time_log
-            WHERE employee_Id = ? 
-            AND log_date BETWEEN ? AND ?
-        """;
+        AttendanceData data = new AttendanceData();
 
-        try (PreparedStatement stmt = connect.getConnection().prepareStatement(query)) {
-            stmt.setString(1, employeeId);
-            stmt.setDate(2, java.sql.Date.valueOf(startDate));
-            stmt.setDate(3, java.sql.Date.valueOf(endDate));
-            ResultSet rs = stmt.executeQuery();
+        // Query to count absences from time_log where status != 'Present'
+        String absenceQuery = "SELECT COUNT(*) as absence_count " +
+                "FROM time_log " +
+                "WHERE employee_id = ? " +
+                "AND log_date BETWEEN ? AND ? " +
+                "AND status != 'Present'";
 
-            if (rs.next()) {
-                AttendanceData data = new AttendanceData();
-                data.daysWorked = rs.getInt("days_worked");
-                data.daysAbsent = rs.getInt("days_absent");
-                data.regularOTHours = rs.getDouble("regular_ot_hours");
-                data.nightDifferentialOTHours = 0.0;
-                data.specialHolidaysWorked = 0;
-                data.regularHolidaysWorked = 0;
-                data.restDaysWorked = 0;
-                data.restDayOTHours = 0.0;
-                data.restDayNightDiffOTHours = 0.0;
-                data.undertimeHours = 0.0;
-                return data;
+        // Query to count present days
+        String presentQuery = "SELECT COUNT(*) as present_count " +
+                "FROM time_log " +
+                "WHERE employee_id = ? " +
+                "AND log_date BETWEEN ? AND ? " +
+                "AND status = 'Present'";
+
+        // Query to calculate total hours worked
+        String hoursQuery = "SELECT SUM(total_hours) as total_hours " +
+                "FROM time_log " +
+                "WHERE employee_id = ? " +
+                "AND log_date BETWEEN ? AND ? " +
+                "AND status = 'Present'";
+
+        try {
+            // Get absence count
+            PreparedStatement absenceStmt = connect.prepareStatement(absenceQuery);
+            absenceStmt.setString(1, employeeId);
+            absenceStmt.setDate(2, java.sql.Date.valueOf(startDate));
+            absenceStmt.setDate(3, java.sql.Date.valueOf(endDate));
+            ResultSet absenceRs = absenceStmt.executeQuery();
+
+            if (absenceRs.next()) {
+                data.daysAbsent = absenceRs.getInt("absence_count");
             }
+
+            // Get present days count
+            PreparedStatement presentStmt = connect.prepareStatement(presentQuery);
+            presentStmt.setString(1, employeeId);
+            presentStmt.setDate(2, java.sql.Date.valueOf(startDate));
+            presentStmt.setDate(3, java.sql.Date.valueOf(endDate));
+            ResultSet presentRs = presentStmt.executeQuery();
+
+            if (presentRs.next()) {
+                data.daysWorked = presentRs.getInt("present_count");
+            }
+
+            // Get total hours worked
+            PreparedStatement hoursStmt = connect.prepareStatement(hoursQuery);
+            hoursStmt.setString(1, employeeId);
+            hoursStmt.setDate(2, java.sql.Date.valueOf(startDate));
+            hoursStmt.setDate(3, java.sql.Date.valueOf(endDate));
+            ResultSet hoursRs = hoursStmt.executeQuery();
+
+            double totalHours = 0;
+            if (hoursRs.next()) {
+                totalHours = hoursRs.getDouble("total_hours");
+                // Calculate regular OT (hours beyond 8 per day)
+                data.regularOTHours = Math.max(0, totalHours - (data.daysWorked * 8));
+            }
+
+            // Initialize other fields with default values
+            data.nightDifferentialOTHours = 0.0;
+            data.specialHolidaysWorked = 0;
+            data.regularHolidaysWorked = 0;
+            data.restDaysWorked = 0;
+            data.restDayOTHours = 0.0;
+            data.restDayNightDiffOTHours = 0.0;
+            data.undertimeHours = 0.0;
+
+            System.out.println("\n=== ATTENDANCE DATA FROM time_log ===");
+            System.out.println("Employee: " + employeeId);
+            System.out.println("Period: " + startDate + " to " + endDate);
+            System.out.println("Days Present: " + data.daysWorked);
+            System.out.println("Days Absent: " + data.daysAbsent);
+            System.out.println("Total Hours: " + totalHours);
+            System.out.println("Regular OT Hours: " + data.regularOTHours);
+            System.out.println("====================================\n");
+
+            absenceRs.close();
+            presentRs.close();
+            hoursRs.close();
+            absenceStmt.close();
+            presentStmt.close();
+            hoursStmt.close();
+
         } catch (SQLException e) {
-            System.err.println("Error fetching attendance data: " + e.getMessage());
+            System.err.println("Error getting attendance data: " + e.getMessage());
             e.printStackTrace();
         }
-        return new AttendanceData();
+
+        return data;
     }
 
-    // Add these methods to PayrollDAO.java
+    /**
+     * Get absence information for display (current/recent month)
+     */
+    public AbsenceInfo getRecentAbsenceInfo(String employeeId) {
+        AbsenceInfo info = new AbsenceInfo();
+
+        // Get absences for current month
+        String query = "SELECT COUNT(*) as absence_count " +
+                "FROM time_log " +
+                "WHERE employee_id = ? " +
+                "AND MONTH(log_date) = MONTH(CURDATE()) " +
+                "AND YEAR(log_date) = YEAR(CURDATE()) " +
+                "AND (status IS NULL OR status != 'Present')";
+
+        try (PreparedStatement pstmt = connect.prepareStatement(query)) {
+            pstmt.setString(1, employeeId);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                info.absenceCount = rs.getInt("absence_count");
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error getting recent absence info: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return info;
+    }
+
+    /**
+     * Inner class to hold absence information
+     */
+    public static class AbsenceInfo {
+        public int absenceCount;
+    }
+
+    /**
+     * Get total number of absences for an employee (all time or for a specific period)
+     */
+    public int getTotalAbsences(String employeeId) {
+        int absenceCount = 0;
+
+        // Query to count all absences where status is NOT 'Present'
+        String query = "SELECT COUNT(*) as absence_count " +
+                "FROM time_log " +
+                "WHERE employee_id = ? " +
+                "AND (status IS NULL OR status != 'Present')";
+
+        try (PreparedStatement pstmt = connect.prepareStatement(query)) {
+            pstmt.setString(1, employeeId);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                absenceCount = rs.getInt("absence_count");
+            }
+
+            System.out.println("Absences found for employee " + employeeId + ": " + absenceCount);
+
+        } catch (SQLException e) {
+            System.err.println("Error getting total absences: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return absenceCount;
+    }
+
+    /**
+     * Get absences for a specific period (for payroll computation)
+     */
+    public int getAbsencesForPeriod(String employeeId, LocalDate startDate, LocalDate endDate) {
+        int absenceCount = 0;
+
+        String query = "SELECT COUNT(*) as absence_count " +
+                "FROM time_log " +
+                "WHERE employee_id = ? " +
+                "AND log_date BETWEEN ? AND ? " +
+                "AND (status IS NULL OR status != 'Present')";
+
+        try (PreparedStatement pstmt = connect.prepareStatement(query)) {
+            pstmt.setString(1, employeeId);
+            pstmt.setDate(2, java.sql.Date.valueOf(startDate));
+            pstmt.setDate(3, java.sql.Date.valueOf(endDate));
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                absenceCount = rs.getInt("absence_count");
+            }
+
+            System.out.println("Absences for period " + startDate + " to " + endDate + ": " + absenceCount);
+
+        } catch (SQLException e) {
+            System.err.println("Error getting absences for period: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return absenceCount;
+    }
 
     /**
      * Automatically compute and save SSS, PHIC, HDMF contributions for an employee

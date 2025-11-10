@@ -263,17 +263,18 @@ public class admin2Controller {
     @FXML
     private void displayComputedPayroll(PayrollModel model, PayrollDAO.SalaryConfig config,
                                         PayrollDAO.AttendanceData attendance, double perDiem, int perDiemCount) {
-        // Display all computed values in the text fields
+        // Display all computed values
         basicPayTF.setText(String.format("₱%,.2f", model.getSemiMonthlyBasicPay()));
         overtimeTF.setText(String.format("₱%,.2f", attendance.regularOTHours * model.getHourlyRate() * 1.25));
-        absencesTF.setText(String.format("₱%,.2f", attendance.daysAbsent * model.getGrossDailyRate()));
-        numAbsencesTF.setText(String.valueOf(attendance.daysAbsent));
 
-        // Computed contributions
+        // Display absence deduction and count
+        absencesTF.setText(String.format("₱%,.2f", attendance.daysAbsent * model.getGrossDailyRate()));
+        numAbsencesTF.setText(String.valueOf(attendance.daysAbsent));  // Shows number of absences
+
+        // Contributions
         sssContributionTF.setText(String.format("₱%,.2f", model.getSSSContribution()));
         phicContributionTF.setText(String.format("₱%,.2f", model.getPHICContribution()));
 
-        // *** UPDATED: Show Pag-IBIG with visual indicator ***
         double hdmf = model.getHDMFContribution();
         if (hdmf > 0) {
             hdmfContributionTF.setText(String.format("₱%,.2f ✓", hdmf));
@@ -283,27 +284,17 @@ public class admin2Controller {
             hdmfContributionTF.setStyle("-fx-text-fill: gray;");
         }
 
-        // Computed tax
         withholdingTaxTF.setText(String.format("₱%,.2f", model.getWithholdingTax()));
-
-        // Summary
         grossPayTF.setText(String.format("₱%,.2f", model.getSemiMonthlyGrossPay()));
         totalDeductionTF.setText(String.format("₱%,.2f", model.getTotalDeductions()));
         netPayTF.setText(String.format("₱%,.2f", model.getNetPay()));
 
-        // Console output for debugging
+        // Console output
         System.out.println("\n=== COMPUTED PAYROLL ===");
         System.out.println("Period: " + selectedStartDate + " to " + selectedEndDate);
-        System.out.println("SSS: " + String.format("₱%,.2f", model.getSSSContribution()));
-        System.out.println("PHIC: " + String.format("₱%,.2f", model.getPHICContribution()));
-        System.out.println("HDMF: " + String.format("₱%,.2f", model.getHDMFContribution()) +
-                (hdmf > 0 ? " ✓ DEDUCTED" : " ✗ NOT DEDUCTED"));
-        System.out.println("Overtime: " + String.format("₱%,.2f", attendance.regularOTHours * model.getHourlyRate() * 1.25));
-        System.out.println("Absences: " + String.format("₱%,.2f", attendance.daysAbsent * model.getGrossDailyRate()));
-        System.out.println("Tax: " + String.format("₱%,.2f", model.getWithholdingTax()));
-        System.out.println("Gross Pay: " + String.format("₱%,.2f", model.getSemiMonthlyGrossPay()));
-        System.out.println("Total Deductions: " + String.format("₱%,.2f", model.getTotalDeductions()));
-        System.out.println("Net Pay: " + String.format("₱%,.2f", model.getNetPay()));
+        System.out.println("Days Worked: " + attendance.daysWorked);
+        System.out.println("Days Absent: " + attendance.daysAbsent);
+        System.out.println("Absence Deduction: " + String.format("₱%,.2f", attendance.daysAbsent * model.getGrossDailyRate()));
         System.out.println("========================\n");
     }
 
@@ -367,12 +358,13 @@ public class admin2Controller {
         // Display employee basic info
         payrollemployeeName.setText(empInfo.employeeName);
         payrollEmployeeID.setText(empInfo.employeeId);
-        basicPayTF.setText(String.format("₱%,.2f", empInfo.basicMonthlyPay / 2));
 
-        // Get salary config (NOW INCLUDES CONTRIBUTIONS)
+        // Calculate semi-monthly basic pay
+        double semiMonthlyPay = empInfo.basicMonthlyPay / 2;
+        basicPayTF.setText(String.format("₱%,.2f", semiMonthlyPay));
+
         PayrollDAO.SalaryConfig config = payrollDAO.getSalaryConfig(searchID);
         if (config != null) {
-            // Allowances
             telecoAllowance.setText(String.format("%.2f", config.telecomAllowance));
             travelAllowance.setText(String.format("%.2f", config.travelAllowance));
             riceSubsidy.setText(String.format("%.2f", config.riceSubsidy));
@@ -380,19 +372,9 @@ public class admin2Controller {
             perDeimTF.setText(String.format("%.2f", config.perDiem));
             perDeimCountTF.setText(String.valueOf(config.perDiemCount));
 
-            // *** NEW: Display contributions from salary_config ***
             sssContributionTF.setText(String.format("₱%,.2f", config.sssContribution));
-
             phicContributionTF.setText(String.format("₱%,.2f", config.phicContribution));
-
             hdmfContributionTF.setText(String.format("₱%,.2f", config.hdmfContribution));
-
-            System.out.println("\n=== LOADED FROM SALARY_CONFIG ===");
-            System.out.println("Employee: " + empInfo.employeeName);
-            System.out.println("SSS: ₱" + String.format("%,.2f", config.sssContribution));
-            System.out.println("PHIC: ₱" + String.format("%,.2f", config.phicContribution));
-            System.out.println("HDMF: ₱" + String.format("%,.2f", config.hdmfContribution));
-            System.out.println("=================================\n");
 
         } else {
             telecoAllowance.setText("0.00");
@@ -401,10 +383,37 @@ public class admin2Controller {
             nonTaxableTF.setText("0.00");
             perDeimTF.setText("0.00");
             perDeimCountTF.setText("0");
-            sssContributionTF.setText("₱0.00");
-            phicContributionTF.setText("₱0.00");
-            hdmfContributionTF.setText("₱0.00");
+            sssContributionTF.setText("0.00");
+            phicContributionTF.setText("0.00");
+            hdmfContributionTF.setText("0.00");
         }
+
+        PayrollModel previewModel = new PayrollModel();
+        previewModel.PayrollComputation(
+                empInfo.employeeId,
+                empInfo.employeeName,
+                empInfo.basicMonthlyPay,
+                empInfo.employmentStatus,
+                empInfo.dateHired,
+                empInfo.workingHoursPerDay
+        );
+
+        PayrollDAO.AbsenceInfo absenceInfo = payrollDAO.getRecentAbsenceInfo(searchID);
+
+        double absenceDeduction = previewModel.calculateAbsentDeduction(absenceInfo.absenceCount);
+        double grossDailyRate = previewModel.getGrossDailyRate();
+
+        numAbsencesTF.setText(String.valueOf(absenceInfo.absenceCount));
+
+        absencesTF.setText(String.format("₱%,.2f", absenceDeduction));
+
+        System.out.println("\n=== EMPLOYEE ABSENCE CALCULATION (via PayrollModel) ===");
+        System.out.println("Employee: " + empInfo.employeeName + " (" + searchID + ")");
+        System.out.println("Basic Monthly Salary: ₱" + String.format("%,.2f", empInfo.basicMonthlyPay));
+        System.out.println("Gross Daily Rate (from PayrollModel): ₱" + String.format("%,.2f", grossDailyRate));
+        System.out.println("Absences This Month: " + absenceInfo.absenceCount);
+        System.out.println("Absence Deduction (from PayrollModel): ₱" + String.format("%,.2f", absenceDeduction));
+        System.out.println("========================================================\n");
 
         // Get SSS Loan
         PayrollDAO.DeductionData deductions = payrollDAO.getDeductions(searchID);
@@ -414,14 +423,20 @@ public class admin2Controller {
             sssLoanTF.setText("0.00");
         }
 
-        // Clear computed fields
+        // Clear other computed fields (these will be filled during payroll computation)
         overtimeTF.clear();
-        absencesTF.clear();
-        numAbsencesTF.clear();
         withholdingTaxTF.clear();
         grossPayTF.clear();
         totalDeductionTF.clear();
         netPayTF.clear();
+
+        errorLabelManagePayroll.setStyle("-fx-text-fill: green;");
+        errorLabelManagePayroll.setText(String.format(
+                "✓ Employee loaded | Absences: %d (₱%,.2f) | Daily Rate: ₱%,.2f",
+                absenceInfo.absenceCount,
+                absenceDeduction,
+                grossDailyRate
+        ));
 
         payrollDAO.close();
     }

@@ -143,32 +143,17 @@ public class PayrollModel {
         this.slBalance = slBalance;
     }
 
-    /**
-     * *** NEW METHOD ***
-     * Set pre-computed contributions from database
-     * This bypasses the formula calculation
-     *
-     * @param sss Semi-monthly SSS contribution from database
-     * @param phic Semi-monthly PHIC contribution from database
-     * @param hdmf Semi-monthly HDMF contribution from database (0 if second period)
-     */
     public void setPreComputedContributions(double sss, double phic, double hdmf) {
         this.usePreComputedContributions = true;
         this.preComputedSSS = sss;
         this.preComputedPHIC = phic;
         this.preComputedHDMF = hdmf;
-
-        System.out.println("\n*** USING PRE-COMPUTED CONTRIBUTIONS FROM DATABASE ***");
-        System.out.println("  SSS (semi-monthly): ₱" + String.format("%,.2f", sss));
-        System.out.println("  PHIC (semi-monthly): ₱" + String.format("%,.2f", phic));
-        System.out.println("  HDMF (semi-monthly): ₱" + String.format("%,.2f", hdmf));
-        System.out.println("**************************************************\n");
     }
 
     public void computePayroll() {
         // Calculate Earnings/Gross Pay
         double basicPayForPeriod = calculateBasicPay();
-        double absentDeduction = calculateAbsentDeduction();
+        double absentDeduction = calculateAbsentDeduction(daysAbsent);
         double undertimeDeduction = calculateUndertimeDeduction();
         double regularOTPay = calculateRegularOT();
         double nightDiffOTPay = calculateNightDifferentialOT();
@@ -236,7 +221,7 @@ public class PayrollModel {
         return semiMonthlyBasicPay;
     }
 
-    private double calculateAbsentDeduction() {
+    public double calculateAbsentDeduction(int daysAbsent) {
         return daysAbsent * grossDailyRate;
     }
 
