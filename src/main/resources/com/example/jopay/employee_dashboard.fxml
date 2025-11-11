@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.Group?>
-<?import javafx.scene.chart.CategoryAxis?>
-<?import javafx.scene.chart.LineChart?>
-<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
@@ -44,15 +42,6 @@
         </Label>
 
         <ComboBox id="period_comboBox" fx:id="comboBoxPeriod" layoutX="64.0" layoutY="284.0" onAction="#handleMonthSelection" prefHeight="64.0" prefWidth="251.0" promptText="Select period" styleClass="period_comboBox" />
-
-        <LineChart layoutX="772.0" layoutY="244.0" prefHeight="340.0" prefWidth="375.0">
-            <xAxis>
-                <CategoryAxis side="BOTTOM" />
-            </xAxis>
-            <yAxis>
-                <NumberAxis side="LEFT" />
-            </yAxis>
-        </LineChart>
         <Label alignment="CENTER" layoutX="628.0" layoutY="182.0" prefHeight="64.0" prefWidth="522.0" text="Summary of Attendance">
             <font>
                 <Font name="System Italic" size="28.0" />
@@ -90,5 +79,6 @@
             <Font name="System Bold" size="20.0" />
          </font>
       </Label>
+      <PieChart fx:id="employeeAttendancePieChart" layoutX="733.0" layoutY="236.0" prefHeight="318.0" prefWidth="402.0" />
     </children>
 </AnchorPane>

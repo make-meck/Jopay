@@ -1,8 +1,12 @@
 package com.example.jopay;
 
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.ImageView;
@@ -12,6 +16,7 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Map;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
@@ -102,6 +107,8 @@ public class employeeController {
         if (!payslipsDir.exists()) {
             payslipsDir.mkdir();
         }
+
+
     }
 
     @FXML
@@ -321,5 +328,60 @@ public class employeeController {
     public void setEmployeeName(String name) {
         this.employeeName = name;
         welcomeLabel.setText("Mabuhay " + name + "!");
+    }
+
+    @FXML
+    private PieChart employeeAttendancePieChart;
+    private EmployeeDAO employeeDAO = new EmployeeDAO();
+
+    private int loggedInEmployeeId; // Set this after login
+
+    public void setLoggedInEmployeeId(int employeeId) {
+        System.out.println("=== setLoggedInEmployeeId called ===");
+        System.out.println("Employee ID: " + employeeId);
+        this.loggedInEmployeeId = employeeId;
+
+        // Make sure PieChart node is ready before loading
+        Platform.runLater(this::loadAttendancePieChart);
+    }
+
+    public void loadAttendancePieChart() {
+        System.out.println("=== loadAttendancePieChart called ===");
+        System.out.println("PieChart is null? " + (employeeAttendancePieChart == null));
+        System.out.println("Employee ID: " + loggedInEmployeeId);
+
+        if (employeeAttendancePieChart == null) {
+            System.out.println("ERROR: PieChart node is null!");
+            return;
+        }
+
+        if (loggedInEmployeeId <= 0) {
+            System.out.println("ERROR: Employee ID not set!");
+            return;
+        }
+
+        Map<String, Integer> summary = employeeDAO.getEmployeeAttendanceSummary(loggedInEmployeeId);
+        System.out.println("Attendance summary size: " + summary.size());
+        System.out.println("Attendance summary contents: " + summary);
+
+        if (summary.isEmpty()) {
+            System.out.println("WARNING: No attendance data found.");
+            PieChart.Data noData = new PieChart.Data("No Data", 1);
+            employeeAttendancePieChart.setData(FXCollections.observableArrayList(noData));
+            return;
+        }
+
+        ObservableList<PieChart.Data> pieData = FXCollections.observableArrayList();
+        summary.forEach((status, count) -> {
+            System.out.println("Adding to pie chart: " + status + " = " + count);
+            pieData.add(new PieChart.Data(status + " (" + count + ")", count));
+        });
+
+        System.out.println("PieData size: " + pieData.size());
+        employeeAttendancePieChart.setData(pieData);
+
+
+        employeeAttendancePieChart.setTitle("Your Attendance Summary");
+
     }
 }

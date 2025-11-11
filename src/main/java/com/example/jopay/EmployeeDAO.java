@@ -362,7 +362,7 @@ public class EmployeeDAO {
 
         return deptCounts;
     }
-
+    //this is for the admin dashboard, where it also tracks the attendance of the employee
     public Map<String, Integer> getWeeklyAttendanceSummary() {
         Map<String, Integer> summary = new HashMap<>();
 
@@ -389,6 +389,36 @@ public class EmployeeDAO {
         System.out.println("Weekly attendance summary: " + summary);
         return summary;
     }
+    //this is for the employee attendance
+    public Map<String, Integer> getEmployeeAttendanceSummary(int employeeId) {
+        Map<String, Integer> summary = new HashMap<>();
+
+
+        String query = """
+    SELECT status, COUNT(*) AS count
+    FROM time_log
+    WHERE employee_Id = ?
+    GROUP BY status
+""";
+
+        try (PreparedStatement stmt = connect.prepareStatement(query)) {
+            stmt.setInt(1, employeeId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String status = rs.getString("status");
+                int count = rs.getInt("count");
+                summary.put(status, count);
+                System.out.println("DAO result: " + status + " = " + count);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return summary;
+    }
+
 
 }
 

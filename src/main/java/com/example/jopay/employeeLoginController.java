@@ -1,13 +1,18 @@
 package com.example.jopay;
 
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 
 public class employeeLoginController {
@@ -30,8 +35,8 @@ public class employeeLoginController {
     @FXML
     private Button adminButton;
 
-    @FXML
     private final AutheticationHandler authService = new AutheticationHandler();
+    private EmployeeDAO employeeDAO;
 
    /* private int employeeID = 11111;
     private String password = "0000";
@@ -59,6 +64,9 @@ public class employeeLoginController {
     }
     */
 
+
+
+
     @FXML
     private void handleLogin() {
         String employeeId = employee_id.getText();
@@ -69,27 +77,28 @@ public class employeeLoginController {
             return;
         }
 
-
         Optional<Employee> employee = authService.authenticate(employeeId, password);
-
 
         if (employee.isPresent()) {
             Employee emp = employee.get();
 
-                if (emp.isActive()) {
-                    error.setText("Your account is inactive. Please contact admin.");
-                    return;
-                }
-            try {
+            if (emp.isActive()) {
+                error.setText("Your account is inactive. Please contact admin.");
+                return;
+            }
 
+            try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
                 Scene scene = new Scene(loader.load());
 
                 employeeController controller = loader.getController();
-                controller.setEmployeeName(employee.get().getEmployeeId());
 
-                String fullName = employee.get().getFirstName() + " " + employee.get().getLastName();
+
+                String fullName = emp.getFirstName() + " " + emp.getLastName();
                 controller.setEmployeeName(fullName);
+
+
+                controller.setLoggedInEmployeeId(Integer.parseInt(emp.getEmployeeId()));
 
                 Stage stage = (Stage) employee_id.getScene().getWindow();
                 stage.setScene(scene);
@@ -112,7 +121,12 @@ public class employeeLoginController {
         stage.setScene(adminLoginScene);
         stage.show();
     }
+
+
+
 }
+
+
 
 
     /*@FXML
