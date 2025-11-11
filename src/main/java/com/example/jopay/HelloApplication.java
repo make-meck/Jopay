@@ -16,10 +16,13 @@ public class HelloApplication extends Application {
         Scene scene = new Scene(fxmlLoader.load());
 
         Image icon = new Image(getClass().getResource("/com/example/jopay/logoIcon.png").toExternalForm());
+        stage.setHeight(745);
+        stage.setWidth(1250);
         stage.getIcons().add(icon);
         stage.setTitle("JOPAY");
         stage.setScene(scene);
         stage.show();
+        stage.setFullScreen(true);
     }
 
     public static void main(String[] args) {

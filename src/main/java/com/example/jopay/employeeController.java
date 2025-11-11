@@ -1,8 +1,13 @@
 package com.example.jopay;
 
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.ImageView;
@@ -17,7 +22,7 @@ import java.sql.*;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 
-import java.util.List;
+import java.util.Map;
 
 public class employeeController {
 
@@ -45,6 +50,7 @@ public class employeeController {
 
     @FXML
     private Button updateBackBtn;
+    @FXML private PieChart employeeAttendancePieChart;
 
     // Employee data
     private String employeeId;
@@ -77,10 +83,14 @@ public class employeeController {
     private double grossPay = 0.0;
     private double totalDeductions = 0.0;
     private double netPay = 0.0;
+    private int loggedInEmployeeId;
+
 
 
     @FXML
     void initialize() {
+        System.out.println("=== employeeController initialized ===");
+        System.out.println("PieChart is null? " + (employeeAttendancePieChart == null));
         // Load payroll periods from database
         loadPayrollPeriods();
 
@@ -140,32 +150,32 @@ public class employeeController {
 
         try {
             String query = """
-            SELECT 
-                pr.basic_pay,
-                pr.telecom_Allowance,
-                pr.travel_Allowance,
-                pr.rice_Subsidy,
-                pr.non_Taxable_Salary,
-                pr.per_Deim,
-                pr.per_Deim_Count,
-                pr.overtime_Pay,
-                pr.overtime_hours,
-                pr.sss_Contribution,
-                pr.phic_contribution,
-                pr.hdmf_Contibution,
-                pr.sss_Loan,
-                pr.absences,
-                pr.num_Absences,
-                pr.withholding_Tax,
-                pr.taxable_Income,
-                pr.gross_pay,
-                pr.total_Deduction,
-                pr.net_Pay
-            FROM payroll_records pr
-            WHERE pr.employee_Id = ? AND pr.period_id = ?
-            ORDER BY pr.payroll_Id DESC
-            LIMIT 1
-        """;
+                        SELECT 
+                            pr.basic_pay,
+                            pr.telecom_Allowance,
+                            pr.travel_Allowance,
+                            pr.rice_Subsidy,
+                            pr.non_Taxable_Salary,
+                            pr.per_Deim,
+                            pr.per_Deim_Count,
+                            pr.overtime_Pay,
+                            pr.overtime_hours,
+                            pr.sss_Contribution,
+                            pr.phic_contribution,
+                            pr.hdmf_Contibution,
+                            pr.sss_Loan,
+                            pr.absences,
+                            pr.num_Absences,
+                            pr.withholding_Tax,
+                            pr.taxable_Income,
+                            pr.gross_pay,
+                            pr.total_Deduction,
+                            pr.net_Pay
+                        FROM payroll_records pr
+                        WHERE pr.employee_Id = ? AND pr.period_id = ?
+                        ORDER BY pr.payroll_Id DESC
+                        LIMIT 1
+                    """;
 
             PreparedStatement stmt = dbConnect.getConnection().prepareStatement(query);
             stmt.setString(1, employeeId);
@@ -427,27 +437,24 @@ public class employeeController {
     void handleUpdatePassword() throws IOException {
         FXMLLoader updatePasswordLoader = new FXMLLoader(getClass().getResource("updatepassword.fxml"));
         Stage stage = (Stage) updatePasswordLink.getScene().getWindow();
-        Scene updatePasswordScene = new Scene(updatePasswordLoader.load());
-        stage.setScene(updatePasswordScene);
-        stage.show();
+        Parent root = updatePasswordLoader.load();
+        stage.getScene().setRoot(root);
     }
 
     @FXML
     void handleLogout() throws IOException {
         FXMLLoader employeeLoginLoader = new FXMLLoader(getClass().getResource("employeelogin.fxml"));
         Stage stage = (Stage) logoutLink.getScene().getWindow();
-        Scene employeeLoginScene = new Scene(employeeLoginLoader.load());
-        stage.setScene(employeeLoginScene);
-        stage.show();
+        Parent root = employeeLoginLoader.load();
+        stage.getScene().setRoot(root);
     }
 
     @FXML
     void handleLogoutImageClick() throws IOException {
         FXMLLoader employeeLoginLoader = new FXMLLoader(getClass().getResource("employeelogin.fxml"));
         Stage stage = (Stage) logoutImageView.getScene().getWindow();
-        Scene employeeLoginScene = new Scene(employeeLoginLoader.load());
-        stage.setScene(employeeLoginScene);
-        stage.show();
+        Parent root = employeeLoginLoader.load();
+        stage.getScene().setRoot(root);
     }
 
     private void showAlert(String message) {
@@ -461,5 +468,61 @@ public class employeeController {
     public void setEmployeeName(String name) {
         this.employeeName = name;
         welcomeLabel.setText("Mabuhay " + name + "!");
+    }
+
+
+    public void setLoggedInEmployeeId(String employeeId) {
+        System.out.println("=== setLoggedInEmployeeId called ===");
+        System.out.println("Employee ID: " + employeeId);
+
+        try {
+            this.loggedInEmployeeId = Integer.parseInt(employeeId);
+            System.out.println("Employee ID successfully parsed: " + loggedInEmployeeId);
+        } catch (NumberFormatException e) {
+            System.err.println("Invalid numeric employee ID: " + employeeId);
+            return;
+        }
+
+
+        Platform.runLater(this::loadAttendancePieChart);
+    }
+
+
+
+    public void loadAttendancePieChart() {
+        System.out.println("=== loadAttendancePieChart called ===");
+        System.out.println("PieChart is null? " + (employeeAttendancePieChart == null));
+        System.out.println("Employee ID: " + loggedInEmployeeId);
+
+        if (employeeAttendancePieChart == null) {
+            System.out.println("ERROR: PieChart node is null!");
+            return;
+        }
+
+        if (loggedInEmployeeId > 0) {
+            EmployeeDAO employeeDAO = new EmployeeDAO();
+            Map<String, Integer> summary = employeeDAO.getEmployeeAttendanceSummary(loggedInEmployeeId);
+
+            System.out.println("Attendance summary size: " + summary.size());
+            System.out.println("Attendance summary contents: " + summary);
+
+            ObservableList<PieChart.Data> pieData = FXCollections.observableArrayList();
+
+            if (summary.isEmpty()) {
+                System.out.println("WARNING: No attendance data found.");
+                pieData.add(new PieChart.Data("No Data", 1));
+            } else {
+                summary.forEach((status, count) -> {
+                    System.out.println("Adding to pie chart: " + status + " = " + count);
+                    pieData.add(new PieChart.Data(status + " (" + count + ")", count));
+                });
+            }
+
+            employeeAttendancePieChart.setData(pieData);
+            employeeAttendancePieChart.setTitle("Your Attendance Summary");
+        } else {
+            System.out.println("ERROR: Employee ID not set or invalid!");
+        }
+
     }
 }

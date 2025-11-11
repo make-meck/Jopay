@@ -413,6 +413,7 @@ public class EmployeeDAO {
         System.out.println("Weekly attendance summary: " + summary);
         return summary;
     }
+
     //this is for the employee attendance
     public Map<String, Integer> getEmployeeAttendanceSummary(int employeeId) {
         Map<String, Integer> summary = new HashMap<>();
@@ -423,7 +424,7 @@ public class EmployeeDAO {
     FROM time_log
     WHERE employee_Id = ?
     GROUP BY status
-""";
+        """;
 
         try (PreparedStatement stmt = connect.prepareStatement(query)) {
             stmt.setInt(1, employeeId);

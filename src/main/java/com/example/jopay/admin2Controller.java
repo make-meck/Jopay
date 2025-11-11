@@ -5,15 +5,18 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+
 
 import java.io.IOException;
 import java.sql.PreparedStatement;
@@ -58,6 +61,8 @@ public class admin2Controller {
     @FXML Label reportAnalysisLabel;
     @FXML Label employeeIDErrorLabel;
     @FXML TextField employeeIDToRemoveTextfield;
+    @FXML ImageView adminLogoutImage;
+    @FXML Hyperlink adminLogoutHpl;
 
     // Add Employee Fields
     @FXML TextField firstName;
@@ -281,9 +286,8 @@ public class admin2Controller {
             } else {
                 FXMLLoader fxmlLoader2 = new FXMLLoader(getClass().getResource("admin2Dashboard.fxml"));
                 Stage stage = (Stage) loginButton.getScene().getWindow();
-                Scene scene2 = new Scene(fxmlLoader2.load());
-                stage.setScene(scene2);
-                stage.show();
+                Parent root = fxmlLoader2.load();
+                stage.getScene().setRoot(root);
             }
         } catch (NumberFormatException e) {
             error.setText("Please fill in all fields.");
@@ -294,9 +298,24 @@ public class admin2Controller {
     void backButtonClick() throws IOException {
         FXMLLoader employeeDashboardLoader = new FXMLLoader(getClass().getResource("employeelogin.fxml"));
         Stage stage = (Stage) adminBackButton.getScene().getWindow();
-        Scene employeeLoginScene = new Scene(employeeDashboardLoader.load());
-        stage.setScene(employeeLoginScene);
-        stage.show();
+        Parent root = employeeDashboardLoader.load();
+        stage.getScene().setRoot(root);
+    }
+
+    @FXML
+    void adminLogoutClick() throws IOException {
+        FXMLLoader adminLoginLoader = new FXMLLoader(getClass().getResource("admin2.fxml"));
+        Stage stage = (Stage) adminLogoutHpl.getScene().getWindow();
+        Parent root = adminLoginLoader.load();
+        stage.getScene().setRoot(root);
+    }
+
+    @FXML
+    void adminLogoutImageClick() throws IOException {
+        FXMLLoader adminLoginLoader = new FXMLLoader(getClass().getResource("admin2.fxml"));
+        Stage stage = (Stage) adminLogoutImage.getScene().getWindow();
+        Parent root = adminLoginLoader.load();
+        stage.getScene().setRoot(root);
     }
 
     @FXML

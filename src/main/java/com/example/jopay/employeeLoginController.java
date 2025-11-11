@@ -70,9 +70,7 @@ public class employeeLoginController {
             return;
         }
 
-
         Optional<Employee> employee = authService.authenticate(employeeId, password);
-
 
         if (employee.isPresent()) {
             Employee emp = employee.get();
@@ -82,18 +80,15 @@ public class employeeLoginController {
                     return;
                 }
             try {
-
-                // In your login controller
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
                 Parent root = loader.load();
 
                 employeeController controller = loader.getController();
-                controller.loadEmployeeData(employeeId); // Pass the logged-in employee's ID
-
+                controller.setLoggedInEmployeeId(employeeId);
+                controller.loadEmployeeData(employeeId);
                 Stage stage = (Stage) loginButton.getScene().getWindow();
-                Scene scene = new Scene(root);
-                stage.setScene(scene);
-                stage.show();
+                stage.getScene().setRoot(root);
+
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -108,9 +103,8 @@ public class employeeLoginController {
     private void adminIconClick() throws IOException {
         FXMLLoader adminLoginLoader = new FXMLLoader(getClass().getResource("admin2.fxml"));
         Stage stage = (Stage) adminButton.getScene().getWindow();
-        Scene adminLoginScene = new Scene(adminLoginLoader.load());
-        stage.setScene(adminLoginScene);
-        stage.show();
+        Parent root = adminLoginLoader.load();
+        stage.getScene().setRoot(root);
     }
 }
 
