@@ -1,13 +1,19 @@
 package com.example.jopay;
 
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Side;
+import javafx.geometry.VPos;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
@@ -15,7 +21,10 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 
 import java.io.IOException;
@@ -24,8 +33,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import static com.example.jopay.EmployeeDAO.connect;
 
@@ -133,8 +144,9 @@ public class admin2Controller {
 
     //report analysis
     @FXML private Label headCountLabel;
-    @FXML BarChart<String, Number> departmentWiseCount;
-    @FXML PieChart attendancePieChart;
+    @FXML private BarChart<String, Number> departmentWiseCount;
+    @FXML private PieChart attendancePieChart;
+    @FXML private CategoryAxis departmentAxis;
 
 
     private ObservableList<Employee> employeeList = FXCollections.observableArrayList();
@@ -159,15 +171,12 @@ public class admin2Controller {
             setupPeriodComboBox();
         }
 
-        if (departmentWiseCount != null && employeeDAO != null) {
-
-        }
-
         setupAutoUpdateListeners();
 
         Platform.runLater(() -> {
             displayActiveEmployees();
             loadDepartmentChart();
+            //rotateDepartmentLabels();
             loadWeeklyAttendanceChart();
         });
 
@@ -1077,7 +1086,7 @@ public class admin2Controller {
         int total = employeeDAO.getActiveEmployeeCount();
         headCountLabel.setText(String.valueOf(total));
     }
-    public void loadDepartmentChart() {
+   public void loadDepartmentChart() {
         System.out.println("departmentWiseCount is null? " + (departmentWiseCount == null)); // ADD THIS
 
         if (departmentWiseCount == null) {
@@ -1106,7 +1115,108 @@ public class admin2Controller {
         departmentWiseCount.setTitle("Department Wise Headcount");
 
         System.out.println("Chart data added!");
+        Platform.runLater(() -> {
+            rotateDepartmentLabels();
+        });
     }
+    private void rotateDepartmentLabels() {
+        try {
+            // Get the CategoryAxis that you defined in FXML with fx:id="departmentAxis"
+            CategoryAxis xAxis = departmentAxis;
+
+            if (xAxis == null) {
+                System.out.println("ERROR: departmentAxis is null!");
+                return;
+            }
+
+            // Rotate each label 45 degrees
+            for (Node node : xAxis.getChildrenUnmodifiable()) {
+                if (node instanceof Text) {
+                    Text text = (Text) node;
+                    text.setRotate(-45);
+                    text.setTextOrigin(VPos.TOP);
+                }
+            }
+
+            // Add padding at bottom for rotated labels so they're not cut off
+            xAxis.setPadding(new Insets(0, 0, 50, 0));
+
+            System.out.println("Labels rotated successfully!");
+
+        } catch (Exception e) {
+            System.out.println("Error rotating labels: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+   /*public void loadDepartmentChart() {
+       System.out.println("=== LOADING DEPARTMENT CHART ===");
+
+       if (departmentWiseCount == null) {
+           System.out.println("ERROR: Chart is null!");
+           return;
+       }
+
+       // Configure the axis FIRST before loading data
+       departmentAxis.setTickLabelRotation(-45);
+
+       Map<String, Integer> deptCounts = employeeDAO.getEmployeeDepartmentCounts();
+
+       System.out.println("Department counts: " + deptCounts);
+       System.out.println("Number of departments: " + deptCounts.size());
+
+       XYChart.Series<String, Number> series = new XYChart.Series<>();
+       series.setName("Active Employees");
+
+       deptCounts.forEach((dept, count) -> {
+           System.out.println("Adding to chart: " + dept + " = " + count);
+           series.getData().add(new XYChart.Data<>(dept, count));
+       });
+
+       System.out.println("Series data size: " + series.getData().size());
+
+       departmentWiseCount.getData().clear();
+       departmentWiseCount.getData().add(series);
+       departmentWiseCount.setTitle("Department Wise Headcount");
+
+       System.out.println("Chart loaded with rotated labels!");
+   }*/
+
+
+  /* public void loadDepartmentChart() {
+       System.out.println("=== LOADING DEPARTMENT CHART ===");
+
+       if (departmentWiseCount == null) {
+           System.out.println("ERROR: Chart is null!");
+           return;
+       }
+       Map<String, Integer> deptCounts = new LinkedHashMap<>();
+       employeeDAO.getEmployeeDepartmentCounts().forEach((dept, count) -> {
+           String label = dept.length() > 15 ? dept.replaceAll(" ", "\n") : dept;
+           deptCounts.put(label, count);
+       });
+
+       System.out.println("Department counts: " + deptCounts);
+
+       XYChart.Series<String, Number> series = new XYChart.Series<>();
+       series.setName("Active Employees");
+
+       deptCounts.forEach((dept, count) -> series.getData().add(new XYChart.Data<>(dept, count)));
+
+       departmentWiseCount.getData().clear();
+       departmentWiseCount.getData().add(series);
+       departmentWiseCount.setTitle("Department Wise Headcount");
+       departmentAxis.setSide(Side.BOTTOM);     // keep departments along bottom
+       departmentAxis.setTickLabelRotation(-25); // tilt labels slightly
+       departmentAxis.setTickLabelGap(15);       // add spacing between labels
+       departmentWiseCount.setCategoryGap(50);   // space out bars
+       departmentWiseCount.setBarGap(10);// space out series
+       departmentAxis.setTickLabelFont(Font.font("Arial", 12));
+
+
+
+       System.out.println("Chart loaded with improved label spacing!");
+   }*/
+
 
     public void loadWeeklyAttendanceChart() {
         Map<String, Integer> summary = employeeDAO.getWeeklyAttendanceSummary();
