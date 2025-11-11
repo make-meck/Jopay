@@ -70,9 +70,7 @@ public class employeeLoginController {
             return;
         }
 
-
         Optional<Employee> employee = authService.authenticate(employeeId, password);
-
 
         if (employee.isPresent()) {
             Employee emp = employee.get();
@@ -82,13 +80,13 @@ public class employeeLoginController {
                     return;
                 }
             try {
-
-
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
                 Parent root = loader.load();
 
                 employeeController controller = loader.getController();
-                controller.loadEmployeeData(employeeId); // Pass the logged-in employee's ID
+                controller.setLoggedInEmployeeId(employeeId);
+                controller.loadEmployeeData(employeeId);
+
 
                 Stage stage = (Stage) loginButton.getScene().getWindow();
                 Scene scene = new Scene(root);
