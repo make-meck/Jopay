@@ -2,6 +2,7 @@ package com.example.jopay;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -42,9 +43,8 @@ public class updatePasswordController {
     void updateBackButton() throws IOException {
         FXMLLoader employeeDashboardLoader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
         Stage stage = (Stage) backButton.getScene().getWindow();
-        Scene employeeDashboardScene = new Scene(employeeDashboardLoader.load());
-        stage.setScene(employeeDashboardScene);
-        stage.show();
+        Parent root = employeeDashboardLoader.load();
+        stage.getScene().setRoot(root);
     }
 
     /*@FXML
@@ -145,14 +145,13 @@ public class updatePasswordController {
                 Employee currentEmployee = employeeDAO.findEmployeeId(EmpID).get();
 
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
-                Scene scene = new Scene(loader.load());
+                Parent root = loader.load();
 
                 employeeController controller = loader.getController();
                 controller.setEmployeeName(currentEmployee.getFirstName() + " " + currentEmployee.getLastName());
 
                 Stage stage = (Stage) loginButton.getScene().getWindow();
-                stage.setScene(scene);
-                stage.show();
+                stage.getScene().setRoot(root);
 
             }
             else {
