@@ -5,6 +5,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
@@ -436,27 +437,24 @@ public class employeeController {
     void handleUpdatePassword() throws IOException {
         FXMLLoader updatePasswordLoader = new FXMLLoader(getClass().getResource("updatepassword.fxml"));
         Stage stage = (Stage) updatePasswordLink.getScene().getWindow();
-        Scene updatePasswordScene = new Scene(updatePasswordLoader.load());
-        stage.setScene(updatePasswordScene);
-        stage.show();
+        Parent root = updatePasswordLoader.load();
+        stage.getScene().setRoot(root);
     }
 
     @FXML
     void handleLogout() throws IOException {
         FXMLLoader employeeLoginLoader = new FXMLLoader(getClass().getResource("employeelogin.fxml"));
         Stage stage = (Stage) logoutLink.getScene().getWindow();
-        Scene employeeLoginScene = new Scene(employeeLoginLoader.load());
-        stage.setScene(employeeLoginScene);
-        stage.show();
+        Parent root = employeeLoginLoader.load();
+        stage.getScene().setRoot(root);
     }
 
     @FXML
     void handleLogoutImageClick() throws IOException {
         FXMLLoader employeeLoginLoader = new FXMLLoader(getClass().getResource("employeelogin.fxml"));
         Stage stage = (Stage) logoutImageView.getScene().getWindow();
-        Scene employeeLoginScene = new Scene(employeeLoginLoader.load());
-        stage.setScene(employeeLoginScene);
-        stage.show();
+        Parent root = employeeLoginLoader.load();
+        stage.getScene().setRoot(root);
     }
 
     private void showAlert(String message) {
