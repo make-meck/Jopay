@@ -8,6 +8,10 @@ import java.util.List;
 public class PayrollDAO {
     private DatabaseConnector connect = new DatabaseConnector();
 
+    private static final double PHIC_RATE = 0.025;
+    private static final double PHIC_MIN = 250.00;   // ✓ FIXED: Changed from 500 to 250
+    private static final double PHIC_MAX = 2500.00;  // ✓ FIXED: Changed from 5000 to 2500
+
     // retrieve employee info
     public EmployeeInfo getEmployeeInfo(String employeeId) {
         String query = """
@@ -49,13 +53,9 @@ public class PayrollDAO {
             payrollModel.PayrollComputation(employeeId, "", basicMonthlySalary, "", null, 8);
 
             // Compute contributions using PayrollModel
-            double monthlySSS = computeSSSMonthly(basicMonthlySalary);
-            double monthlyPHIC = computePHICMonthly(basicMonthlySalary);
+            double semiMonthlySSS = payrollModel.getSSSContribution();
+            double semiMonthlyPHIC = payrollModel.getPHICContribution();
             double hdmfContribution = 200.00; // Fixed HDMF amount
-
-            // Convert to semi-monthly
-            double semiMonthlySSS = monthlySSS / 2;
-            double semiMonthlyPHIC = monthlyPHIC / 2;
 
             // Save to database
             String query = """
@@ -94,96 +94,6 @@ public class PayrollDAO {
         }
     }
 
-    // sss
-    private double computeSSSMonthly(double basicMonthlySalary) {
-        // Use the same SSS table logic from PayrollModel
-        return getSSSEmployeeShare(basicMonthlySalary);
-    }
-
-    // phic formula
-    private double computePHICMonthly(double basicMonthlySalary) {
-        final double PHIC_RATE = 0.025;
-        final double PHIC_MIN = 500.00;
-        final double PHIC_MAX = 5000.00;
-
-        double monthlyContribution;
-
-        if (basicMonthlySalary < 10000) {
-            monthlyContribution = PHIC_MIN;
-        } else if (basicMonthlySalary > 100000) {
-            monthlyContribution = PHIC_MAX;
-        } else {
-            // Employee share is half of total contribution
-            monthlyContribution = (basicMonthlySalary * PHIC_RATE) / 2;
-        }
-
-        return monthlyContribution;
-    }
-
-    // sss table
-    private double getSSSEmployeeShare(double monthlySalary) {
-        if (monthlySalary < 5250) return 250.00;
-        else if (monthlySalary >= 5250 && monthlySalary <= 5749.99) return 275.00;
-        else if (monthlySalary >= 5750 && monthlySalary <= 6249.99) return 300.00;
-        else if (monthlySalary >= 6250 && monthlySalary <= 6749.99) return 325.00;
-        else if (monthlySalary >= 6750 && monthlySalary <= 7249.99) return 350.00;
-        else if (monthlySalary >= 7250 && monthlySalary <= 7749.99) return 375.00;
-        else if (monthlySalary >= 7750 && monthlySalary <= 8249.99) return 400.00;
-        else if (monthlySalary >= 8250 && monthlySalary <= 8749.99) return 425.00;
-        else if (monthlySalary >= 8750 && monthlySalary <= 9249.99) return 450.00;
-        else if (monthlySalary >= 9250 && monthlySalary <= 9749.99) return 475.00;
-        else if (monthlySalary >= 9750 && monthlySalary <= 10249.99) return 500.00;
-        else if (monthlySalary >= 10250 && monthlySalary <= 10749.99) return 525.00;
-        else if (monthlySalary >= 10750 && monthlySalary <= 11249.99) return 550.00;
-        else if (monthlySalary >= 11250 && monthlySalary <= 11749.99) return 575.00;
-        else if (monthlySalary >= 11750 && monthlySalary <= 12249.99) return 600.00;
-        else if (monthlySalary >= 12250 && monthlySalary <= 12749.99) return 625.00;
-        else if (monthlySalary >= 12750 && monthlySalary <= 13249.99) return 650.00;
-        else if (monthlySalary >= 13250 && monthlySalary <= 13749.99) return 675.00;
-        else if (monthlySalary >= 13750 && monthlySalary <= 14249.99) return 700.00;
-        else if (monthlySalary >= 14250 && monthlySalary <= 14749.99) return 725.00;
-        else if (monthlySalary >= 14750 && monthlySalary <= 15249.99) return 750.00;
-        else if (monthlySalary >= 15250 && monthlySalary <= 15749.99) return 775.00;
-        else if (monthlySalary >= 15750 && monthlySalary <= 16249.99) return 800.00;
-        else if (monthlySalary >= 16250 && monthlySalary <= 16749.99) return 825.00;
-        else if (monthlySalary >= 16750 && monthlySalary <= 17249.99) return 850.00;
-        else if (monthlySalary >= 17250 && monthlySalary <= 17749.99) return 875.00;
-        else if (monthlySalary >= 17750 && monthlySalary <= 18249.99) return 900.00;
-        else if (monthlySalary >= 18250 && monthlySalary <= 18749.99) return 925.00;
-        else if (monthlySalary >= 18750 && monthlySalary <= 19249.99) return 950.00;
-        else if (monthlySalary >= 19250 && monthlySalary <= 19749.99) return 975.00;
-        else if (monthlySalary >= 19750 && monthlySalary <= 20249.99) return 1000.00;
-        else if (monthlySalary >= 20250 && monthlySalary <= 20749.99) return 1025.00;
-        else if (monthlySalary >= 20750 && monthlySalary <= 21249.99) return 1050.00;
-        else if (monthlySalary >= 21250 && monthlySalary <= 21749.99) return 1075.00;
-        else if (monthlySalary >= 21750 && monthlySalary <= 22249.99) return 1100.00;
-        else if (monthlySalary >= 22250 && monthlySalary <= 22749.99) return 1125.00;
-        else if (monthlySalary >= 22750 && monthlySalary <= 23249.99) return 1150.00;
-        else if (monthlySalary >= 23250 && monthlySalary <= 23749.99) return 1175.00;
-        else if (monthlySalary >= 23750 && monthlySalary <= 24249.99) return 1200.00;
-        else if (monthlySalary >= 24250 && monthlySalary <= 24749.99) return 1225.00;
-        else if (monthlySalary >= 24750 && monthlySalary <= 25249.99) return 1250.00;
-        else if (monthlySalary >= 25250 && monthlySalary <= 25749.99) return 1275.00;
-        else if (monthlySalary >= 25750 && monthlySalary <= 26249.99) return 1300.00;
-        else if (monthlySalary >= 26250 && monthlySalary <= 26749.99) return 1325.00;
-        else if (monthlySalary >= 26750 && monthlySalary <= 27249.99) return 1350.00;
-        else if (monthlySalary >= 27250 && monthlySalary <= 27749.99) return 1375.00;
-        else if (monthlySalary >= 27750 && monthlySalary <= 28249.99) return 1400.00;
-        else if (monthlySalary >= 28250 && monthlySalary <= 28749.99) return 1425.00;
-        else if (monthlySalary >= 28750 && monthlySalary <= 29249.99) return 1450.00;
-        else if (monthlySalary >= 29250 && monthlySalary <= 29749.99) return 1475.00;
-        else if (monthlySalary >= 29750 && monthlySalary <= 30249.99) return 1500.00;
-        else if (monthlySalary >= 30250 && monthlySalary <= 30749.99) return 1525.00;
-        else if (monthlySalary >= 30750 && monthlySalary <= 31249.99) return 1550.00;
-        else if (monthlySalary >= 31250 && monthlySalary <= 31749.99) return 1575.00;
-        else if (monthlySalary >= 31750 && monthlySalary <= 32249.99) return 1600.00;
-        else if (monthlySalary >= 32250 && monthlySalary <= 32749.99) return 1625.00;
-        else if (monthlySalary >= 32750 && monthlySalary <= 33249.99) return 1650.00;
-        else if (monthlySalary >= 33250 && monthlySalary <= 33749.99) return 1675.00;
-        else if (monthlySalary >= 33750 && monthlySalary <= 34249.99) return 1700.00;
-        else if (monthlySalary >= 34250 && monthlySalary <= 34749.99) return 1725.00;
-        else return 1800.00; // Maximum
-    }
 
     // retrieve contributions (sss, phic, hdmf)
     public ContributionData getContributions(String employeeId) {
@@ -422,13 +332,43 @@ public class PayrollDAO {
         return new DeductionData();
     }
 
+    // Update Basic Salary in employee_info
+    public boolean updateBasicSalary(String employeeId, double newMonthlyBasicSalary) {
+        String query = """
+            UPDATE employee_info
+            SET basic_Salary = ?
+            WHERE employee_Id = ?
+        """;
+
+        try (PreparedStatement stmt = connect.getConnection().prepareStatement(query)) {
+            stmt.setDouble(1, newMonthlyBasicSalary);
+            stmt.setString(2, employeeId);
+
+            int rowsAffected = stmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("✓ Basic Salary updated: ₱" + String.format("%,.2f", newMonthlyBasicSalary) +
+                        " for employee " + employeeId);
+                return true;
+            } else {
+                System.err.println("No employee found with ID: " + employeeId);
+                return false;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error updating Basic Salary: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     //  Update Per Diem in salary_config
     public boolean updatePerDiem(String employeeId, double perDiem) {
         String query = """
-        UPDATE salary_config
-        SET per_diem = ?
-        WHERE employee_Id = ?
-    """;
+            UPDATE salary_config
+            SET per_diem = ?
+            WHERE employee_Id = ?
+        """;
 
         try (PreparedStatement stmt = connect.getConnection().prepareStatement(query)) {
             stmt.setDouble(1, perDiem);
@@ -455,10 +395,10 @@ public class PayrollDAO {
     // update Per Diem Count in salary_config
     public boolean updatePerDiemCount(String employeeId, int perDiemCount) {
         String query = """
-        UPDATE salary_config
-        SET per_diem_count = ?
-        WHERE employee_Id = ?
-    """;
+            UPDATE salary_config
+            SET per_diem_count = ?
+            WHERE employee_Id = ?
+        """;
 
         try (PreparedStatement stmt = connect.getConnection().prepareStatement(query)) {
             stmt.setInt(1, perDiemCount);
@@ -517,10 +457,10 @@ public class PayrollDAO {
             } else {
                 // Insert new record
                 String insertQuery = """
-                INSERT INTO leave_balances 
-                (employee_Id, year, vl_balance, sl_balance, vl_used, sl_used)
-                VALUES (?, ?, ?, ?, 0, 0)
-            """;
+                    INSERT INTO leave_balances 
+                    (employee_Id, year, vl_balance, sl_balance, vl_used, sl_used)
+                    VALUES (?, ?, ?, ?, 0, 0)
+                """;
 
                 try (PreparedStatement insertStmt = connect.getConnection().prepareStatement(insertQuery)) {
                     insertStmt.setString(1, employeeId);
@@ -557,13 +497,13 @@ public class PayrollDAO {
     public boolean updateAllowances(String employeeId, double telecom, double travel,
                                     double rice, double nonTaxable) {
         String query = """
-        UPDATE salary_config
-        SET telecom_allowance = ?,
-            travel_allowance = ?,
-            rice_subsidy = ?,
-            non_taxable_salary = ?
-        WHERE employee_Id = ?
-    """;
+            UPDATE salary_config
+            SET telecom_allowance = ?,
+                travel_allowance = ?,
+                rice_subsidy = ?,
+                non_taxable_salary = ?
+            WHERE employee_Id = ?
+        """;
 
         try (PreparedStatement stmt = connect.getConnection().prepareStatement(query)) {
             stmt.setDouble(1, telecom);
@@ -589,12 +529,10 @@ public class PayrollDAO {
         }
     }
 
-    /**
-     * Update SSS Loan in deduction_config
-     */
+    // update sss loan
     public boolean updateSSSLoan(String employeeId, double sssLoan) {
         // Check if deduction record exists
-        String checkQuery = "SELECT COUNT(*) FROM deduction_config WHERE employee_Id = ?";
+        String checkQuery = "SELECT COUNT(*) FROM contribution_config WHERE employee_Id = ?";
 
         try (PreparedStatement checkStmt = connect.getConnection().prepareStatement(checkQuery)) {
             checkStmt.setString(1, employeeId);
@@ -605,7 +543,7 @@ public class PayrollDAO {
 
             if (recordExists) {
                 // Update existing record
-                String updateQuery = "UPDATE deduction_config SET sss_loan = ? WHERE employee_Id = ?";
+                String updateQuery = "UPDATE contribution_config SET sss_loan = ? WHERE employee_Id = ?";
 
                 try (PreparedStatement updateStmt = connect.getConnection().prepareStatement(updateQuery)) {
                     updateStmt.setDouble(1, sssLoan);
@@ -621,7 +559,7 @@ public class PayrollDAO {
                 }
             } else {
                 // Insert new record
-                String insertQuery = "INSERT INTO deduction_config (employee_Id, sss_loan) VALUES (?, ?)";
+                String insertQuery = "INSERT INTO contribution_config (employee_Id, sss_loan) VALUES (?, ?)";
 
                 try (PreparedStatement insertStmt = connect.getConnection().prepareStatement(insertQuery)) {
                     insertStmt.setString(1, employeeId);
@@ -993,7 +931,7 @@ public class PayrollDAO {
             (employee_Id, period_id, basic_pay, telecom_Allowance, travel_Allowance,
              rice_Subsidy, non_Taxable_Salary, per_Deim, per_Deim_Count,
              overtime_Pay, overtime_hours, sss_Contribution, phic_contribution,
-             hdmf_Contibution, sss_loan, absences, num_Absences,
+             hdmf_Contibution, sss_Loan, absences, num_Absences,
              taxable_income, withholding_tax, gross_pay, total_Deduction, net_Pay, status)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'DRAFT')
         """;
@@ -1005,6 +943,9 @@ public class PayrollDAO {
             conn = connect.getConnection();
             conn.setAutoCommit(false);
             stmt = conn.prepareStatement(query);
+
+            DeductionData deductions = getDeductions(employeeId);
+            double sssLoan = deductions != null ? deductions.sssLoan : 0.0;
 
             stmt.setString(1, employeeId);
             stmt.setInt(2, periodId);
@@ -1020,7 +961,7 @@ public class PayrollDAO {
             stmt.setDouble(12, model.getSSSContribution());
             stmt.setDouble(13, model.getPHICContribution());
             stmt.setDouble(14, model.getHDMFContribution());
-            stmt.setDouble(15, 0.0); // SSS loan - will be fetched from deduction_config
+            stmt.setDouble(15, sssLoan); // SSS loan - will be fetched from deduction_config
             stmt.setDouble(16, attendance.daysAbsent * model.getGrossDailyRate());
             stmt.setInt(17, attendance.daysAbsent);
             stmt.setDouble(18, model.getTaxableIncome());     // taxable_income

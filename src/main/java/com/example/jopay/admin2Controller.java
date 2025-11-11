@@ -175,9 +175,17 @@ public class admin2Controller {
     }
 
     private void setupAutoUpdateListeners() {
+        if (basicPayTF != null) {
+            basicPayTF.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+                if (wasFocused && !isNowFocused) {
+                    handleBasicPayUpdate();
+                }
+            });
+        }
+
         if (perDeimTF != null) {
             perDeimTF.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-                if (wasFocused && !isNowFocused) { // Lost focus = user finished typing
+                if (wasFocused && !isNowFocused) {
                     handlePerDiemUpdate();
                 }
             });
@@ -206,6 +214,14 @@ public class admin2Controller {
                 }
             });
         }
+
+        if (sssLoanTF != null) {
+            sssLoanTF.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+                if (wasFocused && !isNowFocused) {
+                    handleSSSLoanUpdate();
+                }
+            });
+        }
     }
 
     // retrieve period data from database
@@ -221,7 +237,7 @@ public class admin2Controller {
 
         payrollPeriodComboBox.setItems(periodItems);
 
-        // Set listener to capture selected period
+        // listener to capture selected period
         payrollPeriodComboBox.setOnAction(event -> {
             PayrollPeriodItem selected = payrollPeriodComboBox.getSelectionModel().getSelectedItem();
             if (selected != null) {
@@ -230,8 +246,8 @@ public class admin2Controller {
                 selectedPeriodId = selected.getPeriod().periodId;
 
                 // Determine period type and show info
-                boolean isFirstPeriod = selectedStartDate.getDayOfMonth() <= 11 &&
-                        selectedStartDate.getDayOfMonth() >= 25;
+                boolean isFirstPeriod = selectedStartDate.getDayOfMonth() >= 26 ||
+                        selectedStartDate.getDayOfMonth() <= 10;
                 String periodType = isFirstPeriod ? "FIRST PERIOD (11-25) - Pag-IBIG WILL be deducted" :
                         "SECOND PERIOD (26-10) - Pag-IBIG NOT deducted";
 
@@ -239,6 +255,10 @@ public class admin2Controller {
                 System.out.println("Dates: " + selectedStartDate + " to " + selectedEndDate);
                 System.out.println("Period ID: " + selectedPeriodId);
                 System.out.println("Type: " + periodType);
+
+                if (!payrollEmployeeID.getText().trim().isEmpty()) {
+                    autoRecomputePayroll();
+                }
             }
         });
 
@@ -473,7 +493,6 @@ public class admin2Controller {
             hdmfContributionTF.setText("₱0.00");
         }
 
-        // *** NEW: Get and display leave balances ***
         int currentYear = LocalDate.now().getYear();
         PayrollDAO.LeaveData leave = payrollDAO.getLeaveData(searchID, currentYear);
         if (leave != null && vlBalanceTF != null && slBalanceTF != null) {
@@ -503,7 +522,7 @@ public class admin2Controller {
         );
 
         LocalDate now = LocalDate.now();
-        boolean isFirstPeriod = now.getDayOfMonth() <= 11 && now.getDayOfMonth() >= 25;
+        boolean isFirstPeriod = now.getDayOfMonth() >= 26 || now.getDayOfMonth() <= 10;
         previewModel.setPayrollPeriod(now, now, isFirstPeriod);
 
         if (config != null) {
@@ -567,10 +586,50 @@ public class admin2Controller {
         payrollDAO.close();
     }
 
+    private void handleBasicPayUpdate() {
+        String empId = payrollEmployeeID.getText().trim();
+        if (empId.isEmpty()) return;
 
-    /**
-     * Handle Per Diem update - save to DB and recompute
-     */
+        try {
+            // Parse the basic pay from textfield (remove currency symbols)
+            String basicPayText = basicPayTF.getText().trim()
+                    .replace("₱", "")
+                    .replace(",", "");
+
+            if (basicPayText.isEmpty()) return;
+
+            double newBasicPay = Double.parseDouble(basicPayText);
+
+            // Convert semi-monthly to monthly
+            double newMonthlyBasicPay = newBasicPay * 2;
+
+            PayrollDAO dao = new PayrollDAO();
+
+            // Update basic salary in employee_info table
+            boolean updated = dao.updateBasicSalary(empId, newMonthlyBasicPay);
+
+            if (updated) {
+                System.out.println("✓ Basic Salary updated to: ₱" + String.format("%,.2f", newMonthlyBasicPay));
+
+                // Auto-recompute contributions based on new salary
+                dao.autoComputeAndSaveContributions(empId, newMonthlyBasicPay);
+
+                // Auto-recompute payroll if period is selected
+                if (selectedStartDate != null && selectedEndDate != null) {
+                    autoRecomputePayroll();
+                }
+            } else {
+                System.err.println("Failed to update Basic Salary");
+            }
+
+            dao.close();
+
+        } catch (NumberFormatException e) {
+            errorLabelManagePayroll.setText("Invalid Basic Pay value");
+            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
+        }
+    }
+
     private void handlePerDiemUpdate() {
         String empId = payrollEmployeeID.getText().trim();
         if (empId.isEmpty()) return;
@@ -587,7 +646,6 @@ public class admin2Controller {
             if (updated) {
                 System.out.println("✓ Per Diem updated to: ₱" + String.format("%,.2f", perDiem));
 
-                // Auto-recompute if period is selected
                 if (selectedStartDate != null && selectedEndDate != null) {
                     autoRecomputePayroll();
                 }
@@ -603,9 +661,7 @@ public class admin2Controller {
         }
     }
 
-    /**
-     * Handle Per Diem Count update - save to DB and recompute
-     */
+
     private void handlePerDiemCountUpdate() {
         String empId = payrollEmployeeID.getText().trim();
         if (empId.isEmpty()) return;
@@ -638,9 +694,7 @@ public class admin2Controller {
         }
     }
 
-    /**
-     * Handle VL Balance update - save to DB and recompute
-     */
+
     private void handleVLBalanceUpdate() {
         String empId = payrollEmployeeID.getText().trim();
         if (empId.isEmpty()) return;
@@ -674,9 +728,7 @@ public class admin2Controller {
         }
     }
 
-    /**
-     * Handle SL Balance update - save to DB and recompute
-     */
+
     private void handleSLBalanceUpdate() {
         String empId = payrollEmployeeID.getText().trim();
         if (empId.isEmpty()) return;
@@ -709,6 +761,38 @@ public class admin2Controller {
             errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
         }
     }
+
+    private void handleSSSLoanUpdate() {
+        String empId = payrollEmployeeID.getText().trim();
+        if (empId.isEmpty()) return;
+
+        try {
+            double sssLoan = sssLoanTF.getText().trim().isEmpty() ? 0.0 :
+                    Double.parseDouble(sssLoanTF.getText().trim().replace("₱", "").replace(",", ""));
+
+            PayrollDAO dao = new PayrollDAO();
+
+            // Update in database
+            boolean updated = dao.updateSSSLoan(empId, sssLoan);
+
+            if (updated) {
+                System.out.println("✓ SSS Loan updated to: ₱" + String.format("%,.2f", sssLoan));
+
+                if (selectedStartDate != null && selectedEndDate != null) {
+                    autoRecomputePayroll();
+                }
+            } else {
+                System.err.println("Failed to update SSS Loan");
+            }
+
+            dao.close();
+
+        } catch (NumberFormatException e) {
+            errorLabelManagePayroll.setText("Invalid SSS Loan value");
+            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
+        }
+    }
+
 
     @FXML
     private void updateComputedPayroll() {
@@ -765,9 +849,8 @@ public class admin2Controller {
                     empInfo.workingHoursPerDay
             );
 
-            // *** CRITICAL: Determine if first period (11-25) or second period (26-10) ***
-            boolean isFirstPeriod = selectedStartDate.getDayOfMonth() <= 11 &&
-                    selectedStartDate.getDayOfMonth() >= 25;
+            boolean isFirstPeriod = selectedStartDate.getDayOfMonth() >= 26 ||
+                    selectedStartDate.getDayOfMonth() <= 10;
 
             String periodType = isFirstPeriod ? "FIRST PERIOD (11-25)" : "SECOND PERIOD (26-10)";
             System.out.println("Computing for: " + periodType);
@@ -873,10 +956,8 @@ public class admin2Controller {
                     empInfo.workingHoursPerDay
             );
 
-            // Determine if first period (11-25) or second period (26-10)
-            boolean isFirstPeriod = selectedStartDate.getDayOfMonth() <= 11 &&
-                    selectedStartDate.getDayOfMonth() >= 25;
-
+            boolean isFirstPeriod = selectedStartDate.getDayOfMonth() >= 26 ||
+                    selectedStartDate.getDayOfMonth() <= 10;
             model.setPayrollPeriod(selectedStartDate, selectedEndDate, isFirstPeriod);
 
             dao.loadContributionsIntoPayrollModel(empId, model, isFirstPeriod);
@@ -951,7 +1032,6 @@ public class admin2Controller {
             return;
         }
 
-        // *** UPDATED: Use selected period ***
         if (selectedStartDate == null || selectedEndDate == null) {
             errorLabelManagePayroll.setText("Please select a payroll period");
             errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
@@ -959,13 +1039,21 @@ public class admin2Controller {
         }
 
         try {
+            // *** FIXED: Get SSS Loan from TEXTFIELD, not database ***
+            double sssLoanInput = sssLoanTF.getText().trim().isEmpty() ? 0.0 :
+                    Double.parseDouble(sssLoanTF.getText().trim().replace("₱", "").replace(",", ""));
+
+            double perDiemInput = perDeimTF.getText().trim().isEmpty() ? 0.0 :
+                    Double.parseDouble(perDeimTF.getText().trim());
+            int perDiemCountInput = perDeimCountTF.getText().trim().isEmpty() ? 0 :
+                    Integer.parseInt(perDeimCountTF.getText().trim());
+
             PayrollDAO dao = new PayrollDAO();
 
             // Get all required data
             PayrollDAO.EmployeeInfo empInfo = dao.getEmployeeInfo(empId);
             PayrollDAO.SalaryConfig config = dao.getSalaryConfig(empId);
             PayrollDAO.AttendanceData attendance = dao.getAttendanceData(empId, selectedStartDate, selectedEndDate);
-            PayrollDAO.DeductionData deductions = dao.getDeductions(empId);
 
             if (empInfo == null) {
                 errorLabelManagePayroll.setText("Employee not found");
@@ -986,8 +1074,8 @@ public class admin2Controller {
             );
 
             // Determine period type
-            boolean isFirstPeriod = selectedStartDate.getDayOfMonth() <= 11 &&
-                    selectedStartDate.getDayOfMonth() >= 25;
+            boolean isFirstPeriod = selectedStartDate.getDayOfMonth() >= 26 ||
+                    selectedStartDate.getDayOfMonth() <= 10;
             model.setPayrollPeriod(selectedStartDate, selectedEndDate, isFirstPeriod);
 
             model.setAttendanceData(
@@ -998,25 +1086,23 @@ public class admin2Controller {
                     attendance.restDayNightDiffOTHours, attendance.undertimeHours
             );
 
-            double perDiem = config != null ? config.perDiem : 0.0;
-            int perDiemCount = config != null ? config.perDiemCount : 0;
-
+            // *** FIXED: Use perDiem from textfield ***
             if (config != null) {
                 model.setAllowances(
                         config.telecomAllowance, config.travelAllowance,
                         config.riceSubsidy, config.nonTaxableSalary,
-                        perDiem, perDiemCount
+                        perDiemInput, perDiemCountInput  // Use textfield values
                 );
             } else {
-                model.setAllowances(0, 0, 0, 0, perDiem, perDiemCount);
+                model.setAllowances(0, 0, 0, 0, perDiemInput, perDiemCountInput);
             }
 
-            double sssLoan = deductions != null ? deductions.sssLoan : 0.0;
-            model.setDeductions(sssLoan);
+            // *** FIXED: Use SSS Loan from textfield ***
+            model.setDeductions(sssLoanInput);
 
             model.computePayroll();
 
-            // *** FIXED: Call savePayroll with correct 5 parameters ***
+            // Save to database
             boolean saved = dao.savePayroll(
                     empId,
                     selectedPeriodId,
@@ -1026,13 +1112,14 @@ public class admin2Controller {
             );
 
             if (saved) {
-                String periodType = isFirstPeriod ? "FIRST (11-25)" : "SECOND (26-10)";
+                String periodType = isFirstPeriod ? "FIRST (26-10)" : "SECOND (11-25)";
                 errorLabelManagePayroll.setStyle("-fx-text-fill: green;");
                 errorLabelManagePayroll.setText(String.format(
-                        "✓ Payroll saved! Period: %s | ID: %d | Net Pay: ₱%,.2f",
-                        periodType, selectedPeriodId, model.getNetPay()
+                        "✓ Payroll saved! Period: %s | ID: %d | Net Pay: ₱%,.2f | SSS Loan: ₱%,.2f",
+                        periodType, selectedPeriodId, model.getNetPay(), sssLoanInput
                 ));
                 System.out.println("Payroll saved for employee " + empId + " in period " + selectedPeriodId);
+                System.out.println("SSS Loan saved: ₱" + String.format("%,.2f", sssLoanInput));
             } else {
                 errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
                 errorLabelManagePayroll.setText("Failed to save payroll to database");
@@ -1040,6 +1127,10 @@ public class admin2Controller {
 
             dao.close();
 
+        } catch (NumberFormatException e) {
+            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
+            errorLabelManagePayroll.setText("Invalid numeric values");
+            e.printStackTrace();
         } catch (Exception e) {
             errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
             errorLabelManagePayroll.setText("Error saving payroll: " + e.getMessage());

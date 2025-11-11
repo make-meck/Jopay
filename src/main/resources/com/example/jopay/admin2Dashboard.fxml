@@ -523,7 +523,7 @@
                 </VBox>
                 <VBox id="manageEmpTextfieldPane2" layoutX="648.0" layoutY="89.0" prefHeight="346.0" prefWidth="242.0" spacing="1.0">
                     <children>
-                        <TextField fx:id="basicPayTF" editable="false" prefHeight="12.0" prefWidth="169.0" />
+                        <TextField fx:id="basicPayTF" editable="true" prefHeight="12.0" prefWidth="169.0" />
 
                         <!-- CHANGED: Single ComboBox for period selection -->
                         <ComboBox fx:id="payrollPeriodComboBox" prefHeight="26.0" prefWidth="250.0" promptText="Select Payroll Period" style="-fx-font-size: 11;">
