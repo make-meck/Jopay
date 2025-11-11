@@ -123,6 +123,12 @@
     -fx-background-color: #a4cfb7;
     -fx-text-fill: black;
 }
+.axis-label {
+    -fx-rotate: -45;
+}
 
+.chart-category-axis {
+    -fx-padding: 0 0 60 0;
+}
 
 
