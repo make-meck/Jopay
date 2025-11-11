@@ -26,7 +26,7 @@
 <AnchorPane maxHeight="Infinity" maxWidth="Infinity" prefHeight="1080.0" prefWidth="1920.0" style="-fx-background-color: white;" stylesheets="@admin2style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.jopay.admin2Controller">
     <children>
         <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#a4cfb7" height="659.0" layoutX="-20.0" layoutY="-12.0" stroke="#a4cfb7" strokeType="OUTSIDE" width="1939.0" />
-        <Rectangle fx:id="attendanceChart" fill="WHITE" height="583.0" layoutX="-21.0" layoutY="74.0" nodeOrientation="LEFT_TO_RIGHT" onMousePressed="#reportAnalysisClick" stroke="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-rotate: 0;" width="1941.0" />
+        <Rectangle fx:id="attendanceChart" fill="WHITE" height="583.0" layoutX="-34.0" layoutY="64.0" nodeOrientation="LEFT_TO_RIGHT" onMousePressed="#reportAnalysisClick" stroke="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-rotate: 0;" width="1941.0" />
         <Button fx:id="reportAnalysisButton" layoutX="62.0" layoutY="161.0" mnemonicParsing="false" onAction="#reportAnalysisClick" prefHeight="47.0" prefWidth="213.0" style="-fx-background-radius: 15;" styleClass="adminButton" text="Report Analysis">
             <opaqueInsets>
                 <Insets bottom="1.0" left="1.0" right="1.0" top="1.0" />
@@ -35,7 +35,7 @@
                 <Font size="15.0" />
             </font>
         </Button>
-        <Button fx:id="managePayrollButton" layoutX="287.0" layoutY="161.0" mnemonicParsing="false" onAction="#managePayrollClick" prefHeight="47.0" prefWidth="213.0" style="-fx-background-radius: 15;" styleClass="adminButton" text="Manage Payroll" textAlignment="CENTER">
+        <Button fx:id="managePayrollButton" layoutX="276.0" layoutY="161.0" mnemonicParsing="false" onAction="#managePayrollClick" prefHeight="47.0" prefWidth="213.0" style="-fx-background-radius: 15;" styleClass="adminButton" text="Manage Payroll" textAlignment="CENTER">
             <font>
                 <Font size="15.0" />
             </font></Button>
@@ -47,47 +47,51 @@
             <image>
                 <Image url="@JopayLogo.png" />
             </image></ImageView>
-        <AnchorPane id="reportAnalysisPane" fx:id="reportAnalysisPane" layoutX="18.0" layoutY="217.0" onMouseClicked="#reportAnalysisClick" onMousePressed="#reportAnalysisClick" prefHeight="390.0" prefWidth="1200.0">
+        <AnchorPane id="reportAnalysisPane" fx:id="reportAnalysisPane" layoutX="77.0" layoutY="231.0" onMouseClicked="#reportAnalysisClick" onMousePressed="#reportAnalysisClick" prefHeight="390.0" prefWidth="1200.0">
             <children>
-                <HBox layoutX="33.0" layoutY="28.0" prefHeight="307.0" prefWidth="1137.0" spacing="100.0">
-                    <children>
-                        <Pane>
+            <VBox fx:id="reportAnalysisBox" layoutX="722.0" prefHeight="397.0" prefWidth="373.0" spacing="10.0">
+               <children>
+                        <Pane prefHeight="178.0" prefWidth="320.0">
                             <children>
-                                <Rectangle id="reportAnalysispaBackground" arcHeight="50.0" arcWidth="50.0" fill="#a4cfb7" height="307.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="322.0" />
                                 <Label layoutX="27.0" layoutY="23.0" prefHeight="25.0" prefWidth="182.0" text="Headcount ">
                                     <font>
                                         <Font size="20.0" />
                                     </font>
                                 </Label>
-                                <Circle fill="#fdfeff" layoutX="161.0" layoutY="166.0" radius="114.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" />
-                                <Label fx:id="headCountLabel" layoutX="91.0" layoutY="86.0" prefHeight="160.0" prefWidth="160.0" textAlignment="JUSTIFY">
+                                <Rectangle id="reportAnalysispaBackground" arcHeight="50.0" arcWidth="50.0" fill="#a4cfb7" height="178.0" layoutX="20.0" layoutY="-23.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="334.0" />
+                                <Circle fill="#fdfeff" layoutX="251.0" layoutY="66.0" radius="64.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" />
+                                <Label fx:id="headCountLabel" layoutX="209.0" layoutY="2.0" prefHeight="128.0" prefWidth="100.0" text="200" textAlignment="JUSTIFY">
                                     <font>
-                                        <Font size="96.0" />
+                                        <Font size="46.0" />
                                     </font>
                                 </Label>
                             </children>
                         </Pane>
-                        <Pane layoutX="10.0" layoutY="10.0" prefHeight="319.0" prefWidth="321.0">
+                        <Pane prefHeight="218.0" prefWidth="347.0">
                             <children>
-                                <Rectangle id="reportAnalysispaBackground" arcHeight="50.0" arcWidth="50.0" fill="#a4cfb7" height="307.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="322.0" />
-                                <BarChart fx:id="departmentWiseCount" layoutX="-2.0" layoutY="18.0" prefHeight="318.0" prefWidth="324.0">
-                                    <xAxis>
-                                        <CategoryAxis fx:id="departmentAxis" prefHeight="8.0" prefWidth="258.0" side="BOTTOM" />
-                                    </xAxis>
-                                    <yAxis>
-                                        <NumberAxis side="LEFT" />
-                                    </yAxis>
-                                </BarChart>
+                                <Rectangle id="reportAnalysispaBackground" arcHeight="50.0" arcWidth="50.0" fill="#a4cfb7" height="218.0" layoutX="17.0" layoutY="-17.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="339.0" />
+                        <PieChart fx:id="attendancePieChart" layoutX="14.0" layoutY="-8.0" prefHeight="209.0" prefWidth="339.0" />
                             </children>
                         </Pane>
-                        <Pane layoutX="300.0" layoutY="10.0" prefHeight="307.0" prefWidth="339.0">
-                            <children>
-                                <Rectangle id="reportAnalysispaBackground" arcHeight="50.0" arcWidth="50.0" fill="#a4cfb7" height="307.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="339.0" />
-                        <PieChart fx:id="attendancePieChart" layoutX="2.0" layoutY="12.0" prefHeight="334.0" prefWidth="348.0" />
-                            </children>
-                        </Pane>
-                    </children>
-                </HBox>
+               </children>
+               <padding>
+                  <Insets bottom="10.0" />
+               </padding>
+            </VBox>
+                  <Pane layoutX="14.0" layoutY="22.0" prefHeight="319.0" prefWidth="670.0">
+                      <children>
+                          <Rectangle id="reportAnalysispaBackground" arcHeight="50.0" arcWidth="50.0" fill="#a4cfb7" height="307.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="635.0" />
+                          <BarChart fx:id="departmentWiseCount" barGap="10" categoryGap="20" layoutX="6.0" layoutY="23.0" prefHeight="274.0" prefWidth="624.0" stylesheets="@admin2style.css">
+                              <xAxis>
+                                  <CategoryAxis fx:id="departmentAxis" side="BOTTOM" />
+                              </xAxis>
+                              <yAxis>
+                                  <NumberAxis fx:id="employeeCountAxis" side="LEFT" />
+                              </yAxis>
+                          </BarChart>
+
+                      </children>
+                  </Pane>
             </children>
         </AnchorPane>
         <AnchorPane fx:id="pane1" layoutX="1.0" layoutY="208.0" prefHeight="436.0" prefWidth="1200.0" visible="false">

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
@@ -7,54 +8,72 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1080.0" prefWidth="1920.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.jopay.employeeLoginController">
-   <children>
-      <TextField fx:id="employee_id" layoutX="416.0" layoutY="313.0" prefHeight="46.0" prefWidth="441.0" promptText="Employee ID" style="-fx-background-color: white; -fx-border-color: a8a8a8; -fx-background-radius: 13; -fx-border-radius: 13; -fx-prompt-text-fill: #c6c6c6; -fx-padding: 0 0 0 20;">
-         <font>
-            <Font name="System Bold" size="15.0" />
-         </font>
-      </TextField>
+<VBox maxHeight="Infinity" maxWidth="Infinity" prefHeight="1080.0" prefWidth="1920.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.jopay.employeeLoginController">
+   <BorderPane style="-fx-background-color: white;" VBox.vgrow="ALWAYS">
+      <center>
+         <StackPane>
+            <VBox alignment="CENTER" maxWidth="500" prefWidth="400" spacing="10.0">
+               <ImageView fitHeight="100" preserveRatio="true">
+                  <image>
+                     <Image url="@logo.png" />
+                  </image>
+                  <VBox.margin>
+                     <Insets bottom="25.0" />
+                  </VBox.margin>
+               </ImageView>
 
-      <PasswordField fx:id="pass_word" layoutX="416.0" layoutY="371.0" prefHeight="46.0" prefWidth="441.0" promptText="Password" style="-fx-background-color: white; -fx-border-color: a8a8a8; -fx-background-radius: 13; -fx-border-radius: 13; -fx-prompt-text-fill: #c6c6c6; -fx-padding: 0 0 0 20;">
-         <font>
-            <Font name="System Bold" size="15.0" />
-         </font>
-      </PasswordField>
+               <TextField fx:id="employee_id" prefHeight="46" promptText="Employee ID" style="-fx-background-color: white; -fx-border-color: #a8a8a8; -fx-background-radius: 13; -fx-border-radius: 13; -fx-prompt-text-fill: #c6c6c6; -fx-padding: 0 0 0 20;">
+                  <font>
+                     <Font name="System Bold" size="15.0" />
+                  </font>
+               </TextField>
 
-      <Label fx:id="error" layoutX="415.0" layoutY="420.0" prefHeight="20.0" prefWidth="441.0" textFill="RED">
-         <font>
-            <Font size="13.0" />
-         </font>
-      </Label>
+               <PasswordField fx:id="pass_word" prefHeight="46" promptText="Password" style="-fx-background-color: white; -fx-border-color: #a8a8a8; -fx-background-radius: 13; -fx-border-radius: 13; -fx-prompt-text-fill: #c6c6c6; -fx-padding: 0 0 0 20;">
+                  <font>
+                     <Font name="System Bold" size="15.0" />
+                  </font>
+               </PasswordField>
 
-      <Button fx:id="backButton" layoutX="416.0" layoutY="445.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="203.0" style="-fx-background-color: #dfdfdf; -fx-background-radius: 10;" text="BACK" textFill="#0a625b">
-         <font>
-            <Font name="Arial Bold" size="17.0" />
-         </font>
-      </Button>
+               <HBox prefHeight="15.0" prefWidth="400.0">
+                  <children>
+                     <Label fx:id="error" prefHeight="19.0" style="-fx-font-size: 13;" textFill="RED" />
+                  </children>
+               </HBox>
 
-      <Button fx:id="loginButton" defaultButton="true" layoutX="653.0" layoutY="445.0" mnemonicParsing="false" onAction="#handleLogin" prefHeight="39.0" prefWidth="203.0" style="-fx-background-radius: 10;" styleClass="loginButton" stylesheets="@admin2style.css" text="LOG IN" textFill="WHITE">
-         <font>
-            <Font name="Arial Bold" size="18.0" />
-         </font>
-      </Button>
+               <HBox alignment="CENTER" spacing="20">
+                  <Button fx:id="backButton" prefHeight="39" prefWidth="212.0" style="-fx-background-color: #dfdfdf; -fx-background-radius: 10; -fx-text-fill: #0a625b;" text="BACK">
+                     <font>
+                        <Font name="Arial Bold" size="18.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="loginButton" onAction="#handleLogin" prefHeight="39" prefWidth="212.0" style="-fx-background-radius: 10;" styleClass="loginButton" stylesheets="@admin2style.css" text="LOG IN" textFill="WHITE">
+                     <font>
+                        <Font name="Arial Bold" size="18.0" />
+                     </font>
+                  </Button>
+               </HBox>
+            </VBox>
+         </StackPane>
+      </center>
 
-      <ImageView fitHeight="116.0" fitWidth="175.0" layoutX="556.0" layoutY="152.0" pickOnBounds="true" preserveRatio="true">
-         <image>
-            <Image url="@logo.png" />
-         </image>
-      </ImageView>
-
-      <Button fx:id="adminButton" layoutX="1121.0" layoutY="631.0" mnemonicParsing="false" onAction="#adminIconClick" prefHeight="33.0" prefWidth="27.0" style="-fx-background-color: white;">
-         <graphic>
-            <ImageView fitHeight="64.0" fitWidth="56.0" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@adminIcon.png" />
-               </image>
-            </ImageView>
-         </graphic>
-      </Button>
-   </children>
-</AnchorPane>
+      <bottom>
+         <AnchorPane>
+            <Button fx:id="adminButton" onAction="#adminIconClick" prefHeight="64" prefWidth="56" style="-fx-background-color: transparent;" AnchorPane.bottomAnchor="30.0" AnchorPane.rightAnchor="30.0">
+               <graphic>
+                  <ImageView fitHeight="64" fitWidth="56" preserveRatio="true">
+                     <image>
+                        <Image url="@adminIcon.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </Button>
+         </AnchorPane>
+      </bottom>
+   </BorderPane>
+</VBox>
