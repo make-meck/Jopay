@@ -393,13 +393,13 @@ public class PayrollDAO {
     public DeductionData getDeductions(String employeeId) {
         String query = """
         SELECT 
-            COALESCE(sss_Contribution, 0) as sss_contrib,
-            COALESCE(phic_Contribution, 0) as phic_contrib,
-            COALESCE(hdmf_Contribution, 0) as hdmf_contrib,
-            COALESCE(sss_Loan, 0) as sss_loan
-        FROM deduction_config
+            COALESCE(sss_contribution, 0) as sss_contrib,
+            COALESCE(phic_contribution, 0) as phic_contrib,
+            COALESCE(hdmf_contribution, 0) as hdmf_contrib,
+            COALESCE(sss_loan, 0) as sss_loan
+        FROM contribution_config
         WHERE employee_Id = ?
-        ORDER BY deduction_configID DESC
+        ORDER BY contribution_id DESC
         LIMIT 1
     """;
 
@@ -422,19 +422,432 @@ public class PayrollDAO {
         return new DeductionData();
     }
 
+    //  Update Per Diem in salary_config
+    public boolean updatePerDiem(String employeeId, double perDiem) {
+        String query = """
+        UPDATE salary_config
+        SET per_diem = ?
+        WHERE employee_Id = ?
+    """;
 
-    public boolean saveSalaryConfig(String employeeId, double telecom, double travel,
+        try (PreparedStatement stmt = connect.getConnection().prepareStatement(query)) {
+            stmt.setDouble(1, perDiem);
+            stmt.setString(2, employeeId);
+
+            int rowsAffected = stmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("✓ Per Diem updated: ₱" + String.format("%,.2f", perDiem) +
+                        " for employee " + employeeId);
+                return true;
+            } else {
+                System.err.println("No salary_config found for employee " + employeeId);
+                return false;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error updating Per Diem: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // update Per Diem Count in salary_config
+    public boolean updatePerDiemCount(String employeeId, int perDiemCount) {
+        String query = """
+        UPDATE salary_config
+        SET per_diem_count = ?
+        WHERE employee_Id = ?
+    """;
+
+        try (PreparedStatement stmt = connect.getConnection().prepareStatement(query)) {
+            stmt.setInt(1, perDiemCount);
+            stmt.setString(2, employeeId);
+
+            int rowsAffected = stmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("✓ Per Diem Count updated: " + perDiemCount +
+                        " days for employee " + employeeId);
+                return true;
+            } else {
+                System.err.println("No salary_config found for employee " + employeeId);
+                return false;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error updating Per Diem Count: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateLeaveBalance(String employeeId, int year, double balance, String leaveType) {
+        String column = leaveType.equalsIgnoreCase("VL") ? "vl_balance" : "sl_balance";
+
+        // check if record exists
+        String checkQuery = "SELECT COUNT(*) FROM leave_balances WHERE employee_Id = ? AND year = ?";
+
+        try (PreparedStatement checkStmt = connect.getConnection().prepareStatement(checkQuery)) {
+            checkStmt.setString(1, employeeId);
+            checkStmt.setInt(2, year);
+
+            ResultSet rs = checkStmt.executeQuery();
+            rs.next();
+            boolean recordExists = rs.getInt(1) > 0;
+
+            if (recordExists) {
+                // Update existing record
+                String updateQuery = "UPDATE leave_balances SET " + column + " = ? " +
+                        "WHERE employee_Id = ? AND year = ?";
+
+                try (PreparedStatement updateStmt = connect.getConnection().prepareStatement(updateQuery)) {
+                    updateStmt.setDouble(1, balance);
+                    updateStmt.setString(2, employeeId);
+                    updateStmt.setInt(3, year);
+
+                    int rowsAffected = updateStmt.executeUpdate();
+
+                    if (rowsAffected > 0) {
+                        System.out.println("✓ " + leaveType + " Balance updated: " + balance +
+                                " days for employee " + employeeId + " (year " + year + ")");
+                        return true;
+                    }
+                }
+            } else {
+                // Insert new record
+                String insertQuery = """
+                INSERT INTO leave_balances 
+                (employee_Id, year, vl_balance, sl_balance, vl_used, sl_used)
+                VALUES (?, ?, ?, ?, 0, 0)
+            """;
+
+                try (PreparedStatement insertStmt = connect.getConnection().prepareStatement(insertQuery)) {
+                    insertStmt.setString(1, employeeId);
+                    insertStmt.setInt(2, year);
+
+                    if (leaveType.equalsIgnoreCase("VL")) {
+                        insertStmt.setDouble(3, balance);
+                        insertStmt.setDouble(4, 0.0); // Default SL balance
+                    } else {
+                        insertStmt.setDouble(3, 0.0); // Default VL balance
+                        insertStmt.setDouble(4, balance);
+                    }
+
+                    int rowsAffected = insertStmt.executeUpdate();
+
+                    if (rowsAffected > 0) {
+                        System.out.println("✓ " + leaveType + " Balance created: " + balance +
+                                " days for employee " + employeeId + " (year " + year + ")");
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+
+        } catch (SQLException e) {
+            System.err.println("Error updating " + leaveType + " Balance: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Update allowances in salary_config
+    public boolean updateAllowances(String employeeId, double telecom, double travel,
+                                    double rice, double nonTaxable) {
+        String query = """
+        UPDATE salary_config
+        SET telecom_allowance = ?,
+            travel_allowance = ?,
+            rice_subsidy = ?,
+            non_taxable_salary = ?
+        WHERE employee_Id = ?
+    """;
+
+        try (PreparedStatement stmt = connect.getConnection().prepareStatement(query)) {
+            stmt.setDouble(1, telecom);
+            stmt.setDouble(2, travel);
+            stmt.setDouble(3, rice);
+            stmt.setDouble(4, nonTaxable);
+            stmt.setString(5, employeeId);
+
+            int rowsAffected = stmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("✓ Allowances updated for employee " + employeeId);
+                return true;
+            } else {
+                System.err.println("No salary_config found for employee " + employeeId);
+                return false;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error updating allowances: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Update SSS Loan in deduction_config
+     */
+    public boolean updateSSSLoan(String employeeId, double sssLoan) {
+        // Check if deduction record exists
+        String checkQuery = "SELECT COUNT(*) FROM deduction_config WHERE employee_Id = ?";
+
+        try (PreparedStatement checkStmt = connect.getConnection().prepareStatement(checkQuery)) {
+            checkStmt.setString(1, employeeId);
+
+            ResultSet rs = checkStmt.executeQuery();
+            rs.next();
+            boolean recordExists = rs.getInt(1) > 0;
+
+            if (recordExists) {
+                // Update existing record
+                String updateQuery = "UPDATE deduction_config SET sss_loan = ? WHERE employee_Id = ?";
+
+                try (PreparedStatement updateStmt = connect.getConnection().prepareStatement(updateQuery)) {
+                    updateStmt.setDouble(1, sssLoan);
+                    updateStmt.setString(2, employeeId);
+
+                    int rowsAffected = updateStmt.executeUpdate();
+
+                    if (rowsAffected > 0) {
+                        System.out.println("✓ SSS Loan updated: ₱" + String.format("%,.2f", sssLoan) +
+                                " for employee " + employeeId);
+                        return true;
+                    }
+                }
+            } else {
+                // Insert new record
+                String insertQuery = "INSERT INTO deduction_config (employee_Id, sss_loan) VALUES (?, ?)";
+
+                try (PreparedStatement insertStmt = connect.getConnection().prepareStatement(insertQuery)) {
+                    insertStmt.setString(1, employeeId);
+                    insertStmt.setDouble(2, sssLoan);
+
+                    int rowsAffected = insertStmt.executeUpdate();
+
+                    if (rowsAffected > 0) {
+                        System.out.println("✓ SSS Loan created: ₱" + String.format("%,.2f", sssLoan) +
+                                " for employee " + employeeId);
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+
+        } catch (SQLException e) {
+            System.err.println("Error updating SSS Loan: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /* public boolean updatePayroll(int payrollId, String employeeId, int periodId,
+                                 PayrollModel model, SalaryConfig config,
+                                 AttendanceData attendance) {
+        String query = """
+        UPDATE payroll_records
+        SET employee_Id = ?,
+            period_id = ?,
+            basic_pay = ?,
+            telecom_Allowance = ?,
+            travel_Allowance = ?,
+            rice_Subsidy = ?,
+            non_Taxable_Salary = ?,
+            per_Deim = ?,
+            per_Deim_Count = ?,
+            overtime_Pay = ?,
+            overtime_hours = ?,
+            sss_Contribution = ?,
+            phic_contribution = ?,
+            hdmf_Contribution = ?,
+            sss_Loan = ?,
+            absences = ?,
+            num_Absences = ?,
+            gross_pay = ?,
+            total_Deduction = ?,
+            net_Pay = ?,
+            taxable_Income = ?,
+            withholding_Tax = ?,
+            status = 'UPDATED',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE payroll_Id = ?
+    """;
+
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = connect.getConnection();
+            conn.setAutoCommit(false);
+            stmt = conn.prepareStatement(query);
+
+            stmt.setString(1, employeeId);
+            stmt.setInt(2, periodId);
+            stmt.setDouble(3, model.getSemiMonthlyBasicPay());
+            stmt.setDouble(4, config != null ? config.telecomAllowance : 0.0);
+            stmt.setDouble(5, config != null ? config.travelAllowance : 0.0);
+            stmt.setDouble(6, config != null ? config.riceSubsidy : 0.0);
+            stmt.setDouble(7, config != null ? config.nonTaxableSalary : 0.0);
+            stmt.setDouble(8, config != null ? config.perDiem : 0.0);
+            stmt.setInt(9, config != null ? config.perDiemCount : 0);
+            stmt.setDouble(10, attendance.regularOTHours * model.getHourlyRate() * 1.25);
+            stmt.setDouble(11, attendance.regularOTHours);
+            stmt.setDouble(12, model.getSSSContribution());
+            stmt.setDouble(13, model.getPHICContribution());
+            stmt.setDouble(14, model.getHDMFContribution());
+
+            // Get SSS Loan from deduction_config
+            DeductionData deductions = getDeductions(employeeId);
+            stmt.setDouble(15, deductions != null ? deductions.sssLoan : 0.0);
+
+            stmt.setDouble(16, attendance.daysAbsent * model.getGrossDailyRate());
+            stmt.setInt(17, attendance.daysAbsent);
+            stmt.setDouble(18, model.getSemiMonthlyGrossPay());
+            stmt.setDouble(19, model.getTotalDeductions());
+            stmt.setDouble(20, model.getNetPay());
+            stmt.setDouble(21, model.getTaxableIncome());
+            stmt.setDouble(22, model.getWithholdingTax());
+            stmt.setInt(23, payrollId);
+
+            int result = stmt.executeUpdate();
+            conn.commit();
+
+            if (result > 0) {
+                System.out.println("✓ Payroll record updated successfully!");
+                System.out.println("  Payroll ID: " + payrollId);
+                System.out.println("  Employee: " + employeeId);
+                System.out.println("  Period: " + periodId);
+                System.out.println("  Gross Pay: ₱" + String.format("%,.2f", model.getSemiMonthlyGrossPay()));
+                System.out.println("  Total Deductions: ₱" + String.format("%,.2f", model.getTotalDeductions()));
+                System.out.println("  Net Pay: ₱" + String.format("%,.2f", model.getNetPay()));
+            }
+
+            return result > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error updating payroll: " + e.getMessage());
+            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    System.err.println("Error rolling back transaction: " + ex.getMessage());
+                    ex.printStackTrace();
+                }
+            }
+            return false;
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    System.err.println("Error closing statement: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                } catch (SQLException e) {
+                    System.err.println("Error resetting auto-commit: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        }
+    } */
+
+    /* public Integer getExistingPayrollId(String employeeId, int periodId) {
+        String query = """
+        SELECT payroll_Id
+        FROM payroll_records
+        WHERE employee_Id = ? AND period_id = ?
+        LIMIT 1
+    """;
+
+        try (PreparedStatement stmt = connect.getConnection().prepareStatement(query)) {
+            stmt.setString(1, employeeId);
+            stmt.setInt(2, periodId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int payrollId = rs.getInt("payroll_Id");
+                System.out.println("Found existing payroll record: ID = " + payrollId);
+                return payrollId;
+            } else {
+                System.out.println("No existing payroll record found for employee " + employeeId +
+                        " in period " + periodId);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error checking existing payroll: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    } */
+
+
+    // update salary config (multiple fields at once)
+    /*public boolean updateSalaryConfig(String employeeId, SalaryConfig config) {
+        String query = """
+        UPDATE salary_config
+        SET basic_Pay = ?,
+            telecom_allowance = ?,
+            travel_allowance = ?,
+            rice_subsidy = ?,
+            non_taxable_salary = ?,
+            per_diem = ?,
+            per_diem_count = ?
+        WHERE employee_Id = ?
+    """;
+
+        try (PreparedStatement stmt = connect.getConnection().prepareStatement(query)) {
+            stmt.setDouble(1, config.basicPay);
+            stmt.setDouble(2, config.telecomAllowance);
+            stmt.setDouble(3, config.travelAllowance);
+            stmt.setDouble(4, config.riceSubsidy);
+            stmt.setDouble(5, config.nonTaxableSalary);
+            stmt.setDouble(6, config.perDiem);
+            stmt.setInt(7, config.perDiemCount);
+            stmt.setString(8, employeeId);
+
+            int rowsAffected = stmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("✓ Salary config updated completely for employee " + employeeId);
+
+                // Auto-compute contributions when basic pay changes
+                autoComputeAndSaveContributions(employeeId, config.basicPay);
+
+                return true;
+            } else {
+                System.err.println("No salary_config found for employee " + employeeId);
+                return false;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error updating salary config: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }*/
+
+
+    /* public boolean saveSalaryConfig(String employeeId, double telecom, double travel,
                                     double rice, double nonTaxable, double perDiem,
                                     int perDiemCount, LocalDate startDate, LocalDate endDate) {
 
-        // First, get employee info to compute contributions
+        // get employee info to compute contributions
         EmployeeInfo empInfo = getEmployeeInfo(employeeId);
         if (empInfo == null) {
             System.err.println("Cannot save salary config: Employee not found");
             return false;
         }
 
-        // Compute contributions using PayrollModel
+        // use PayrollModel for formulas
         PayrollModel tempModel = new PayrollModel();
         tempModel.PayrollComputation(
                 empInfo.employeeId,
@@ -445,20 +858,19 @@ public class PayrollDAO {
                 empInfo.workingHoursPerDay
         );
 
-        // Set first period to get HDMF contribution
+        // Set period to get HDMF contribution
         tempModel.setPayrollPeriod(LocalDate.now(), LocalDate.now(), true);
         tempModel.setAllowances(0, 0, 0, 0, 0, 0);
         tempModel.setDeductions(0);
         tempModel.computePayroll();
 
-        // Get monthly contributions (semi-monthly * 2)
         double monthlySSS = tempModel.getSSSContribution() * 2;
         double monthlyPHIC = tempModel.getPHICContribution() * 2;
         double monthlyHDMF = tempModel.getHDMFContribution(); // Already monthly
 
         String query = """
-            INSERT INTO salary_config 
-            (employee_Id, basic_Pay, telecom_Allowance, travel_Allowance, rice_Subsidy, 
+            INSERT INTO salary_config
+            (employee_Id, basic_Pay, telecom_Allowance, travel_Allowance, rice_Subsidy,
              non_Taxable_Salary, per_Diem, per_Diem_Count, starting_Date, end_Date)
             SELECT ?, basic_Salary, ?, ?, ?, ?, ?, ?, ?, ?
             FROM employee_info
@@ -502,7 +914,7 @@ public class PayrollDAO {
             if (result > 0) {
                 // Also update deduction_config table
                 String deductionQuery = """
-                    INSERT INTO deduction_config 
+                    INSERT INTO deduction_config
                     (employee_Id, sss_Contribution, phic_Contribution, hdmf_Contribution, sss_Loan, starting_Date, end_Date)
                     VALUES (?, ?, ?, ?, 0.00, ?, ?)
                     ON DUPLICATE KEY UPDATE
@@ -570,43 +982,8 @@ public class PayrollDAO {
                 }
             }
         }
-    }
+    }*/
 
-
-    public boolean updateDeductionContributions(String employeeId, double monthlySSS,
-                                                double monthlyPHIC, double monthlyHDMF) {
-        String query = """
-        INSERT INTO deduction_config 
-        (employee_Id, sss_Contribution, phic_Contribution, hdmf_Contribution, sss_loan)
-        VALUES (?, ?, ?, ?, 0.00)
-        ON DUPLICATE KEY UPDATE
-        sss_Contribution = VALUES(sss_contribution),
-        phic_Contribution = VALUES(philhealth_contribution),
-        hdmf_Contribution = VALUES(pagibig_contribution)
-    """;
-
-        try (PreparedStatement stmt = connect.getConnection().prepareStatement(query)) {
-            stmt.setString(1, employeeId);
-            stmt.setDouble(2, monthlySSS);
-            stmt.setDouble(3, monthlyPHIC);
-            stmt.setDouble(4, monthlyHDMF);
-
-            int result = stmt.executeUpdate();
-
-            if (result > 0) {
-                System.out.println("✓ Deduction contributions updated for employee " + employeeId);
-                System.out.println("  Monthly SSS: ₱" + String.format("%,.2f", monthlySSS));
-                System.out.println("  Monthly PHIC: ₱" + String.format("%,.2f", monthlyPHIC));
-                System.out.println("  Monthly HDMF: ₱" + String.format("%,.2f", monthlyHDMF));
-            }
-
-            return result > 0;
-        } catch (SQLException e) {
-            System.err.println("Error updating deduction contributions: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
 
 
     public boolean savePayroll(String employeeId, int periodId, PayrollModel model,
@@ -616,9 +993,9 @@ public class PayrollDAO {
             (employee_Id, period_id, basic_pay, telecom_Allowance, travel_Allowance,
              rice_Subsidy, non_Taxable_Salary, per_Deim, per_Deim_Count,
              overtime_Pay, overtime_hours, sss_Contribution, phic_contribution,
-             hdmf_Contribution, sss_Loan, absences, num_Absences,
-             gross_pay, total_Deduction, net_Pay, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'DRAFT')
+             hdmf_Contibution, sss_loan, absences, num_Absences,
+             taxable_income, withholding_tax, gross_pay, total_Deduction, net_Pay, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'DRAFT')
         """;
 
         Connection conn = null;
@@ -643,12 +1020,14 @@ public class PayrollDAO {
             stmt.setDouble(12, model.getSSSContribution());
             stmt.setDouble(13, model.getPHICContribution());
             stmt.setDouble(14, model.getHDMFContribution());
-            stmt.setDouble(15, 0.0); // SSS loan from deduction_config
+            stmt.setDouble(15, 0.0); // SSS loan - will be fetched from deduction_config
             stmt.setDouble(16, attendance.daysAbsent * model.getGrossDailyRate());
             stmt.setInt(17, attendance.daysAbsent);
-            stmt.setDouble(18, model.getSemiMonthlyGrossPay());
-            stmt.setDouble(19, model.getTotalDeductions());
-            stmt.setDouble(20, model.getNetPay());
+            stmt.setDouble(18, model.getTaxableIncome());     // taxable_income
+            stmt.setDouble(19, model.getWithholdingTax());    // withholding_tax
+            stmt.setDouble(20, model.getSemiMonthlyGrossPay());
+            stmt.setDouble(21, model.getTotalDeductions());
+            stmt.setDouble(22, model.getNetPay());
 
             int result = stmt.executeUpdate();
             conn.commit();
@@ -791,14 +1170,13 @@ public class PayrollDAO {
     // get leave data
     public LeaveData getLeaveData(String employeeId, int year) {
         String query = """
-            SELECT 
-                total_leave_balance,
-                sick_leave_balance,
-                vacation_leave_balance
-            FROM leave_balance
-            WHERE employee_Id = ? AND year = ?
-            LIMIT 1
-        """;
+        SELECT 
+            sick_leave_balance,
+            vacation_leave_balance
+        FROM leave_balance
+        WHERE employee_Id = ? AND year = ?
+        LIMIT 1
+    """;
 
         try (PreparedStatement stmt = connect.getConnection().prepareStatement(query)) {
             stmt.setString(1, employeeId);
@@ -815,7 +1193,6 @@ public class PayrollDAO {
             }
         } catch (SQLException e) {
             System.err.println("Error fetching leave data: " + e.getMessage());
-            System.err.println("Hint: Check your leave_balance table column names");
             e.printStackTrace();
         }
         return null;
@@ -825,7 +1202,7 @@ public class PayrollDAO {
         connect.close();
     }
 
-    // Helper classes to organize data
+    // data organizers
     public static class EmployeeInfo {
         public String employeeId;
         public String employeeName;
@@ -883,4 +1260,20 @@ public class PayrollDAO {
         public LocalDate payDate;
         public String status;
     }
+
+    public static class PayrollRecord {
+        public int payrollId;
+        public String employeeId;
+        public String employeeName;
+        public int periodId;
+        public String periodName;
+        public LocalDate startDate;
+        public LocalDate endDate;
+        public double basicPay;
+        public double grossPay;
+        public double totalDeduction;
+        public double netPay;
+        public String status;
+    }
+
 }

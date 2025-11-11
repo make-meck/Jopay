@@ -12,9 +12,12 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.*;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
+
+import java.util.List;
 
 public class employeeController {
 
@@ -44,57 +47,43 @@ public class employeeController {
     private Button updateBackBtn;
 
     // Employee data
-    private String employeeId = "11111";
-    private String employeeName = "Coco Martin";
-    private String employmentStatus = "Regular";
+    private String employeeId;
+    private String employeeName;
+    private String employmentStatus;
 
     // Earnings
-    private double basicPay = 7650.00;
-    private double overtime = 1995.29;
+    private double basicPay = 0.0;
+    private double overtime = 0.0;
+    private double overtimeHours = 0.0;  // ADD THIS
 
     // Allowances
-    private double telecom = 500.00;
-    private double travel = 500.00;
-    private double riceSubsidy = 1000.00;
-    private double nonTaxableSalary = 0.00;
-    private double perDiem = 3600.00;
+    private double telecom = 0.0;
+    private double travel = 0.0;
+    private double riceSubsidy = 0.0;
+    private double nonTaxableSalary = 0.0;
+    private double perDiem = 0.0;
 
     // Deductions
-    private double sssContributions = 400.00;
-    private double phicContributions = 191.25;
-    private double hdmfContributions = 200.00;
-    private double sssLoan = 323.02;
-    private double absences = 0.00;
-    private double withholdingTax = 0.00;
+    private double sssContributions = 0.0;
+    private double phicContributions = 0.0;
+    private double hdmfContributions = 0.0;
+    private double sssLoan = 0.0;
+    private double absences = 0.0;
+    private int numAbsences = 0;  // ADD THIS
+    private double withholdingTax = 0.0;
+    private double taxableIncome = 0.0;  // ADD THIS
+
+    // Summary
+    private double grossPay = 0.0;
+    private double totalDeductions = 0.0;
+    private double netPay = 0.0;
+
 
     @FXML
     void initialize() {
-        comboBoxPeriod.getItems().addAll(
-                "2024 Dec 26 - 2025 Jan 10",
-                "2025 Jan 11 - Jan 25",
-                "2025 Jan 26 - Feb 10",
-                "2025 Feb 11 - Feb 25",
-                "2025 Feb 26 - Mar 10",
-                "2025 Mar 11 - Mar 25",
-                "2025 Mar 26 - Apr 10",
-                "2025 Apr 11 - Apr 25",
-                "2025 Apr 26 - May 10",
-                "2025 May 11 - May 25",
-                "2025 May 26 - Jun 10",
-                "2025 Jun 11 - Jun 25",
-                "2025 Jun 26 - Jul 10",
-                "2025 Jul 11 - Jul 25",
-                "2025 Jul 26 - Aug 10",
-                "2025 Aug 11 - Aug 25",
-                "2025 Aug 26 - Sept 10",
-                "2025 Sept 11 - Sept 25",
-                "2025 Sept 26 - Oct 10",
-                "2025 Oct 11 - Oct 25",
-                "2025 Oct 26 - Nov 10",
-                "2025 Nov 11 - Nov 25"
-        );
+        // Load payroll periods from database
+        loadPayrollPeriods();
 
-        comboBoxPeriod.setPromptText("Select period");
         downloadLink.setVisible(false);
         downloadBtn.setVisible(false);
 
@@ -104,13 +93,161 @@ public class employeeController {
         }
     }
 
+    /**
+     * Load payroll periods from database
+     */
+    private void loadPayrollPeriods() {
+        PayrollDAO dao = new PayrollDAO();
+        java.util.List<PayrollDAO.PayrollPeriod> periods = dao.getAllPayrollPeriods();  // Use java.util.List
+
+        comboBoxPeriod.getItems().clear();
+
+        for (PayrollDAO.PayrollPeriod period : periods) {
+            comboBoxPeriod.getItems().add(period.periodName + "|" + period.periodId);
+        }
+
+        comboBoxPeriod.setPromptText("Select period");
+        dao.close();
+    }
+
+    // load employee info
+    public void loadEmployeeData(String empId) {
+        this.employeeId = empId;
+
+        PayrollDAO dao = new PayrollDAO();
+        PayrollDAO.EmployeeInfo empInfo = dao.getEmployeeInfo(empId);
+
+        if (empInfo != null) {
+            this.employeeName = empInfo.employeeName;
+            this.employmentStatus = empInfo.employmentStatus;
+
+            welcomeLabel.setText("Mabuhay " + employeeName + "!");
+
+            System.out.println("Employee data loaded: " + employeeName);
+        } else {
+            System.err.println("Failed to load employee data for ID: " + empId);
+        }
+
+        dao.close();
+    }
+
+    /**
+     * Load payroll data from database for the selected period
+     */
+    private boolean loadPayrollDataForPeriod(int periodId) {
+        PayrollDAO dao = new PayrollDAO();
+        DatabaseConnector dbConnect = new DatabaseConnector();
+
+        try {
+            String query = """
+            SELECT 
+                pr.basic_pay,
+                pr.telecom_Allowance,
+                pr.travel_Allowance,
+                pr.rice_Subsidy,
+                pr.non_Taxable_Salary,
+                pr.per_Deim,
+                pr.per_Deim_Count,
+                pr.overtime_Pay,
+                pr.overtime_hours,
+                pr.sss_Contribution,
+                pr.phic_contribution,
+                pr.hdmf_Contibution,
+                pr.sss_Loan,
+                pr.absences,
+                pr.num_Absences,
+                pr.withholding_Tax,
+                pr.taxable_Income,
+                pr.gross_pay,
+                pr.total_Deduction,
+                pr.net_Pay
+            FROM payroll_records pr
+            WHERE pr.employee_Id = ? AND pr.period_id = ?
+            ORDER BY pr.payroll_Id DESC
+            LIMIT 1
+        """;
+
+            PreparedStatement stmt = dbConnect.getConnection().prepareStatement(query);
+            stmt.setString(1, employeeId);
+            stmt.setInt(2, periodId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                // Load all payroll data
+                this.basicPay = rs.getDouble("basic_pay");
+                this.telecom = rs.getDouble("telecom_Allowance");
+                this.travel = rs.getDouble("travel_Allowance");
+                this.riceSubsidy = rs.getDouble("rice_Subsidy");
+                this.nonTaxableSalary = rs.getDouble("non_Taxable_Salary");
+                this.perDiem = rs.getDouble("per_Deim");
+                this.overtime = rs.getDouble("overtime_Pay");
+                this.overtimeHours = rs.getDouble("overtime_hours");
+                this.sssContributions = rs.getDouble("sss_Contribution");
+                this.phicContributions = rs.getDouble("phic_contribution");
+                this.hdmfContributions = rs.getDouble("hdmf_Contibution");
+                this.sssLoan = rs.getDouble("sss_Loan");
+                this.absences = rs.getDouble("absences");
+                this.numAbsences = rs.getInt("num_Absences");
+                this.withholdingTax = rs.getDouble("withholding_Tax");
+                this.taxableIncome = rs.getDouble("taxable_Income");
+                this.grossPay = rs.getDouble("gross_pay");
+                this.totalDeductions = rs.getDouble("total_Deduction");
+                this.netPay = rs.getDouble("net_Pay");
+
+                System.out.println("\n=== PAYROLL DATA LOADED ===");
+                System.out.println("Employee: " + employeeName);
+                System.out.println("Period ID: " + periodId);
+                System.out.println("Basic Pay: ₱" + String.format("%,.2f", basicPay));
+                System.out.println("Gross Pay: ₱" + String.format("%,.2f", grossPay));
+                System.out.println("Net Pay: ₱" + String.format("%,.2f", netPay));
+                System.out.println("===========================\n");
+
+                rs.close();
+                stmt.close();
+                dbConnect.close();
+                dao.close();
+                return true;
+            } else {
+                System.err.println("No payroll record found for employee " + employeeId +
+                        " in period " + periodId);
+                rs.close();
+                stmt.close();
+                dbConnect.close();
+                dao.close();
+                return false;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error loading payroll data: " + e.getMessage());
+            e.printStackTrace();
+            dbConnect.close();
+            dao.close();
+            return false;
+        }
+    }
+
     @FXML
     void handleMonthSelection() {
-        selectedPeriod = comboBoxPeriod.getValue();
+        String selection = comboBoxPeriod.getValue();
 
-        if (selectedPeriod != null && !selectedPeriod.isEmpty()) {
-            downloadLink.setVisible(true);
-            downloadBtn.setVisible(true);
+        if (selection != null && !selection.isEmpty()) {
+            // Extract period name and ID
+            String[] parts = selection.split("\\|");
+            selectedPeriod = parts[0];
+            int periodId = Integer.parseInt(parts[1]);
+
+            // Load payroll data for this period
+            boolean dataLoaded = loadPayrollDataForPeriod(periodId);
+
+            if (dataLoaded) {
+                downloadLink.setVisible(true);
+                downloadBtn.setVisible(true);
+            } else {
+                downloadLink.setVisible(false);
+                downloadBtn.setVisible(false);
+                showAlert("No payroll data found for the selected period.");
+            }
         } else {
             downloadLink.setVisible(false);
             downloadBtn.setVisible(false);
@@ -153,7 +290,6 @@ public class employeeController {
 
         java.net.URL jopayLogo = getClass().getResource("/com/example/jopay/logo.png");
         Image photo = Image.getInstance(jopayLogo);
-
         photo.scaleToFit(100, 120);
         photo.setAlignment(Element.ALIGN_CENTER);
         document.add(photo);
@@ -163,6 +299,10 @@ public class employeeController {
         empName.setSpacingAfter(5);
         document.add(empName);
 
+        Paragraph empId = new Paragraph("Employee ID: " + employeeId, normalFont);
+        empId.setSpacingAfter(5);
+        document.add(empId);
+
         Paragraph period = new Paragraph("Period: " + selectedPeriod, normalFont);
         period.setSpacingAfter(5);
         document.add(period);
@@ -171,6 +311,7 @@ public class employeeController {
         empStatus.setSpacingAfter(15);
         document.add(empStatus);
 
+        // Main table
         PdfPTable mainTable = new PdfPTable(4);
         mainTable.setWidthPercentage(100);
         float[] columnWidths = {35f, 15f, 35f, 15f};
@@ -181,9 +322,10 @@ public class employeeController {
         addCell(mainTable, "", normalFont, Rectangle.BOX);
         addCell(mainTable, "", normalFont, Rectangle.BOX);
 
+        // Overtime
         addCell(mainTable, "", normalFont, Rectangle.BOX);
         addCell(mainTable, "", normalFont, Rectangle.BOX);
-        addCell(mainTable, "Overtime", normalFont, Rectangle.BOX);
+        addCell(mainTable, "Overtime (" + String.format("%.1f hrs)", overtimeHours), normalFont, Rectangle.BOX);
         addCell(mainTable, formatAmount(overtime), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
 
         addCell(mainTable, "Allowance and De Minimis", boldFont, Rectangle.BOX);
@@ -191,6 +333,7 @@ public class employeeController {
         addCell(mainTable, "Deductions", boldFont, Rectangle.BOX);
         addCell(mainTable, "", normalFont, Rectangle.BOX);
 
+        // Allowances and Deductions
         addCell(mainTable, "Telecom", normalFont, Rectangle.BOX);
         addCell(mainTable, formatAmount(telecom), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
         addCell(mainTable, "SSS Contributions", normalFont, Rectangle.BOX);
@@ -213,13 +356,14 @@ public class employeeController {
 
         addCell(mainTable, "Per Diem", normalFont, Rectangle.BOX);
         addCell(mainTable, formatAmount(perDiem), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
-        addCell(mainTable, "", normalFont, Rectangle.BOX);
-        addCell(mainTable, "", normalFont, Rectangle.BOX);
-
-        addCell(mainTable, "", normalFont, Rectangle.BOX);
-        addCell(mainTable, "", normalFont, Rectangle.BOX);
-        addCell(mainTable, "Absences", normalFont, Rectangle.BOX);
+        addCell(mainTable, "Absences (" + numAbsences + " days)", normalFont, Rectangle.BOX);
         addCell(mainTable, formatAmount(absences), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
+
+        // Taxable Income and Withholding Tax
+        addCell(mainTable, "", normalFont, Rectangle.BOX);
+        addCell(mainTable, "", normalFont, Rectangle.BOX);
+        addCell(mainTable, "Taxable Income", normalFont, Rectangle.BOX);
+        addCell(mainTable, formatAmount(taxableIncome), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
 
         addCell(mainTable, "", normalFont, Rectangle.BOX);
         addCell(mainTable, "", normalFont, Rectangle.BOX);
@@ -228,10 +372,7 @@ public class employeeController {
 
         document.add(mainTable);
 
-        double grossPay = basicPay + overtime + telecom + travel + riceSubsidy + perDiem;
-        double totalDeductions = sssContributions + phicContributions + hdmfContributions + sssLoan + absences + withholdingTax;
-        double netPay = grossPay - totalDeductions;
-
+        // Summary table
         PdfPTable summaryTable = new PdfPTable(2);
         summaryTable.setWidthPercentage(100);
         summaryTable.setSpacingBefore(20);
@@ -257,7 +398,6 @@ public class employeeController {
         summaryTable.addCell(netPayAmount);
 
         document.add(summaryTable);
-
         document.close();
     }
 

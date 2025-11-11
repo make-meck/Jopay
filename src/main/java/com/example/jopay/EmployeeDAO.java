@@ -35,29 +35,53 @@ public class EmployeeDAO {
 
     // find the employee by their employee_ID
     public Optional<Employee> findEmployeeId(String employeeId) throws SQLException {
-        String findEmp = """
-                    SELECT ea.employee_Id, ea.employee_password, ei.employee_FirstName, 
-                           ei.employee_LastName, ei.is_Active
-                    FROM employee_account ea
-                    JOIN employee_info ei ON ea.employee_Id = ei.employee_Id
-                    WHERE ea.employee_Id = ?
-                """;
+        String query = """
+            SELECT ei.employee_Id, ei.employee_FirstName, ei.employee_LastName,
+                ei.employee_MiddleName, ei.employee_Department, ei.employment_Status,
+                ei.employee_Title, ei.basic_Salary, ei.date_Hired, 
+                ei.employee_DOB, ei.is_Active, ea.employee_password
+            FROM employee_info ei
+            JOIN employee_account ea ON ei.employee_Id = ea.employee_Id
+            WHERE ei.employee_Id = ?
+        """;
 
-        try (PreparedStatement stmt = connect.prepareStatement(findEmp)) {
+        try (PreparedStatement stmt = connect.prepareStatement(query)) {
             stmt.setString(1, employeeId);
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
                 Employee employee = new Employee();
                 employee.setEmployeeId(rs.getString("employee_Id"));
-                employee.setPassword(rs.getString("employee_password"));
                 employee.setFirstName(rs.getString("employee_FirstName"));
                 employee.setLastName(rs.getString("employee_LastName"));
+                employee.setMiddleName(rs.getString("employee_MiddleName"));
+                employee.setDepartment(rs.getString("employee_Department"));
+                employee.setEmploymentStatus(rs.getString("employment_Status"));
+                employee.setTitle(rs.getString("employee_Title"));
+                employee.setBasicSalary(rs.getDouble("basic_Salary"));
+                employee.setDateHired(rs.getString("date_Hired"));
+
+                // Handle DOB which might be null
+                if (rs.getDate("employee_DOB") != null) {
+                    employee.setDob(rs.getDate("employee_DOB").toLocalDate());
+                }
+
                 employee.setActive(rs.getBoolean("is_Active"));
+                employee.setPassword(rs.getString("employee_password"));
+
+                System.out.println("✓ Found employee: " + employee.getFullName() + " (Active: " + employee.isActive() + ")");
+
                 return Optional.of(employee);
+            } else {
+                System.out.println("✗ Employee not found: " + employeeId);
+                return Optional.empty();
             }
+
+        } catch (SQLException e) {
+            System.err.println("Error finding employee by ID: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
-        return Optional.empty();
     }
 
     //updates the employee password

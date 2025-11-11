@@ -2,6 +2,7 @@ package com.example.jopay;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -82,16 +83,15 @@ public class employeeLoginController {
                 }
             try {
 
+                // In your login controller
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
-                Scene scene = new Scene(loader.load());
+                Parent root = loader.load();
 
                 employeeController controller = loader.getController();
-                controller.setEmployeeName(employee.get().getEmployeeId());
+                controller.loadEmployeeData(employeeId); // Pass the logged-in employee's ID
 
-                String fullName = employee.get().getFirstName() + " " + employee.get().getLastName();
-                controller.setEmployeeName(fullName);
-
-                Stage stage = (Stage) employee_id.getScene().getWindow();
+                Stage stage = (Stage) loginButton.getScene().getWindow();
+                Scene scene = new Scene(root);
                 stage.setScene(scene);
                 stage.show();
 
