@@ -75,10 +75,10 @@ public class employeeLoginController {
         if (employee.isPresent()) {
             Employee emp = employee.get();
 
-                if (!emp.isActive()) {
-                    error.setText("Your account is inactive. Please contact admin.");
-                    return;
-                }
+            if (!emp.isActive()) {
+                error.setText("Your account is inactive. Please contact admin.");
+                return;
+            }
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
                 Parent root = loader.load();
@@ -86,9 +86,9 @@ public class employeeLoginController {
                 employeeController controller = loader.getController();
                 controller.setLoggedInEmployeeId(employeeId);
                 controller.loadEmployeeData(employeeId);
+
                 Stage stage = (Stage) loginButton.getScene().getWindow();
                 stage.getScene().setRoot(root);
-
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -98,7 +98,6 @@ public class employeeLoginController {
             error.setText("Invalid Employee ID or Password.");
         }
     }
-
     @FXML
     private void adminIconClick() throws IOException {
         FXMLLoader adminLoginLoader = new FXMLLoader(getClass().getResource("admin2.fxml"));
