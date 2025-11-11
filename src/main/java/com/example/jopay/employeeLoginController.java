@@ -60,57 +60,101 @@ public class employeeLoginController {
     }
     */
 
-    @FXML
-    private void handleLogin() {
-        String employeeId = employee_id.getText();
-        String password = pass_word.getText();
+//    @FXML
+//    private void handleLogin() {
+//        String employeeId = employee_id.getText();
+//        String password = pass_word.getText();
+//
+//        if (employeeId.isEmpty() || password.isEmpty()) {
+//            error.setText("Please fill in all fields.");
+//            return;
+//        }
+//
+//        Optional<Employee> employee = authService.authenticate(employeeId, password);
+//
+//        if (employee.isPresent()) {
+//            Employee emp = employee.get();
+//
+//            if (!emp.isActive()) {
+//                error.setText("Your account is inactive. Please contact admin.");
+//                return;
+//            }
+//            try {
+//                FXMLLoader loader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
+//                Parent root = loader.load();
+//
+//                employeeController controller = loader.getController();
+//                controller.loadEmployeeData(employeeId);
+//
+//                Stage stage = (Stage) loginButton.getScene().getWindow();
+//                Scene scene = new Scene(root);
+//                stage.setScene(scene);
+//                // Remove stage.show() and stage.setFullScreen(true)
+//                // The stage is already showing and already fullscreen!
+//
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//                error.setText("Error loading dashboard.");
+//            }
+//        } else {
+//            error.setText("Invalid Employee ID or Password.");
+//        }
+//    }
+//
 
-        if (employeeId.isEmpty() || password.isEmpty()) {
-            error.setText("Please fill in all fields.");
+@FXML
+private void handleLogin() {
+    String employeeId = employee_id.getText();
+    String password = pass_word.getText();
+
+    if (employeeId.isEmpty() || password.isEmpty()) {
+        error.setText("Please fill in all fields.");
+        return;
+    }
+
+    Optional<Employee> employee = authService.authenticate(employeeId, password);
+
+    if (employee.isPresent()) {
+        Employee emp = employee.get();
+
+        if (!emp.isActive()) {
+            error.setText("Your account is inactive. Please contact admin.");
             return;
         }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
+            Parent root = loader.load();
 
+            employeeController controller = loader.getController();
+            controller.loadEmployeeData(employeeId);
 
-        Optional<Employee> employee = authService.authenticate(employeeId, password);
+            Stage stage = (Stage) loginButton.getScene().getWindow();
+            stage.getScene().setRoot(root);
 
-
-        if (employee.isPresent()) {
-            Employee emp = employee.get();
-
-                if (!emp.isActive()) {
-                    error.setText("Your account is inactive. Please contact admin.");
-                    return;
-                }
-            try {
-
-
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
-                Parent root = loader.load();
-
-                employeeController controller = loader.getController();
-                controller.loadEmployeeData(employeeId); // Pass the logged-in employee's ID
-
-                Stage stage = (Stage) loginButton.getScene().getWindow();
-                Scene scene = new Scene(root);
-                stage.setScene(scene);
-                stage.show();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                error.setText("Error loading dashboard.");
-            }
-        } else {
-            error.setText("Invalid Employee ID or Password.");
+        } catch (IOException e) {
+            e.printStackTrace();
+            error.setText("Error loading dashboard.");
         }
+    } else {
+        error.setText("Invalid Employee ID or Password.");
     }
+}
+
+//    @FXML
+//    private void adminIconClick() throws IOException {
+//        FXMLLoader adminLoginLoader = new FXMLLoader(getClass().getResource("admin2.fxml"));
+//        Stage stage = (Stage) adminButton.getScene().getWindow();
+//        Scene adminLoginScene = new Scene(adminLoginLoader.load());
+//        stage.setScene(adminLoginScene);
+//        // Remove stage.show() and stage.setFullScreen(true)
+//    }
 
     @FXML
     private void adminIconClick() throws IOException {
         FXMLLoader adminLoginLoader = new FXMLLoader(getClass().getResource("admin2.fxml"));
         Stage stage = (Stage) adminButton.getScene().getWindow();
-        Scene adminLoginScene = new Scene(adminLoginLoader.load());
-        stage.setScene(adminLoginScene);
-        stage.show();
+        Parent root = adminLoginLoader.load();
+        stage.getScene().setRoot(root);
     }
 }
 

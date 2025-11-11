@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.Group?>
 <?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Hyperlink?>
@@ -8,77 +7,120 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="628.0" prefWidth="1200.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.jopay.employeeController">
-    <children>
-        <Group layoutX="418.0" layoutY="355.0" />
-        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#a4cfb7" height="628.0" layoutX="1.0" layoutY="1.0" stroke="#a4cfb7" strokeType="OUTSIDE" width="1200.0" />
-        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="WHITE" height="592.0" layoutY="68.0" nodeOrientation="LEFT_TO_RIGHT" stroke="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" width="1202.0" />
-        <Label id="year_period" fx:id="welcomeLabel" alignment="CENTER" layoutX="-117.0" layoutY="83.0" prefHeight="64.0" prefWidth="809.0" text="Mabuhay, Mr. Coco Martin!" textFill="#0a625b">
-            <font>
-                <Font name="System Bold" size="38.0" />
-            </font>
-        </Label>
-        <ImageView fitHeight="62.0" fitWidth="182.0" layoutX="14.0" layoutY="6.0" pickOnBounds="true" preserveRatio="true">
-            <image>
-                <Image url="@JopayLogo.png" />
-            </image>
-        </ImageView>
+<VBox maxHeight="Infinity" maxWidth="Infinity" prefHeight="1080.0" prefWidth="1920.0"
+      stylesheets="@style.css"
+      xmlns="http://javafx.com/javafx/25"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.jopay.employeeController">
 
-        <ImageView fitHeight="54.0" fitWidth="200.0" layoutX="14.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true" />
-        <Label alignment="CENTER" layoutX="-36.0" layoutY="115.0" prefHeight="64.0" prefWidth="522.0" text="Here are the latest update on your payslip." textFill="#797979">
-            <font>
-                <Font size="20.0" />
-            </font>
-        </Label>
+    <AnchorPane maxHeight="Infinity" maxWidth="Infinity" VBox.vgrow="ALWAYS">
+        <children>
 
-        <Rectangle id="employee_panel" arcHeight="20.0" arcWidth="20.0" fill="#a4cfb7" height="405.0" layoutX="28.0" layoutY="177.0" stroke="TRANSPARENT" strokeType="INSIDE" styleClass="employee_panel" width="675.0" />
-        <Label alignment="CENTER" layoutX="-140.0" layoutY="189.0" prefHeight="64.0" prefWidth="522.0" text="Payslips">
-            <font>
-                <Font name="System Bold" size="33.0" />
-            </font>
-        </Label>
+            <Rectangle fill="WHITE" stroke="WHITE" strokeType="OUTSIDE" strokeWidth="0.0"
+                       AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                       AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0" />
 
-        <ComboBox id="period_comboBox" fx:id="comboBoxPeriod" layoutX="64.0" layoutY="284.0" onAction="#handleMonthSelection" prefHeight="64.0" prefWidth="251.0" promptText="Select period" styleClass="period_comboBox" />
-        <Label alignment="CENTER" layoutX="628.0" layoutY="182.0" prefHeight="64.0" prefWidth="522.0" text="Summary of Attendance">
-            <font>
-                <Font name="System Italic" size="28.0" />
-            </font>
-        </Label>
+            <Rectangle fill="#a4cfb7" stroke="#a4cfb7" strokeType="OUTSIDE"
+                       AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                       AnchorPane.topAnchor="0.0" height="175.0" />
 
-        <Hyperlink id="update_password" fx:id="updatePasswordLink" layoutX="1044.0" layoutY="89.0" onAction="#handleUpdatePassword" text="Update password" textFill="#0a625b" underline="true">
-            <font>
-                <Font name="System Bold" size="13.0" />
-            </font>
-        </Hyperlink>
+            <Pane AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                  AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                <children>
 
-        <ImageView fx:id="logoutImageView" fitHeight="35.0" fitWidth="30.0" layoutX="1121.0" layoutY="21.0" onMouseClicked="#handleLogoutImageClick" pickOnBounds="true" preserveRatio="true" style="-fx-cursor: hand;">
-            <image>
-                <Image url="@logoutbutton.png" />
-            </image>
-        </ImageView>
-        <Hyperlink fx:id="logoutLink" layoutX="1072.0" layoutY="25.0" onAction="#handleLogout" text="Logout" textFill="#0a625b" />
+                    <ImageView fitHeight="62.0" fitWidth="182.0" layoutX="14.0" layoutY="6.0"
+                               pickOnBounds="true" preserveRatio="true">
+                        <image>
+                            <Image url="@JopayLogo.png" />
+                        </image>
+                    </ImageView>
 
-        <Hyperlink fx:id="downloadLink" layoutX="487.0" layoutY="291.0" onAction="#handleDownloadPayslip" prefHeight="36.0" prefWidth="144.0" text="Download payslip PDF" textFill="WHITE" visible="true">
-            <font>
-                <Font name="System Bold" size="13.0" />
-            </font>
-        </Hyperlink>
-        <ImageView id="download_button" fx:id="downloadBtn" fitHeight="36.0" fitWidth="30.0" layoutX="623.0" layoutY="294.0" onMouseClicked="#handleDownloadPayslip" pickOnBounds="true" preserveRatio="true" visible="true">
-            <image>
-                <Image url="@downloadbutton.png" />
-            </image>
-            <clip>
-                <Rectangle arcHeight="15.0" arcWidth="15.0" height="30.0" width="30.0" />
-            </clip>
-        </ImageView>
-      <Label alignment="CENTER" layoutX="-170.0" layoutY="236.0" prefHeight="64.0" prefWidth="522.0" text="2025" textFill="#0a625b">
-         <font>
-            <Font name="System Bold" size="20.0" />
-         </font>
-      </Label>
-      <PieChart fx:id="employeeAttendancePieChart" layoutX="733.0" layoutY="236.0" prefHeight="318.0" prefWidth="402.0" />
-    </children>
-</AnchorPane>
+                    <Label id="year_period" fx:id="welcomeLabel" alignment="TOP_LEFT" layoutX="39.0" layoutY="85.0"
+                           prefHeight="64.0" prefWidth="600.0" text="Mabuhay, Mr. Coco Martin!" textFill="#0a625b">
+                        <font>
+                            <Font name="System Bold" size="38.0" />
+                        </font>
+                    </Label>
+
+                    <Label layoutX="41.0" layoutY="140.0" prefHeight="30.0" prefWidth="495.0"
+                           text="Here are the latest update on your payslip." textFill="#797979">
+                        <font>
+                            <Font size="20.0" />
+                        </font>
+                    </Label>
+
+                    <Rectangle arcHeight="20.0" arcWidth="20.0" fill="#a4cfb7" height="405.0"
+                               layoutX="28.0" layoutY="177.0" stroke="TRANSPARENT" strokeType="INSIDE" width="675.0" />
+
+                    <Label alignment="CENTER" layoutX="28.0" layoutY="189.0" prefHeight="64.0" prefWidth="201.0" text="Payslips">
+                        <font>
+                            <Font name="System Bold" size="33.0" />
+                        </font>
+                    </Label>
+
+                    <Label layoutX="67.0" layoutY="239.0" prefHeight="40.0" prefWidth="127.0" text="2025" textFill="#0a625b">
+                        <font>
+                            <Font name="System Bold" size="20.0" />
+                        </font>
+                    </Label>
+
+                    <ComboBox id="period_comboBox" fx:id="comboBoxPeriod" layoutX="64.0" layoutY="284.0"
+                              onAction="#handleMonthSelection" prefHeight="64.0" prefWidth="251.0"
+                              promptText="Select period" styleClass="period_comboBox" />
+
+                    <Hyperlink fx:id="downloadLink" layoutX="487.0" layoutY="291.0" onAction="#handleDownloadPayslip"
+                               prefHeight="36.0" prefWidth="144.0" text="Download payslip PDF" textFill="WHITE" visible="true">
+                        <font>
+                            <Font name="System Bold" size="13.0" />
+                        </font>
+                    </Hyperlink>
+
+                    <ImageView id="download_button" fx:id="downloadBtn" fitHeight="36.0" fitWidth="30.0"
+                               layoutX="623.0" layoutY="294.0" onMouseClicked="#handleDownloadPayslip"
+                               pickOnBounds="true" preserveRatio="true" visible="true">
+                        <image>
+                            <Image url="@downloadbutton.png" />
+                        </image>
+                        <clip>
+                            <Rectangle arcHeight="15.0" arcWidth="15.0" height="30.0" width="30.0" />
+                        </clip>
+                    </ImageView>
+
+                    <Label alignment="CENTER" layoutX="730.0" layoutY="182.0" prefHeight="64.0" prefWidth="400.0"
+                           text="Summary of Attendance">
+                        <font>
+                            <Font name="System Italic" size="28.0" />
+                        </font>
+                    </Label>
+
+                    <PieChart fx:id="employeeAttendancePieChart" layoutX="733.0" layoutY="236.0"
+                              prefHeight="318.0" prefWidth="402.0" />
+                </children>
+            </Pane>
+
+            <Hyperlink id="update_password" fx:id="updatePasswordLink" onAction="#handleUpdatePassword"
+                       text="Update password" textFill="#0a625b" underline="true"
+                       AnchorPane.rightAnchor="80.0" AnchorPane.topAnchor="72.0">
+                <font>
+                    <Font name="System Bold" size="13.0" />
+                </font>
+            </Hyperlink>
+
+            <Hyperlink fx:id="logoutLink" onAction="#handleLogout" text="Logout" textFill="#0a625b"
+                       AnchorPane.rightAnchor="60.0" AnchorPane.topAnchor="23.0" />
+
+            <ImageView fx:id="logoutImageView" fitHeight="35.0" fitWidth="30.0"
+                       onMouseClicked="#handleLogoutImageClick" pickOnBounds="true" preserveRatio="true"
+                       style="-fx-cursor: hand;" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="22.0">
+                <image>
+                    <Image url="@logoutbutton.png" />
+                </image>
+            </ImageView>
+        </children>
+    </AnchorPane>
+</VBox>
