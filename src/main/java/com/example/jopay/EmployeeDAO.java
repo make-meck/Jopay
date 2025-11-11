@@ -413,6 +413,8 @@ public class EmployeeDAO {
         System.out.println("Weekly attendance summary: " + summary);
         return summary;
     }
+
+    
     //this is for the employee attendance
     public Map<String, Integer> getEmployeeAttendanceSummary(int employeeId) {
         Map<String, Integer> summary = new HashMap<>();

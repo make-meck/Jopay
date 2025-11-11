@@ -83,7 +83,7 @@ public class employeeLoginController {
                 }
             try {
 
-                // In your login controller
+
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
                 Parent root = loader.load();
 
