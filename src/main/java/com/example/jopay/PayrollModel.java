@@ -74,7 +74,7 @@ public class PayrollModel {
     private double withholdingTax;
     private double netPay;
 
-    // *** NEW: Fields for pre-computed contributions ***
+    // Fields for pre-computed contributions
     private boolean usePreComputedContributions = false;
     private double preComputedSSS = 0.0;
     private double preComputedPHIC = 0.0;
@@ -143,15 +143,6 @@ public class PayrollModel {
         this.slBalance = slBalance;
     }
 
-    /**
-     * *** NEW METHOD ***
-     * Set pre-computed contributions from database
-     * This bypasses the formula calculation
-     *
-     * @param sss Semi-monthly SSS contribution from database
-     * @param phic Semi-monthly PHIC contribution from database
-     * @param hdmf Semi-monthly HDMF contribution from database (0 if second period)
-     */
     public void setPreComputedContributions(double sss, double phic, double hdmf) {
         this.usePreComputedContributions = true;
         this.preComputedSSS = sss;
@@ -160,7 +151,7 @@ public class PayrollModel {
     }
 
     public void computePayroll() {
-        // Calculate Earnings/Gross Pay
+        // Calculate Earnings/Gross Pay - NO ROUNDING
         double basicPayForPeriod = calculateBasicPay();
         double absentDeduction = calculateAbsentDeduction(daysAbsent);
         double undertimeDeduction = calculateUndertimeDeduction();
@@ -175,8 +166,9 @@ public class PayrollModel {
         double slPay = calculateSLPay();
         double perDiemPay = calculatePerDiem();
 
+        // Calculate total earnings with full precision
         totalEarnings = basicPayForPeriod - absentDeduction - undertimeDeduction
-                + telecomAllowance +travelAllowance + riceSubsidy
+                + telecomAllowance + travelAllowance + riceSubsidy
                 + perDiemPay + otherNonTaxable + regularOTPay
                 + nightDiffOTPay + specialHolidayPay
                 + regularHolidayPay + restDayPay + restDayOTPay
@@ -184,48 +176,63 @@ public class PayrollModel {
 
         semiMonthlyGrossPay = totalEarnings;
 
-        // *** MODIFIED: Use pre-computed contributions if available ***
+        // Use pre-computed contributions if available
         if (usePreComputedContributions) {
             sssContribution = preComputedSSS;
             phicContribution = preComputedPHIC;
             hdmfContribution = preComputedHDMF;
 
             System.out.println("✓ Using PRE-COMPUTED contributions from database");
-            System.out.println("  SSS: ₱" + String.format("%,.2f", sssContribution));
-            System.out.println("  PHIC: ₱" + String.format("%,.2f", phicContribution));
-            System.out.println("  HDMF: ₱" + String.format("%,.2f", hdmfContribution));
+            System.out.println("  SSS: ₱" + sssContribution);
+            System.out.println("  PHIC: ₱" + phicContribution);
+            System.out.println("  HDMF: ₱" + hdmfContribution);
         } else {
-            // Calculate Mandatory Contributions using formulas (fallback)
+            // Calculate Mandatory Contributions using formulas
             sssContribution = calculateSSS();
             phicContribution = calculatePHIC();
             hdmfContribution = calculateHDMF();
 
-            System.out.println("⚠ Using FORMULA-COMPUTED contributions (no pre-computed values found)");
-            System.out.println("  SSS: ₱" + String.format("%,.2f", sssContribution));
-            System.out.println("  PHIC: ₱" + String.format("%,.2f", phicContribution));
-            System.out.println("  HDMF: ₱" + String.format("%,.2f", hdmfContribution));
+            System.out.println("⚠ Using FORMULA-COMPUTED contributions");
+            System.out.println("  SSS: ₱" + sssContribution);
+            System.out.println("  PHIC: ₱" + phicContribution);
+            System.out.println("  HDMF: ₱" + hdmfContribution);
         }
 
-        // Calculate Total Non-taxable
+        // Calculate total non-taxable allowances (includes per diem)
         double totalNonTaxable = telecomAllowance + travelAllowance + riceSubsidy
-                + otherNonTaxable + perDiemPay;
+                + otherNonTaxable;
 
-        // Calculate Taxable Income
-        taxableIncome = semiMonthlyGrossPay - (sssContribution + phicContribution
-                + hdmfContribution + totalNonTaxable);
+        // Calculate Taxable Income with full precision
+        // Taxable Income = Gross Pay - Contributions - Non-Taxable Allowances
+        taxableIncome = semiMonthlyGrossPay - sssContribution - phicContribution
+                - hdmfContribution - totalNonTaxable;
 
-        // Calculate Withholding Tax
+        // Calculate Withholding Tax with full precision
         withholdingTax = calculateWithholdingTax(taxableIncome);
 
-        // Calculate Total Deductions
+        // Calculate Total Deductions with full precision
         totalDeductions = sssContribution + phicContribution + hdmfContribution
                 + sssLoan + withholdingTax;
 
-        // Calculate Net Pay
-        netPay = totalEarnings + totalNonTaxable - totalDeductions;
+        // Calculate Net Pay with full precision - NO ROUNDING
+        netPay = semiMonthlyGrossPay - totalDeductions;
 
-        // Reset flag for next computation
+        // Reset for next computation
         usePreComputedContributions = false;
+
+        // Debug output
+        System.out.println("\n=== PAYROLL COMPUTATION (FULL PRECISION) ===");
+        System.out.println("Gross Pay: ₱" + semiMonthlyGrossPay);
+        System.out.println("Total Non-Taxable: ₱" + totalNonTaxable);
+        System.out.println("SSS: ₱" + sssContribution);
+        System.out.println("PHIC: ₱" + phicContribution);
+        System.out.println("HDMF: ₱" + hdmfContribution);
+        System.out.println("Taxable Income: ₱" + taxableIncome);
+        System.out.println("Withholding Tax: ₱" + withholdingTax);
+        System.out.println("SSS Loan: ₱" + sssLoan);
+        System.out.println("Total Deductions: ₱" + totalDeductions);
+        System.out.println("Net Pay: ₱" + netPay);
+        System.out.println("==========================================\n");
     }
 
     private double calculateBasicPay() {
@@ -237,7 +244,7 @@ public class PayrollModel {
     }
 
     private double calculateUndertimeDeduction() {
-        return undertimeHours * hourlyRate * OT_RATE;
+        return undertimeHours * hourlyRate;
     }
 
     public double calculateRegularOT(double regularOTHours) {
@@ -357,14 +364,17 @@ public class PayrollModel {
         } else if (basicMonthlyPay > 100000) {
             monthlyContribution = PHIC_MAX;
         } else {
-            monthlyContribution = (basicMonthlyPay * PHIC_RATE) / 2;
+            monthlyContribution = (basicMonthlyPay * PHIC_RATE);
         }
+
         double semiMonthlyContribution = monthlyContribution / 2;
 
-        if (semiMonthlyContribution < 250 && isFirstHalf) {
-            return 250.00;
-        } else if (semiMonthlyContribution < 250 && !isFirstHalf) {
-            return monthlyContribution - 250.00;
+        if (semiMonthlyContribution < 250) {
+            if (isFirstHalf) {
+                return 250.00;
+            } else {
+                return monthlyContribution - 250.00;
+            }
         }
 
         return semiMonthlyContribution;
@@ -439,7 +449,7 @@ public class PayrollModel {
         else return 0.35;
     }
 
-    // Getters
+    // Getters - return full precision values
     public double getGrossMonthlyPay() { return grossMonthlyPay; }
     public double getGrossDailyRate() { return grossDailyRate; }
     public double getBasicDailyRate() { return basicDailyRate; }

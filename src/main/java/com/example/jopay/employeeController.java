@@ -68,6 +68,7 @@ public class employeeController {
     private double riceSubsidy = 0.0;
     private double nonTaxableSalary = 0.0;
     private double perDiem = 0.0;
+    private int perDiemCount = 1;
 
     // Deductions
     private double sssContributions = 0.0;
@@ -191,6 +192,7 @@ public class employeeController {
                 this.riceSubsidy = rs.getDouble("rice_Subsidy");
                 this.nonTaxableSalary = rs.getDouble("non_Taxable_Salary");
                 this.perDiem = rs.getDouble("per_Deim");
+                this.perDiemCount = rs.getInt("per_Deim_Count");
                 this.overtime = rs.getDouble("overtime_Pay");
                 this.overtimeHours = rs.getDouble("overtime_hours");
                 this.sssContributions = rs.getDouble("sss_Contribution");
@@ -365,7 +367,7 @@ public class employeeController {
         addCell(mainTable, formatAmount(sssLoan), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
 
         addCell(mainTable, "Per Diem", normalFont, Rectangle.BOX);
-        addCell(mainTable, formatAmount(perDiem), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
+        addCell(mainTable, formatAmount(perDiem*perDiemCount), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
         addCell(mainTable, "Absences (" + numAbsences + " days)", normalFont, Rectangle.BOX);
         addCell(mainTable, formatAmount(absences), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
 
