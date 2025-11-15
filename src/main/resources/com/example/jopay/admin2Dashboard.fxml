@@ -48,7 +48,7 @@
             <image>
                 <Image url="@JopayLogo.png" />
             </image></ImageView>
-        <AnchorPane id="reportAnalysisPane" fx:id="reportAnalysisPane" layoutX="77.0" layoutY="231.0" onMouseClicked="#reportAnalysisClick" onMousePressed="#reportAnalysisClick" prefHeight="418.0" prefWidth="1845.0">
+        <AnchorPane id="reportAnalysisPane" fx:id="reportAnalysisPane" layoutX="65.0" layoutY="264.0" onMouseClicked="#reportAnalysisClick" onMousePressed="#reportAnalysisClick" prefHeight="385.0" prefWidth="1858.0">
             <children>
             <VBox fx:id="reportAnalysisBox" layoutX="768.0" layoutY="10.0" prefHeight="397.0" prefWidth="373.0" spacing="10.0">
                <children>
@@ -584,12 +584,12 @@
                 <Label fx:id="errorLabelManagePayroll" layoutX="416.0" layoutY="52.0" prefHeight="22.0" prefWidth="362.0" />
             </children>
         </AnchorPane>
-        <Label id="reportAnalysisLabel" fx:id="reportAnalysisLabel" layoutX="62.0" layoutY="84.0" prefHeight="62.0" prefWidth="334.0" text="Report Analysis " textFill="#0a625b" visible="false">
+        <Label id="reportAnalysisLabel" fx:id="reportAnalysisLabel" layoutX="62.0" layoutY="84.0" prefHeight="62.0" prefWidth="334.0" text="Report Analysis " textFill="#0a625b">
             <font>
                 <Font size="39.0" />
             </font>
         </Label>
-        <Label id="manageEmpLabel" fx:id="manageEmpLabel" layoutX="62.0" layoutY="84.0" prefHeight="62.0" prefWidth="334.0" text="Manage Employee" textFill="#0a625b">
+        <Label id="manageEmpLabel" fx:id="manageEmpLabel" layoutX="62.0" layoutY="84.0" prefHeight="62.0" prefWidth="334.0" text="Manage Employee" textFill="#0a625b" visible="false">
             <font>
                 <Font size="39.0" />
             </font>
@@ -599,12 +599,12 @@
                 <Font size="39.0" />
             </font>
         </Label>
-      <ImageView fx:id="adminLogoutImage" fitHeight="35.0" fitWidth="30.0" layoutX="1836.0" layoutY="20.0" onMouseClicked="#adminLogoutImageClick" pickOnBounds="true" preserveRatio="true" style="-fx-cursor: hand;">
+      <ImageView fx:id="adminLogoutImage" fitHeight="35.0" fitWidth="30.0" layoutX="1713.0" layoutY="20.0" onMouseClicked="#adminLogoutImageClick" pickOnBounds="true" preserveRatio="true" style="-fx-cursor: hand;">
          <image>
             <Image url="@logoutbutton.png" />
          </image>
       </ImageView>
-      <Hyperlink fx:id="adminLogoutHpl" layoutX="1769.0" layoutY="23.0" onAction="#adminLogoutClick" text="Logout" textFill="#0a625b">
+      <Hyperlink fx:id="adminLogoutHpl" layoutX="1656.0" layoutY="21.0" onAction="#adminLogoutClick" text="Logout" textFill="#0a625b">
          <font>
             <Font size="15.0" />
          </font></Hyperlink>
