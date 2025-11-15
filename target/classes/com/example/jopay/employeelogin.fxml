@@ -16,7 +16,6 @@
 
 <BorderPane style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.jopay.employeeLoginController">
 
-   <!-- Center: the login form -->
    <center>
       <StackPane>
          <VBox alignment="CENTER" maxWidth="500" prefWidth="400" spacing="10.0">
@@ -61,7 +60,6 @@
       </StackPane>
    </center>
 
-   <!-- Bottom-right: Admin button -->
    <bottom>
       <AnchorPane>
          <Button fx:id="adminButton" onAction="#adminIconClick" prefHeight="64" prefWidth="56" style="-fx-background-color: transparent;" AnchorPane.bottomAnchor="30.0" AnchorPane.rightAnchor="30.0">
