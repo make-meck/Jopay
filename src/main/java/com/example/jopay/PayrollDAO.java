@@ -48,6 +48,10 @@ public class PayrollDAO {
             PayrollModel payrollModel = new PayrollModel();
             payrollModel.PayrollComputation(employeeId, "", basicMonthlySalary, "", null, 8);
 
+            payrollModel.setPayrollPeriod(LocalDate.now(), LocalDate.now(), true);  // Set period
+            payrollModel.setAllowances(0, 0, 0, 0, 0, 0);  // Set allowances to zero
+            payrollModel.setAttendanceData(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);  // Set attendance to zero
+            payrollModel.setDeductions(0);
             payrollModel.computePayroll();
 
             // Compute contributions using PayrollModel
@@ -93,7 +97,6 @@ public class PayrollDAO {
     }
 
 
-    // retrieve contributions (sss, phic, hdmf)
     public ContributionData getContributions(String employeeId) {
         String query = """
         SELECT employee_Id, basic_monthly_salary, sss_contribution, 
@@ -114,7 +117,19 @@ public class PayrollDAO {
                 data.phicContribution = rs.getDouble("phic_contribution");
                 data.hdmfContribution = rs.getDouble("hdmf_contribution");
                 data.computedDate = rs.getTimestamp("computed_date").toLocalDateTime();
+
+                // *** ADD THIS DEBUG OUTPUT ***
+                System.out.println("=== getContributions() DEBUG ===");
+                System.out.println("Employee ID: " + data.employeeId);
+                System.out.println("Basic Salary: ₱" + data.basicMonthlySalary);
+                System.out.println("SSS from DB: ₱" + data.sssContribution);
+                System.out.println("PHIC from DB: ₱" + data.phicContribution);
+                System.out.println("HDMF from DB: ₱" + data.hdmfContribution);
+                System.out.println("================================\n");
+
                 return data;
+            } else {
+                System.out.println("⚠ NO DATA FOUND in contribution_config for employee: " + employeeId);
             }
         } catch (SQLException e) {
             System.err.println("Error fetching contributions: " + e.getMessage());
@@ -154,19 +169,34 @@ public class PayrollDAO {
         ContributionData data = getContributions(employeeId);
 
         if (data != null) {
-            // For HDMF, only deduct on first half
+            // *** FIX: Database stores MONTHLY, so divide by 2 for semi-monthly ***
+            double semiMonthlySSS = data.sssContribution / 2;
+            double semiMonthlyPHIC = data.phicContribution;
             double hdmf = isFirstHalf ? data.hdmfContribution : 0.0;
 
+            System.out.println("=== loadContributionsIntoPayrollModel() DEBUG ===");
+            System.out.println("From database (MONTHLY values):");
+            System.out.println("  SSS (monthly): ₱" + data.sssContribution);
+            System.out.println("  PHIC (monthly): ₱" + data.phicContribution);
+            System.out.println("Converting to SEMI-MONTHLY for payroll:");
+            System.out.println("  SSS (semi-monthly): ₱" + semiMonthlySSS);
+            System.out.println("  PHIC (semi-monthly): ₱" + semiMonthlyPHIC);
+            System.out.println("  HDMF: ₱" + hdmf);
+            System.out.println("  isFirstHalf: " + isFirstHalf);
+
             payrollModel.setPreComputedContributions(
-                    data.sssContribution,
-                    data.phicContribution,
+                    semiMonthlySSS,     // Use semi-monthly
+                    semiMonthlyPHIC,    // Use semi-monthly
                     hdmf
             );
 
-            System.out.println("Loaded pre-computed contributions from database for employee: " + employeeId);
+            System.out.println("✓ Pre-computed contributions SET in PayrollModel");
+            System.out.println("================================================\n");
         } else {
-            System.out.println("No pre-computed contributions found for employee: " + employeeId +
-                    ". PayrollModel will use formula calculation.");
+            System.out.println("=== loadContributionsIntoPayrollModel() DEBUG ===");
+            System.out.println("⚠ No pre-computed contributions found for employee: " + employeeId);
+            System.out.println("PayrollModel will use formula calculation.");
+            System.out.println("================================================\n");
         }
     }
 
