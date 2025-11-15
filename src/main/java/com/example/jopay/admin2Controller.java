@@ -160,7 +160,7 @@ public class admin2Controller {
 
         employeeDAO = new EmployeeDAO();
 
-        System.out.println("headCountLabel is null? " + (headCountLabel == null));
+
 
         if (employeeTable != null) {
             setupEmployeeTable();
@@ -174,10 +174,17 @@ public class admin2Controller {
         setupAutoUpdateListeners();
 
         Platform.runLater(() -> {
-            displayActiveEmployees();
-            loadDepartmentChart();
-            //rotateDepartmentLabels();
-            loadWeeklyAttendanceChart();
+            if (headCountLabel != null) {
+                displayActiveEmployees();
+            }
+
+            if (departmentWiseCount != null) {
+                loadDepartmentChart();  // Just load data, no wrapping needed
+            }
+
+            if (attendancePieChart != null) {
+                loadWeeklyAttendanceChart();
+            }
         });
 
 
@@ -1167,147 +1174,75 @@ public class admin2Controller {
         manageEmpLabel.setVisible(false);
     }
 
-    @FXML
-    private void reportAnalysisLoad(){
-        displayActiveEmployees();
-        loadDepartmentChart();
-    }
+
     private void displayActiveEmployees() {
 
         int total = employeeDAO.getActiveEmployeeCount();
         headCountLabel.setText(String.valueOf(total));
     }
-   public void loadDepartmentChart() {
-        System.out.println("departmentWiseCount is null? " + (departmentWiseCount == null)); // ADD THIS
 
+
+    public void loadDepartmentChart() {
         if (departmentWiseCount == null) {
             System.out.println("ERROR: Chart is null!");
             return;
         }
+
         Map<String, Integer> deptCounts = employeeDAO.getEmployeeDepartmentCounts();
 
-        // ADD THESE DEBUG LINES:
-        System.out.println("Department counts: " + deptCounts);
-        System.out.println("Number of departments: " + deptCounts.size());
 
+        // Clear previous data
+        departmentWiseCount.getData().clear();
+
+        // Create a series
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Active Employees");
 
         deptCounts.forEach((dept, count) -> {
-            System.out.println("Adding to chart: " + dept + " = " + count);
             series.getData().add(new XYChart.Data<>(dept, count));
         });
 
-        System.out.println("Series data size: " + series.getData().size());
-
-
-        departmentWiseCount.getData().clear();
+        // Add series to chart
         departmentWiseCount.getData().add(series);
         departmentWiseCount.setTitle("Department Wise Headcount");
 
-        System.out.println("Chart data added!");
-        Platform.runLater(() -> {
-            rotateDepartmentLabels();
-        });
-    }
-    private void rotateDepartmentLabels() {
-        try {
-            // Get the CategoryAxis that you defined in FXML with fx:id="departmentAxis"
-            CategoryAxis xAxis = departmentAxis;
 
-            if (xAxis == null) {
-                System.out.println("ERROR: departmentAxis is null!");
-                return;
-            }
+        CategoryAxis xAxis = departmentAxis;
+        if (xAxis != null) {
+            xAxis.setTickLabelRotation(-45);
+            xAxis.setTickLabelGap(10);
+            xAxis.setStyle("-fx-tick-label-font-size: 10px; -fx-font-weight: normal;");
 
-            // Rotate each label 45 degrees
-            for (Node node : xAxis.getChildrenUnmodifiable()) {
-                if (node instanceof Text) {
-                    Text text = (Text) node;
-                    text.setRotate(-45);
-                    text.setTextOrigin(VPos.TOP);
-                }
-            }
-
-            // Add padding at bottom for rotated labels so they're not cut off
-            xAxis.setPadding(new Insets(0, 0, 50, 0));
-
-            System.out.println("Labels rotated successfully!");
-
-        } catch (Exception e) {
-            System.out.println("Error rotating labels: " + e.getMessage());
-            e.printStackTrace();
         }
+
+        // Optimize spacing between bars
+        departmentWiseCount.setCategoryGap(10);
+        departmentWiseCount.setBarGap(10);
+
+        // Dynamically calculate chart width based on number of departments
+        int categoryCount = deptCounts.size();
+        int widthPerCategory = 70; // Pixels per department
+        int calculatedWidth = categoryCount * widthPerCategory;
+        int minWidth = 1000;
+
+        // Set a generous width to prevent label overlap
+        departmentWiseCount.setPrefWidth(Math.max(calculatedWidth, minWidth));
+        departmentWiseCount.setMinWidth(calculatedWidth);
+
+        // Add padding for rotated labels (especially bottom padding)
+        departmentWiseCount.setPadding(new Insets(10, 10, 80, 10));
+
+        // If chart is inside a ScrollPane, ensure it uses the full width
+        if (departmentWiseCount.getParent() instanceof javafx.scene.control.ScrollPane) {
+            javafx.scene.control.ScrollPane scrollPane =
+                    (javafx.scene.control.ScrollPane) departmentWiseCount.getParent();
+            scrollPane.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            scrollPane.setVbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
+            scrollPane.setFitToHeight(true);
+        }
+
+
     }
-   /*public void loadDepartmentChart() {
-       System.out.println("=== LOADING DEPARTMENT CHART ===");
-
-       if (departmentWiseCount == null) {
-           System.out.println("ERROR: Chart is null!");
-           return;
-       }
-
-       // Configure the axis FIRST before loading data
-       departmentAxis.setTickLabelRotation(-45);
-
-       Map<String, Integer> deptCounts = employeeDAO.getEmployeeDepartmentCounts();
-
-       System.out.println("Department counts: " + deptCounts);
-       System.out.println("Number of departments: " + deptCounts.size());
-
-       XYChart.Series<String, Number> series = new XYChart.Series<>();
-       series.setName("Active Employees");
-
-       deptCounts.forEach((dept, count) -> {
-           System.out.println("Adding to chart: " + dept + " = " + count);
-           series.getData().add(new XYChart.Data<>(dept, count));
-       });
-
-       System.out.println("Series data size: " + series.getData().size());
-
-       departmentWiseCount.getData().clear();
-       departmentWiseCount.getData().add(series);
-       departmentWiseCount.setTitle("Department Wise Headcount");
-
-       System.out.println("Chart loaded with rotated labels!");
-   }*/
-
-
-  /* public void loadDepartmentChart() {
-       System.out.println("=== LOADING DEPARTMENT CHART ===");
-
-       if (departmentWiseCount == null) {
-           System.out.println("ERROR: Chart is null!");
-           return;
-       }
-       Map<String, Integer> deptCounts = new LinkedHashMap<>();
-       employeeDAO.getEmployeeDepartmentCounts().forEach((dept, count) -> {
-           String label = dept.length() > 15 ? dept.replaceAll(" ", "\n") : dept;
-           deptCounts.put(label, count);
-       });
-
-       System.out.println("Department counts: " + deptCounts);
-
-       XYChart.Series<String, Number> series = new XYChart.Series<>();
-       series.setName("Active Employees");
-
-       deptCounts.forEach((dept, count) -> series.getData().add(new XYChart.Data<>(dept, count)));
-
-       departmentWiseCount.getData().clear();
-       departmentWiseCount.getData().add(series);
-       departmentWiseCount.setTitle("Department Wise Headcount");
-       departmentAxis.setSide(Side.BOTTOM);     // keep departments along bottom
-       departmentAxis.setTickLabelRotation(-25); // tilt labels slightly
-       departmentAxis.setTickLabelGap(15);       // add spacing between labels
-       departmentWiseCount.setCategoryGap(50);   // space out bars
-       departmentWiseCount.setBarGap(10);// space out series
-       departmentAxis.setTickLabelFont(Font.font("Arial", 12));
-
-
-
-       System.out.println("Chart loaded with improved label spacing!");
-   }*/
-
 
     public void loadWeeklyAttendanceChart() {
         Map<String, Integer> summary = employeeDAO.getWeeklyAttendanceSummary();
