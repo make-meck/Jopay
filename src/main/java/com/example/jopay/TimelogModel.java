@@ -1,7 +1,9 @@
 package com.example.jopay;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class TimelogModel {
     private final DatabaseConnector connect;
@@ -107,5 +109,32 @@ public class TimelogModel {
     }
 
 
+    public void autoMarkAbsences() {
+
+        if (LocalTime.now().isBefore(LocalTime.of(23, 59))) {
+
+        }
+
+        String sql = """
+        INSERT INTO time_log (employee_Id, log_date, status)
+        SELECT e.employee_Id, CURDATE(), 'Absent'
+        FROM employee_info e
+        LEFT JOIN time_log t
+            ON e.employee_Id = t.employee_Id 
+            AND t.log_date = CURDATE()
+        WHERE t.employee_Id IS NULL
+        AND e.is_Active = 1
+    """;
+
+        try (PreparedStatement stmt = connect.prepareStatement(sql)) {
+            int count = stmt.executeUpdate();
+            System.out.println("AUTO ABSENT: " + count + " employees marked absent.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
+
+
 
