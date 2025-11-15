@@ -51,11 +51,13 @@ private AnchorPane timelogs;
 
   private final TimelogModel timelog= new TimelogModel();
   public enum AttendanceStatus{
-      Present, Half_Day, Absent
+      Present, Undertime, Absent, Overtime
   }
 
  @FXML
     public void initialize(){
+      timelog.autoMarkAbsences();
+
      updateDateTime();
 
      Timeline clock= new Timeline( new KeyFrame(Duration.seconds(1), event -> updateDateTime())
@@ -166,7 +168,7 @@ private AnchorPane timelogs;
                 if (totalHours >= 8) {
                     attendanceStatus = AttendanceStatus.Present;
                 } else if (totalHours >= 4) {
-                    attendanceStatus = AttendanceStatus.Half_Day;
+                    attendanceStatus = AttendanceStatus.Undertime;
                 } else {
                     attendanceStatus = AttendanceStatus.Absent;
                 }
