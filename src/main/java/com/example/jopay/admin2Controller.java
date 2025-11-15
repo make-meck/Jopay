@@ -392,11 +392,16 @@ public class admin2Controller {
     @FXML
     private void displayComputedPayroll(PayrollModel model, PayrollDAO.SalaryConfig config,
                                         PayrollDAO.AttendanceData attendance, double perDiem, int perDiemCount) {
+        // Calculate absence amount
+        double absenceAmount = attendance.daysAbsent * model.getGrossDailyRate();
+
         // Display all computed values in the text fields
         basicPayTF.setText(String.format("₱%,.2f", model.getSemiMonthlyBasicPay()));
         overtimeTF.setText(String.format("₱%,.2f", attendance.regularOTHours * model.getHourlyRate() * 1.25));
         undertimeTF.setText(String.format("₱%,.2f", attendance.undertimeHours * model.getHourlyRate()));
-        absencesTF.setText(String.format("₱%,.2f", attendance.daysAbsent * model.getGrossDailyRate()));
+
+        // *** DISPLAY ABSENCE INFO ***
+        absencesTF.setText(String.format("₱%,.2f", absenceAmount));
         numAbsencesTF.setText(String.valueOf(attendance.daysAbsent));
 
         // Computed contributions
@@ -429,12 +434,14 @@ public class admin2Controller {
         System.out.println("HDMF: " + String.format("₱%,.2f", model.getHDMFContribution()) +
                 (hdmf > 0 ? " ✓ DEDUCTED" : " ✗ NOT DEDUCTED"));
         System.out.println("Overtime: " + String.format("₱%,.2f", attendance.regularOTHours * model.getHourlyRate() * 1.25));
-        System.out.println("Absences: " + String.format("₱%,.2f", attendance.daysAbsent * model.getGrossDailyRate()));
+        System.out.println("Undertime: " + String.format("₱%,.2f", attendance.undertimeHours * model.getHourlyRate()));
 
-        // *** ADD THESE LINES: Console output for tax info ***
+        // *** ADD ABSENCE DEBUG OUTPUT ***
+        System.out.println("Days Absent: " + attendance.daysAbsent);
+        System.out.println("Absence Deduction: " + String.format("₱%,.2f", absenceAmount));
+
         System.out.println("Taxable Income: " + String.format("₱%,.2f", model.getTaxableIncome()));
         System.out.println("Withholding Tax: " + String.format("₱%,.2f", model.getWithholdingTax()));
-
         System.out.println("Total Deductions: " + String.format("₱%,.2f", model.getTotalDeductions()));
         System.out.println("Net Pay: " + String.format("₱%,.2f", model.getNetPay()));
         System.out.println("========================\n");

@@ -260,9 +260,21 @@ public class PayrollDAO {
     public AttendanceData getAttendanceData(String employeeId, LocalDate startDate, LocalDate endDate) {
         String query = """
         SELECT 
-            COALESCE(SUM(CASE WHEN status = 'Present' OR status = 'Overtime' THEN 1 ELSE 0 END), 0) as days_worked,
-            COALESCE(SUM(CASE WHEN status = 'Absent' THEN 1 ELSE 0 END), 0) as days_absent,
-            COALESCE(SUM(CASE WHEN total_hours > 8 THEN total_hours - 8 ELSE 0 END), 0) as regular_ot_hours,
+            COALESCE(SUM(CASE 
+                WHEN status = 'Present' OR status = 'Overtime' 
+                THEN 1 
+                ELSE 0 
+            END), 0) as days_worked,
+            COALESCE(SUM(CASE 
+                WHEN status = 'Absent' 
+                THEN 1 
+                ELSE 0 
+            END), 0) as days_absent,
+            COALESCE(SUM(CASE 
+                WHEN total_hours > 8 
+                THEN total_hours - 8 
+                ELSE 0 
+            END), 0) as regular_ot_hours,
             COALESCE(SUM(CASE 
                 WHEN status LIKE 'Under%' OR (status = 'Present' AND total_hours < 8 AND total_hours > 0)
                 THEN 8 - total_hours 
@@ -282,7 +294,7 @@ public class PayrollDAO {
             if (rs.next()) {
                 AttendanceData data = new AttendanceData();
                 data.daysWorked = rs.getInt("days_worked");
-                data.daysAbsent = rs.getInt("days_absent");
+                data.daysAbsent = rs.getInt("days_absent");  // ✅ FROM time_log
                 data.regularOTHours = rs.getDouble("regular_ot_hours");
                 data.undertimeHours = rs.getDouble("undertime_hours");
                 data.nightDifferentialOTHours = 0.0;
@@ -296,7 +308,7 @@ public class PayrollDAO {
                 System.out.println("Employee ID: " + employeeId);
                 System.out.println("Period: " + startDate + " to " + endDate);
                 System.out.println("Days Worked: " + data.daysWorked);
-                System.out.println("Days Absent: " + data.daysAbsent);
+                System.out.println("Days Absent (from time_log): " + data.daysAbsent);
                 System.out.println("OT Hours: " + data.regularOTHours);
                 System.out.println("Undertime Hours: " + data.undertimeHours);
                 System.out.println("==============================\n");
@@ -310,6 +322,7 @@ public class PayrollDAO {
 
         AttendanceData emptyData = new AttendanceData();
         emptyData.undertimeHours = 0.0;
+        emptyData.daysAbsent = 0;
         return emptyData;
     }
 
