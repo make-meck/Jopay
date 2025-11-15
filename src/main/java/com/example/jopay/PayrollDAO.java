@@ -8,10 +8,6 @@ import java.util.List;
 public class PayrollDAO {
     private DatabaseConnector connect = new DatabaseConnector();
 
-    private static final double PHIC_RATE = 0.025;
-    private static final double PHIC_MIN = 250.00;   // ✓ FIXED: Changed from 500 to 250
-    private static final double PHIC_MAX = 2500.00;  // ✓ FIXED: Changed from 5000 to 2500
-
     // retrieve employee info
     public EmployeeInfo getEmployeeInfo(String employeeId) {
         String query = """
@@ -158,17 +154,27 @@ public class PayrollDAO {
         if (data != null) {
             // For HDMF, only deduct on first half
             double hdmf = isFirstHalf ? data.hdmfContribution : 0.0;
+            double semiMonthlyPHIC = data.phicContribution;
+            double monthlyPHIC = semiMonthlyPHIC * 2;
+
+            double phic;
+            if (monthlyPHIC <= 500.00) {
+                phic = isFirstHalf ? 250.00 : (monthlyPHIC - 250.00);
+            } else {
+                phic = semiMonthlyPHIC;
+            }
 
             payrollModel.setPreComputedContributions(
                     data.sssContribution,
-                    data.phicContribution,
+                    phic,
                     hdmf
             );
 
-            System.out.println("Loaded pre-computed contributions from database for employee: " + employeeId);
-        } else {
-            System.out.println("No pre-computed contributions found for employee: " + employeeId +
-                    ". PayrollModel will use formula calculation.");
+            System.out.println("Loaded pre-computed contributions for employee: " + employeeId);
+            System.out.println("  Period: " + (isFirstHalf ? "FIRST" : "SECOND"));
+            System.out.println("  SSS: " + data.sssContribution);
+            System.out.println("  PHIC: " + phic + " (monthly total: " + monthlyPHIC + ")");
+            System.out.println("  HDMF: " + hdmf);
         }
     }
 
