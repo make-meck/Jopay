@@ -331,15 +331,13 @@ public class EmployeeDAO {
     }
 
     public int getActiveEmployeeCount() {
-        System.out.println("getActiveEmployeeCount called");
-        System.out.println("Connection: " + connect);
+
 
         String query = "SELECT COUNT(*) AS employee_count FROM employee_info WHERE is_Active = 1";
         try (PreparedStatement stmt = connect.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 int count = rs.getInt("employee_count");
-                System.out.println("Count from DB: " + count);
                 return count;
             }
         } catch (SQLException e) {
@@ -410,7 +408,7 @@ public class EmployeeDAO {
             e.printStackTrace();
         }
 
-        System.out.println("Weekly attendance summary: " + summary);
+
         return summary;
     }
 
@@ -434,7 +432,7 @@ public class EmployeeDAO {
                 String status = rs.getString("status");
                 int count = rs.getInt("count");
                 summary.put(status, count);
-                System.out.println("DAO result: " + status + " = " + count);
+
             }
 
         } catch (SQLException e) {

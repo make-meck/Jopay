@@ -160,7 +160,7 @@ public class admin2Controller {
 
         employeeDAO = new EmployeeDAO();
 
-        System.out.println("headCountLabel is null? " + (headCountLabel == null));
+
 
         if (employeeTable != null) {
             setupEmployeeTable();
@@ -1209,7 +1209,7 @@ public class admin2Controller {
 
         CategoryAxis xAxis = departmentAxis;
         if (xAxis != null) {
-            xAxis.setTickLabelRotation(-45);  // Vertical labels
+            xAxis.setTickLabelRotation(-45);
             xAxis.setTickLabelGap(10);
             xAxis.setStyle("-fx-tick-label-font-size: 10px; -fx-font-weight: normal;");
 
