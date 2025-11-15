@@ -110,7 +110,7 @@ public class TimelogModel {
 
 
     public void autoMarkAbsences() {
-        
+
         if (LocalTime.now().isBefore(LocalTime.of(23, 59))) {
 
         }

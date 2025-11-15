@@ -51,7 +51,7 @@ private AnchorPane timelogs;
 
   private final TimelogModel timelog= new TimelogModel();
   public enum AttendanceStatus{
-      Present, Undertime, Absent, Overtime
+      Present, Undertime, Overtime
   }
 
  @FXML
@@ -165,12 +165,12 @@ private AnchorPane timelogs;
 
 
                 AttendanceStatus attendanceStatus;
-                if (totalHours >= 8) {
+                if (totalHours == 8) {
                     attendanceStatus = AttendanceStatus.Present;
                 } else if (totalHours >= 4) {
                     attendanceStatus = AttendanceStatus.Undertime;
                 } else {
-                    attendanceStatus = AttendanceStatus.Absent;
+                    attendanceStatus = AttendanceStatus.Overtime;
                 }
 
 
