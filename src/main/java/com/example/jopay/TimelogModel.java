@@ -111,9 +111,8 @@ public class TimelogModel {
 
     public void autoMarkAbsences() {
         // Check if current time is after 5 PM
-        if (LocalTime.now().isBefore(LocalTime.of(17, 0))) {
-            System.out.println("Auto absence skipped: before 5 PM.");
-            return;
+        if (LocalTime.now().isBefore(LocalTime.of(23, 59))) {
+           
         }
 
         String sql = """
