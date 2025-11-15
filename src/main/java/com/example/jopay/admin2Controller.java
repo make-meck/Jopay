@@ -166,10 +166,6 @@ public class admin2Controller {
             setupEmployeeTable();
         }
 
-        // *** NEW: Initialize period ComboBox ***
-        if (payrollPeriodComboBox != null) {
-            setupPeriodComboBox();
-        }
 
         setupAutoUpdateListeners();
 
@@ -241,11 +237,22 @@ public class admin2Controller {
     }
 
     // retrieve period data from database
-    private void setupPeriodComboBox() {
-        PayrollDAO dao = new PayrollDAO();
-        List<PayrollDAO.PayrollPeriod> periods = dao.getAllPayrollPeriods();
+    private void setupPeriodComboBox(String employeeId) {
+        if (employeeId == null || employeeId.isEmpty()) {
+            System.err.println("⚠ Cannot load periods: No employee selected");
+            payrollPeriodComboBox.getItems().clear();
+            payrollPeriodComboBox.setPromptText("Select employee first");
+            payrollPeriodComboBox.setDisable(true);
+            return;
+        }
 
-        ObservableList<PayrollPeriodItem> periodItems = FXCollections.observableArrayList();
+        PayrollDAO dao = new PayrollDAO();
+
+        // ✅ CORRECT: Get ALL periods from selected employee's hire date
+        List<PayrollDAO.PayrollPeriod> periods = dao.getPeriodsFromHireDate(employeeId);
+
+        ObservableList<PayrollPeriodItem> periodItems =
+                FXCollections.observableArrayList();
 
         for (PayrollDAO.PayrollPeriod period : periods) {
             periodItems.add(new PayrollPeriodItem(period));
@@ -253,18 +260,30 @@ public class admin2Controller {
 
         payrollPeriodComboBox.setItems(periodItems);
 
-        // listener to capture selected period
+        if (periods.isEmpty()) {
+            System.out.println("ℹ No periods available from hire date for employee " + employeeId);
+            payrollPeriodComboBox.setPromptText("No periods available");
+            payrollPeriodComboBox.setDisable(true);
+        } else {
+            System.out.println("✓ Loaded " + periods.size() +
+                    " periods from hire date for employee " + employeeId);
+            payrollPeriodComboBox.setPromptText("Select period");
+            payrollPeriodComboBox.setDisable(false);
+        }
+
+        // Listener for period selection
         payrollPeriodComboBox.setOnAction(event -> {
-            PayrollPeriodItem selected = payrollPeriodComboBox.getSelectionModel().getSelectedItem();
+            PayrollPeriodItem selected =
+                    payrollPeriodComboBox.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 selectedStartDate = selected.getPeriod().startDate;
                 selectedEndDate = selected.getPeriod().endDate;
                 selectedPeriodId = selected.getPeriod().periodId;
 
-                // Determine period type and show info
                 boolean isFirstPeriod = selectedStartDate.getDayOfMonth() >= 26 ||
                         selectedStartDate.getDayOfMonth() <= 10;
-                String periodType = isFirstPeriod ? "FIRST PERIOD (11-25) - Pag-IBIG WILL be deducted" :
+                String periodType = isFirstPeriod ?
+                        "FIRST PERIOD (11-25) - Pag-IBIG WILL be deducted" :
                         "SECOND PERIOD (26-10) - Pag-IBIG NOT deducted";
 
                 System.out.println("Period selected: " + selected.getPeriod().periodName);
@@ -534,8 +553,7 @@ public class admin2Controller {
             hdmfContributionTF.setText("₱0.00");
         }
 
-        // ... rest of your existing code for leave data, SSS loan, preview computation ...
-
+        setupPeriodComboBox(searchID);
         payrollDAO.close();
     }
 

@@ -612,6 +612,133 @@ public class PayrollDAO {
         }
     }
 
+    /**
+     * FOR ADMIN: Get periods with payroll data
+     * Shows ONLY periods that have at least one payroll record
+     */
+    public List<PayrollPeriod> getPeriodsWithPayrollData() {
+        List<PayrollPeriod> periods = new ArrayList<>();
+        String query = """
+        SELECT DISTINCT pp.period_ID, pp.period_name, pp.start_Date, 
+               pp.end_Date, pp.pay_Date, pp.status
+        FROM payroll_period pp
+        INNER JOIN payroll_records pr ON pp.period_ID = pr.period_id
+        ORDER BY pp.start_Date DESC
+    """;
+
+        try (PreparedStatement stmt = connect.getConnection().prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                PayrollPeriod period = new PayrollPeriod();
+                period.periodId = rs.getInt("period_ID");
+                period.periodName = rs.getString("period_name");
+                period.startDate = rs.getDate("start_Date").toLocalDate();
+                period.endDate = rs.getDate("end_Date").toLocalDate();
+                period.payDate = rs.getDate("pay_Date").toLocalDate();
+                period.status = rs.getString("status");
+                periods.add(period);
+            }
+
+            System.out.println("✓ Admin: Found " + periods.size() + " periods with payroll data");
+
+        } catch (SQLException e) {
+            System.err.println("Error fetching periods with payroll data: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return periods;
+    }
+
+    /**
+     * FOR EMPLOYEE: Get ONLY periods where employee has payroll records
+     * Used in employee dashboard payslip dropdown
+     * Shows only periods where payslip exists
+     */
+    public List<PayrollPeriod> getPeriodsWithPayrollDataForEmployee(String employeeId) {
+        List<PayrollPeriod> periods = new ArrayList<>();
+
+        String query = """
+        SELECT DISTINCT pp.period_ID, pp.period_name, pp.start_Date, 
+               pp.end_Date, pp.pay_Date, pp.status
+        FROM payroll_period pp
+        INNER JOIN payroll_records pr ON pp.period_ID = pr.period_id
+        WHERE pr.employee_Id = ?
+        ORDER BY pp.start_Date DESC
+    """;
+
+        try (PreparedStatement stmt = connect.getConnection().prepareStatement(query)) {
+            stmt.setString(1, employeeId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                PayrollPeriod period = new PayrollPeriod();
+                period.periodId = rs.getInt("period_ID");
+                period.periodName = rs.getString("period_name");
+                period.startDate = rs.getDate("start_Date").toLocalDate();
+                period.endDate = rs.getDate("end_Date").toLocalDate();
+                period.payDate = rs.getDate("pay_Date").toLocalDate();
+                period.status = rs.getString("status");
+                periods.add(period);
+            }
+
+            System.out.println("✓ Employee " + employeeId + ": Found " + periods.size() +
+                    " periods with payroll records");
+
+        } catch (SQLException e) {
+            System.err.println("Error fetching employee periods: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return periods;
+    }
+
+    /**
+     * FOR ADMIN: Get ALL periods from employee's hire date onwards
+     * Used in admin manage payroll page
+     * Shows all periods so admin can create payroll for any period
+     *
+     * @param employeeId The employee ID to get periods for
+     * @return List of periods from hire date onwards
+     */
+    public List<PayrollPeriod> getPeriodsFromHireDate(String employeeId) {
+        List<PayrollPeriod> periods = new ArrayList<>();
+
+        String query = """
+        SELECT pp.period_ID, pp.period_name, pp.start_Date, pp.end_Date, 
+               pp.pay_Date, pp.status
+        FROM payroll_period pp
+        WHERE pp.start_Date >= (
+            SELECT ei.date_Hired 
+            FROM employee_info ei 
+            WHERE ei.employee_Id = ?
+        )
+        ORDER BY pp.start_Date DESC
+    """;
+
+        try (PreparedStatement stmt = connect.getConnection().prepareStatement(query)) {
+            stmt.setString(1, employeeId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                PayrollPeriod period = new PayrollPeriod();
+                period.periodId = rs.getInt("period_ID");
+                period.periodName = rs.getString("period_name");
+                period.startDate = rs.getDate("start_Date").toLocalDate();
+                period.endDate = rs.getDate("end_Date").toLocalDate();
+                period.payDate = rs.getDate("pay_Date").toLocalDate();
+                period.status = rs.getString("status");
+                periods.add(period);
+            }
+
+            System.out.println("✓ Admin: Found " + periods.size() +
+                    " periods from hire date for employee " + employeeId);
+
+        } catch (SQLException e) {
+            System.err.println("Error fetching periods from hire date: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return periods;
+    }
+
     /* public boolean updatePayroll(int payrollId, String employeeId, int periodId,
                                  PayrollModel model, SalaryConfig config,
                                  AttendanceData attendance) {
