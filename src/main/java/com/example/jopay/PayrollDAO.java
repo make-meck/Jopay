@@ -48,6 +48,8 @@ public class PayrollDAO {
             PayrollModel payrollModel = new PayrollModel();
             payrollModel.PayrollComputation(employeeId, "", basicMonthlySalary, "", null, 8);
 
+            payrollModel.computePayroll();
+
             // Compute contributions using PayrollModel
             double semiMonthlySSS = payrollModel.getSSSContribution();
             double semiMonthlyPHIC = payrollModel.getPHICContribution();
@@ -154,27 +156,17 @@ public class PayrollDAO {
         if (data != null) {
             // For HDMF, only deduct on first half
             double hdmf = isFirstHalf ? data.hdmfContribution : 0.0;
-            double semiMonthlyPHIC = data.phicContribution;
-            double monthlyPHIC = semiMonthlyPHIC * 2;
-
-            double phic;
-            if (monthlyPHIC <= 500.00) {
-                phic = isFirstHalf ? 250.00 : (monthlyPHIC - 250.00);
-            } else {
-                phic = semiMonthlyPHIC;
-            }
 
             payrollModel.setPreComputedContributions(
                     data.sssContribution,
-                    phic,
+                    data.phicContribution,
                     hdmf
             );
 
-            System.out.println("Loaded pre-computed contributions for employee: " + employeeId);
-            System.out.println("  Period: " + (isFirstHalf ? "FIRST" : "SECOND"));
-            System.out.println("  SSS: " + data.sssContribution);
-            System.out.println("  PHIC: " + phic + " (monthly total: " + monthlyPHIC + ")");
-            System.out.println("  HDMF: " + hdmf);
+            System.out.println("Loaded pre-computed contributions from database for employee: " + employeeId);
+        } else {
+            System.out.println("No pre-computed contributions found for employee: " + employeeId +
+                    ". PayrollModel will use formula calculation.");
         }
     }
 
