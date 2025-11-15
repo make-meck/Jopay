@@ -64,6 +64,8 @@ public class employeeController {
     private double basicPay = 0.0;
     private double overtime = 0.0;
     private double overtimeHours = 0.0;
+    private double undertime = 0.0;
+    private double undertimeHours = 0.0;
 
     // Allowances
     private double telecom = 0.0;
@@ -182,32 +184,34 @@ public class employeeController {
 
         try {
             String query = """
-                        SELECT 
-                            pr.basic_pay,
-                            pr.telecom_Allowance,
-                            pr.travel_Allowance,
-                            pr.rice_Subsidy,
-                            pr.non_Taxable_Salary,
-                            pr.per_Deim,
-                            pr.per_Deim_Count,
-                            pr.overtime_Pay,
-                            pr.overtime_hours,
-                            pr.sss_Contribution,
-                            pr.phic_contribution,
-                            pr.hdmf_Contibution,
-                            pr.sss_Loan,
-                            pr.absences,
-                            pr.num_Absences,
-                            pr.withholding_Tax,
-                            pr.taxable_Income,
-                            pr.gross_pay,
-                            pr.total_Deduction,
-                            pr.net_Pay
-                        FROM payroll_records pr
-                        WHERE pr.employee_Id = ? AND pr.period_id = ?
-                        ORDER BY pr.payroll_Id DESC
-                        LIMIT 1
-                    """;
+                    SELECT 
+                        pr.basic_pay,
+                        pr.telecom_Allowance,
+                        pr.travel_Allowance,
+                        pr.rice_Subsidy,
+                        pr.non_Taxable_Salary,
+                        pr.per_Deim,
+                        pr.per_Deim_Count,
+                        pr.overtime_Pay,
+                        pr.overtime_hours,
+                        pr.undertime_Pay,
+                        pr.undertime_hours,
+                        pr.sss_Contribution,
+                        pr.phic_contribution,
+                        pr.hdmf_Contibution,
+                        pr.sss_Loan,
+                        pr.absences,
+                        pr.num_Absences,
+                        pr.withholding_Tax,
+                        pr.taxable_Income,
+                        pr.gross_pay,
+                        pr.total_Deduction,
+                        pr.net_Pay
+                    FROM payroll_records pr
+                    WHERE pr.employee_Id = ? AND pr.period_id = ?
+                    ORDER BY pr.payroll_Id DESC
+                    LIMIT 1
+                """;
 
             PreparedStatement stmt = dbConnect.getConnection().prepareStatement(query);
             stmt.setString(1, employeeId);
@@ -226,6 +230,8 @@ public class employeeController {
                 this.perDiemCount = rs.getInt("per_Deim_Count");
                 this.overtime = rs.getDouble("overtime_Pay");
                 this.overtimeHours = rs.getDouble("overtime_hours");
+                this.undertime = rs.getDouble("undertime_Pay");
+                this.undertimeHours = rs.getDouble("undertime_hours");
                 this.sssContributions = rs.getDouble("sss_Contribution");
                 this.phicContributions = rs.getDouble("phic_contribution");
                 this.hdmfContributions = rs.getDouble("hdmf_Contibution");
@@ -364,10 +370,10 @@ public class employeeController {
 
         addCell(mainTable, "Basic Pay", normalFont, Rectangle.BOX);
         addCell(mainTable, formatAmount(basicPay), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
-        addCell(mainTable, "", normalFont, Rectangle.BOX);
-        addCell(mainTable, "", normalFont, Rectangle.BOX);
+        addCell(mainTable, "Undertime (" + String.format("%.1f hrs)", undertimeHours), normalFont, Rectangle.BOX);
+        addCell(mainTable, formatAmount(undertime), boldFont, Rectangle.BOX, Element.ALIGN_RIGHT);
 
-        // Overtime
+        // Undertime & Overtime
         addCell(mainTable, "", normalFont, Rectangle.BOX);
         addCell(mainTable, "", normalFont, Rectangle.BOX);
         addCell(mainTable, "Overtime (" + String.format("%.1f hrs)", overtimeHours), normalFont, Rectangle.BOX);

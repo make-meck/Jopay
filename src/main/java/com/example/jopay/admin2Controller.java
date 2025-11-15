@@ -109,6 +109,7 @@ public class admin2Controller {
     @FXML TextField sssLoanTF;
     @FXML TextField basicPayTF;
     @FXML TextField overtimeTF;
+    @FXML TextField undertimeTF;
     @FXML TextField slBalanceTF;
     @FXML TextField vlBalanceTF;
     @FXML TextField absencesTF;
@@ -394,6 +395,7 @@ public class admin2Controller {
         // Display all computed values in the text fields
         basicPayTF.setText(String.format("₱%,.2f", model.getSemiMonthlyBasicPay()));
         overtimeTF.setText(String.format("₱%,.2f", attendance.regularOTHours * model.getHourlyRate() * 1.25));
+        undertimeTF.setText(String.format("₱%,.2f", attendance.undertimeHours * model.getHourlyRate()));
         absencesTF.setText(String.format("₱%,.2f", attendance.daysAbsent * model.getGrossDailyRate()));
         numAbsencesTF.setText(String.valueOf(attendance.daysAbsent));
 
@@ -460,6 +462,7 @@ public class admin2Controller {
         // Clear computed fields
         basicPayTF.clear();
         overtimeTF.clear();
+        undertimeTF.clear();
         absencesTF.clear();
         numAbsencesTF.clear();
         sssContributionTF.clear();
