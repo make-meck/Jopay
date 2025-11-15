@@ -1241,7 +1241,7 @@ public class admin2Controller {
             scrollPane.setFitToHeight(true);
         }
 
-        +
+
     }
 
     public void loadWeeklyAttendanceChart() {
