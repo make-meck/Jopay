@@ -11,8 +11,8 @@ public class PayrollModel {
     private static final double REGULAR_HOLIDAY_RATE = 2.00;
     private static final double REST_DAY_RATE = 1.30;
     private static final double PHIC_RATE = 0.025;
-    private static final double PHIC_MIN = 500.00;
-    private static final double PHIC_MAX = 5000.00;
+    private static final double PHIC_MIN = 250.00;
+    private static final double PHIC_MAX = 2500.00;
     private static final double HDMF = 200.00;
     private static final double VL_ACCRUAL_RATE = 1.25;
     private static final int TOTAL_VL_PER_YEAR = 15;
@@ -95,10 +95,16 @@ public class PayrollModel {
         this.semiMonthlyBasicPay = basicMonthlyPay / 2;
     }
 
+    // *** KEY CHANGE: This method now properly sets isFirstHalf flag ***
     public void setPayrollPeriod(LocalDate startDate, LocalDate endDate, boolean isFirstHalf) {
         this.startDate = startDate;
         this.endDate = endDate;
-        this.isFirstHalf = isFirstHalf;
+        this.isFirstHalf = isFirstHalf;  // Store the flag from admin2Controller's isFirstPeriod
+
+        System.out.println("=== PAYROLL PERIOD SET ===");
+        System.out.println("Start Date: " + startDate);
+        System.out.println("End Date: " + endDate);
+        System.out.println("Is First Half: " + isFirstHalf + " (used for PHIC & HDMF)");
     }
 
     public void setAttendanceData(int daysWorked, int daysAbsent, double regularOTHours,
@@ -179,7 +185,11 @@ public class PayrollModel {
         // Use pre-computed contributions if available
         if (usePreComputedContributions) {
             sssContribution = preComputedSSS;
-            phicContribution = preComputedPHIC;
+            if (preComputedPHIC < 0) {
+                phicContribution = calculatePHIC();
+            } else {
+                phicContribution = preComputedPHIC;
+            }
             hdmfContribution = preComputedHDMF;
 
             System.out.println("✓ Using PRE-COMPUTED contributions from database");
@@ -187,15 +197,16 @@ public class PayrollModel {
             System.out.println("  PHIC: ₱" + phicContribution);
             System.out.println("  HDMF: ₱" + hdmfContribution);
         } else {
+            // *** KEY CHANGE: Both PHIC and HDMF now use isFirstHalf flag ***
             // Calculate Mandatory Contributions using formulas
             sssContribution = calculateSSS();
-            phicContribution = calculatePHIC();
-            hdmfContribution = calculateHDMF();
+            phicContribution = calculatePHIC();  // Now respects isFirstHalf
+            hdmfContribution = calculateHDMF();  // Already respects isFirstHalf
 
             System.out.println("⚠ Using FORMULA-COMPUTED contributions");
             System.out.println("  SSS: ₱" + sssContribution);
-            System.out.println("  PHIC: ₱" + phicContribution);
-            System.out.println("  HDMF: ₱" + hdmfContribution);
+            System.out.println("  PHIC: ₱" + phicContribution + (isFirstHalf ? " (First Half)" : " (Second Half)"));
+            System.out.println("  HDMF: ₱" + hdmfContribution + (isFirstHalf ? " ✓ DEDUCTED" : " ✗ NOT DEDUCTED"));
         }
 
         // Calculate total non-taxable allowances (includes per diem)
@@ -222,6 +233,7 @@ public class PayrollModel {
 
         // Debug output
         System.out.println("\n=== PAYROLL COMPUTATION (FULL PRECISION) ===");
+        System.out.println("Period Type: " + (isFirstHalf ? "FIRST HALF (11-25)" : "SECOND HALF (26-10)"));
         System.out.println("Gross Pay: ₱" + semiMonthlyGrossPay);
         System.out.println("Total Non-Taxable: ₱" + totalNonTaxable);
         System.out.println("SSS: ₱" + sssContribution);
@@ -357,30 +369,31 @@ public class PayrollModel {
     }
 
     private double calculatePHIC() {
-        double monthlyContribution;
+        // Calculate MONTHLY employee share
+        double monthlyEmployeeShare;
 
         if (basicMonthlyPay < 10000) {
-            monthlyContribution = PHIC_MIN;
+            monthlyEmployeeShare = 250.00;
         } else if (basicMonthlyPay > 100000) {
-            monthlyContribution = PHIC_MAX;
+            monthlyEmployeeShare = 2500.00;
         } else {
-            monthlyContribution = (basicMonthlyPay * PHIC_RATE);
+            monthlyEmployeeShare = basicMonthlyPay * PHIC_RATE;
         }
 
-        double semiMonthlyContribution = monthlyContribution / 2;
-
-        if (semiMonthlyContribution < 250) {
+        if (monthlyEmployeeShare <= 500.00) {
             if (isFirstHalf) {
                 return 250.00;
             } else {
-                return monthlyContribution - 250.00;
+                return monthlyEmployeeShare - 250.00;
             }
+        } else {
+            return monthlyEmployeeShare / 2;
         }
-
-        return semiMonthlyContribution;
     }
 
+    // *** This method already uses isFirstHalf correctly ***
     private double calculateHDMF() {
+        // HDMF is only deducted on first half of the month (period 11-25)
         return isFirstHalf ? HDMF : 0.00;
     }
 
@@ -471,6 +484,7 @@ public class PayrollModel {
         sb.append("Employee ID: ").append(employeeId).append("\n");
         sb.append("Employee Name: ").append(employeeName).append("\n");
         sb.append("Period: ").append(startDate).append(" to ").append(endDate).append("\n");
+        sb.append("Period Type: ").append(isFirstHalf ? "FIRST HALF (11-25)" : "SECOND HALF (26-10)").append("\n");
         sb.append("Status: ").append(employmentStatus).append("\n\n");
 
         sb.append("EARNINGS:\n");
@@ -481,7 +495,8 @@ public class PayrollModel {
         sb.append("DEDUCTIONS:\n");
         sb.append("SSS: ").append(String.format("%.2f", sssContribution)).append("\n");
         sb.append("PhilHealth: ").append(String.format("%.2f", phicContribution)).append("\n");
-        sb.append("Pag-IBIG: ").append(String.format("%.2f", hdmfContribution)).append("\n");
+        sb.append("Pag-IBIG: ").append(String.format("%.2f", hdmfContribution))
+                .append(isFirstHalf ? " ✓" : " (Not deducted)").append("\n");
         sb.append("SSS Loan: ").append(String.format("%.2f", sssLoan)).append("\n");
         sb.append("Withholding Tax: ").append(String.format("%.2f", withholdingTax)).append("\n");
         sb.append("Total Deductions: ").append(String.format("%.2f", totalDeductions)).append("\n\n");
