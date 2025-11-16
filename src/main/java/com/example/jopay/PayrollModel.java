@@ -144,10 +144,23 @@ public class PayrollModel {
     }
 
     public void setPreComputedContributions(double sss, double phic, double hdmf) {
+        System.out.println("=== setPreComputedContributions() DEBUG ===");
+        System.out.println("Received values:");
+        System.out.println("  SSS: ₱" + sss);
+        System.out.println("  PHIC: ₱" + phic);
+        System.out.println("  HDMF: ₱" + hdmf);
+
         this.usePreComputedContributions = true;
         this.preComputedSSS = sss;
         this.preComputedPHIC = phic;
         this.preComputedHDMF = hdmf;
+
+        System.out.println("Set flags:");
+        System.out.println("  usePreComputedContributions: " + this.usePreComputedContributions);
+        System.out.println("  preComputedSSS: ₱" + this.preComputedSSS);
+        System.out.println("  preComputedPHIC: ₱" + this.preComputedPHIC);
+        System.out.println("  preComputedHDMF: ₱" + this.preComputedHDMF);
+        System.out.println("===========================================\n");
     }
 
     public void computePayroll() {
@@ -216,9 +229,6 @@ public class PayrollModel {
 
         // Calculate Net Pay with full precision - NO ROUNDING
         netPay = semiMonthlyGrossPay - totalDeductions;
-
-        // Reset for next computation
-        usePreComputedContributions = false;
 
         // Debug output
         System.out.println("\n=== PAYROLL COMPUTATION (FULL PRECISION) ===");
@@ -289,10 +299,18 @@ public class PayrollModel {
 
     private double calculateSSS() {
         double employeeShare = getSSSEmployeeShare(basicMonthlyPay);
-        return employeeShare / 2;
+        double semiMonthly = employeeShare / 2;
+
+        System.out.println("=== calculateSSS() DEBUG ===");
+        System.out.println("Basic Monthly Pay: ₱" + basicMonthlyPay);
+        System.out.println("Employee Share (monthly): ₱" + employeeShare);
+        System.out.println("Semi-monthly: ₱" + semiMonthly);
+        System.out.println("===========================\n");
+
+        return semiMonthly;
     }
 
-    private double getSSSEmployeeShare(double monthlySalary) {
+    public double getSSSEmployeeShare(double monthlySalary) {
         if (monthlySalary < 5250) return 250.00;
         else if (monthlySalary >= 5250 && monthlySalary <= 5749.99) return 275.00;
         else if (monthlySalary >= 5750 && monthlySalary <= 6249.99) return 300.00;

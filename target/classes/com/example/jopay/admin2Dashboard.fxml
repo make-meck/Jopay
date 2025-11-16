@@ -364,7 +364,7 @@
         </AnchorPane>
         <AnchorPane id="managePayrollPane" fx:id="managePayrollPane" layoutY="237.0" onMouseClicked="#managePayrollClick" prefHeight="472.0" prefWidth="1921.0" stylesheets="@admin2style.css" visible="false">
             <children>
-                <Rectangle id="manageEmpPane" arcHeight="5.0" arcWidth="5.0" fill="#dfdfdf" height="361.0" layoutX="63.0" layoutY="84.0" smooth="false" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="887.0" />
+                <Rectangle id="manageEmpPane" arcHeight="5.0" arcWidth="5.0" fill="#dfdfdf" height="389.0" layoutX="63.0" layoutY="84.0" smooth="false" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="887.0" />
                 <VBox id="manageEmpLabelPane1" alignment="TOP_CENTER" layoutX="70.0" layoutY="89.0" prefHeight="346.0" prefWidth="160.0">
                     <children>
                         <Label prefHeight="25.0" prefWidth="165.0" text="Employee Name: ">
@@ -465,6 +465,9 @@
                             <VBox.margin>
                                 <Insets />
                             </VBox.margin>
+                     <padding>
+                        <Insets top="5.0" />
+                     </padding>
                         </Label>
 
                         <!-- CHANGED: Single label for Cut-off Period -->
@@ -472,6 +475,9 @@
                             <VBox.margin>
                                 <Insets bottom="13.0" top="5.0" />
                             </VBox.margin>
+                     <padding>
+                        <Insets top="3.0" />
+                     </padding>
                         </Label>
 
                         <!-- Rest of your labels remain the same -->
@@ -490,17 +496,17 @@
                                 <Insets bottom="5.0" top="4.0" />
                             </padding>
                         </Label>
-                        <Label prefHeight="18.0" prefWidth="198.0" text="No. of Vacation Leave (VL):">
+                        <Label prefHeight="18.0" prefWidth="198.0" text="Undertime:">
                             <padding>
                                 <Insets bottom="5.0" top="5.0" />
                             </padding>
                         </Label>
-                        <Label prefHeight="18.0" prefWidth="191.0" text="No. of Sick Leave (SL):">
+                        <Label prefHeight="18.0" prefWidth="191.0" text="No. of Vacation Leave (VL):">
                             <padding>
                                 <Insets bottom="5.0" top="6.0" />
                             </padding>
                         </Label>
-                        <Label prefHeight="18.0" prefWidth="197.0" text="Absences:">
+                        <Label prefHeight="18.0" prefWidth="197.0" text="No. of Sick Leave (SL):">
                             <VBox.margin>
                                 <Insets />
                             </VBox.margin>
@@ -508,22 +514,27 @@
                                 <Insets bottom="5.0" top="7.0" />
                             </padding>
                         </Label>
-                        <Label prefHeight="18.0" prefWidth="200.0" text="Number of Absences:">
+                        <Label prefHeight="18.0" prefWidth="200.0" text="Absences:">
                             <padding>
-                                <Insets bottom="8.0" top="6.0" />
+                                <Insets bottom="6.0" top="6.0" />
                             </padding>
                         </Label>
-                        <Label prefHeight="18.0" prefWidth="189.0" text="Gross Pay:">
+                        <Label prefHeight="18.0" prefWidth="189.0" text="Number of Absences:">
+                            <padding>
+                                <Insets bottom="8.0" top="3.0" />
+                            </padding>
+                        </Label>
+                        <Label layoutX="10.0" layoutY="194.0" prefHeight="18.0" prefWidth="189.0" text="Gross Pay:">
                             <padding>
                                 <Insets bottom="4.0" top="12.0" />
                             </padding>
                         </Label>
-                        <Label layoutX="10.0" layoutY="194.0" prefHeight="18.0" prefWidth="189.0" text="Total Deduction:">
-                            <padding>
-                                <Insets bottom="4.0" top="5.0" />
-                            </padding>
-                        </Label>
-                  <Label layoutX="10.0" layoutY="202.0" prefHeight="18.0" prefWidth="197.0" text="Net Pay:">
+                  <Label layoutX="10.0" layoutY="202.0" prefHeight="18.0" prefWidth="197.0" text="Total Deduction:">
+                     <padding>
+                        <Insets bottom="4.0" top="5.0" />
+                     </padding>
+                  </Label>
+                  <Label layoutX="10.0" layoutY="321.0" prefHeight="18.0" prefWidth="197.0" text="Net Pay:">
                      <padding>
                         <Insets top="5.0" />
                      </padding>
@@ -544,21 +555,25 @@
                         <!-- Rest of your textfields remain the same -->
                         <TextField fx:id="taxablePayTF" editable="false" layoutX="11.0" layoutY="90.0" />
                         <TextField fx:id="withholdingTaxTF" editable="false" layoutX="11.0" layoutY="112.0" />
-                        <TextField fx:id="overtimeTF" editable="false" layoutX="11.0" layoutY="145.0" />
-                        <TextField fx:id="slBalanceTF" editable="false" layoutX="11.0" layoutY="179.0" />
+                        <TextField fx:id="overtimeTF" editable="false" layoutX="11.0" layoutY="145.0" prefHeight="26.0" prefWidth="116.0" />
+                        <TextField fx:id="undertimeTF" editable="false" layoutX="11.0" layoutY="179.0" />
                         <TextField fx:id="vlBalanceTF" editable="false" layoutX="11.0" layoutY="212.0" />
-                        <TextField fx:id="absencesTF" editable="false" layoutX="11.0" layoutY="246.0">
+                        <TextField fx:id="slBalanceTF" editable="false" layoutX="11.0" layoutY="246.0">
                             <VBox.margin>
                                 <Insets />
                             </VBox.margin>
                         </TextField>
-                        <TextField fx:id="numAbsencesTF" editable="false" layoutX="11.0" layoutY="280.0">
+                        <TextField fx:id="absencesTF" editable="false" layoutX="11.0" layoutY="280.0">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin></TextField>
+                        <TextField fx:id="numAbsencesTF" editable="false" layoutX="11.0" layoutY="246.0">
                      <VBox.margin>
                         <Insets bottom="12.0" />
                      </VBox.margin></TextField>
-                        <TextField fx:id="grossPayTF" editable="false" layoutX="11.0" layoutY="246.0" />
-                        <TextField fx:id="totalDeductionTF" editable="false" layoutX="11.0" layoutY="280.0" />
-                        <TextField fx:id="netPayTF" editable="false" layoutX="10.0" layoutY="214.0" />
+                        <TextField fx:id="grossPayTF" editable="false" layoutX="11.0" layoutY="280.0" />
+                        <TextField fx:id="totalDeductionTF" editable="false" layoutX="10.0" layoutY="214.0" />
+                        <TextField fx:id="netPayTF" editable="false" layoutX="10.0" layoutY="129.0" prefHeight="26.0" prefWidth="116.0" />
                     </children>
                 </VBox>
                 <VBox id="manageEmpButtons" layoutX="970.0" layoutY="257.0" prefHeight="147.0" prefWidth="160.0" spacing="20.0">
