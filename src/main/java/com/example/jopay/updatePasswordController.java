@@ -5,36 +5,21 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
-
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Optional;
 
 public class updatePasswordController {
 
-    @FXML
-    private TextField employee_id;
+    @FXML private TextField employee_id;     // Employee ID
+    @FXML private PasswordField pass_word;  // Old Password
+    @FXML private PasswordField pass_word1;  // New Password
+    @FXML private PasswordField pass_word11;  // Confirm Password
+    @FXML private Label error;
+    @FXML private Button backButton;
+    @FXML private Button loginButton;
 
-    @FXML
-    private PasswordField pass_word;  // Old Password
 
-    @FXML
-    private PasswordField pass_word1;  // New Password
-
-    @FXML
-    private PasswordField pass_word11;  // Confirm Password
-
-    @FXML
-    private Label error;
-
-    @FXML
-    private Button backButton;
-
-    @FXML
-    private Button loginButton;  // UPDATE button
-
-    /*private int employeeID = 11111;
-    private String currentPassword = "0000";*/
 
     private final EmployeeDAO  employeeDAO= new EmployeeDAO();
     private String currentEmployeeId;
@@ -56,51 +41,6 @@ public class updatePasswordController {
     }
 
 
-
-    /*@FXML
-    void updatePassword() throws IOException {
-        try {
-            if (employee_id.getText().isEmpty() || pass_word.getText().isEmpty() ||
-                    pass_word1.getText().isEmpty() || pass_word11.getText().isEmpty()) {
-                error.setText("Please fill in all fields.");
-                return;
-            }
-
-            if (Integer.parseInt(employee_id.getText()) != employeeID) {
-                error.setText("Invalid Employee ID.");
-                return;
-            }
-
-            if (!pass_word.getText().equals(currentPassword)) {
-                error.setText("Incorrect old password.");
-                return;
-            }
-
-            if (!pass_word1.getText().equals(pass_word11.getText())) {
-                error.setText("New passwords do not match.");
-                return;
-            }
-
-            if (pass_word.getText().equals(pass_word1.getText())) {
-                error.setText("New password must be different from old password.");
-                return;
-            }
-
-            currentPassword = pass_word1.getText();
-
-            showAlert("Password updated successfully!");
-
-            FXMLLoader employeeDashboardLoader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
-            Stage stage = (Stage) loginButton.getScene().getWindow();
-            Scene employeeDashboardScene = new Scene(employeeDashboardLoader.load());
-            stage.setScene(employeeDashboardScene);
-            stage.show();
-
-        } catch (NumberFormatException e) {
-            error.setText("Invalid Employee ID format.");
-        }
-    } */
-
     @FXML
     void updatePassword() {
         String EmpID = employee_id.getText();
@@ -117,8 +57,6 @@ public class updatePasswordController {
         try {
             int id = Integer.parseInt( EmpID);
 
-            // Fetch employee from database
-            //taga-kuha ng info sa database
             Optional<Employee> employeeOpt = employeeDAO.findEmployeeId( EmpID);
             if (employeeOpt.isEmpty()) {
                 error.setText("Employee ID not found.");
@@ -127,20 +65,14 @@ public class updatePasswordController {
 
             Employee employee = employeeOpt.get();
 
-            // Verify old password
-            // iveverify niya ung dating password na nasa database
             if (!employee.getPassword().equals(oldPassword)) {
                 error.setText("Incorrect old password.");
                 return;
             }
-
-            //checks the new and confirm password if same sila
             if (!newPassword.equals(confirmPassword)) {
                 error.setText("New passwords do not match.");
                 return;
             }
-
-            //preventing the user para magamit ung dati nilang password
             if (oldPassword.equals(newPassword)) {
                 error.setText("New password must be different from old password.");
                 return;

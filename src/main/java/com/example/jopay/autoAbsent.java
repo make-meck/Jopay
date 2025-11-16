@@ -18,10 +18,7 @@ public class autoAbsent {
         connect = new DatabaseConnector();
     }
 
-    /**
-     * Marks employees as absent if they haven't timed in by the cutoff time.
-     * Uses INSERT ... ON DUPLICATE KEY UPDATE to avoid duplicate records.
-     */
+
     public void markAbsentEmployees() throws SQLException {
         Connection connection = null;
         PreparedStatement stmt = null;
@@ -29,8 +26,7 @@ public class autoAbsent {
         try {
             connection = connect.getConnection();
 
-            // Insert absent records for employees who haven't timed in today
-            // If record already exists, only update to Absent if time_IN is still NULL
+
             String query = "INSERT INTO time_log (employee_Id, log_date, time_IN, time_Out, status) " +
                     "SELECT ei.employee_Id, CURDATE(), NULL, NULL, 'Absent' " +
                     "FROM employee_info ei " +
@@ -54,9 +50,6 @@ public class autoAbsent {
         }
     }
 
-    /**
-     * Run the auto-absent marking process immediately
-     */
     public void runAutoAbsent() {
         try {
             markAbsentEmployees();
@@ -66,10 +59,7 @@ public class autoAbsent {
         }
     }
 
-    /**
-     * Schedule daily auto-absent check at a specific time (default: 12:30 AM)
-     * This ensures employees are marked absent if they haven't clocked in by end of day
-     */
+
     public void scheduleDailyCheck(int hour, int minute) {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
@@ -78,15 +68,11 @@ public class autoAbsent {
             runAutoAbsent();
         };
 
-        // Calculate initial delay
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime nextRun = now.withHour(hour).withMinute(minute).withSecond(0);
-
-        // If the scheduled time has passed today, schedule for tomorrow
         if (now.isAfter(nextRun)) {
             nextRun = nextRun.plusDays(1);
         }
-
         long initialDelay = Duration.between(now, nextRun).toMillis();
         long period = TimeUnit.DAYS.toMillis(1);
 
@@ -96,16 +82,12 @@ public class autoAbsent {
         scheduler.scheduleAtFixedRate(task, initialDelay, period, TimeUnit.MILLISECONDS);
     }
 
-    /**
-     * Default scheduler - runs at 12:30 AM daily
-     */
+
     public void scheduleDailyCheck() {
-        scheduleDailyCheck(0, 30);
+        scheduleDailyCheck(17, 30);
     }
 
-    /**
-     * For testing: mark absences for a specific date
-     */
+
     public void markAbsentForDate(java.sql.Date date) throws SQLException {
         Connection connection = null;
         PreparedStatement stmt = null;
