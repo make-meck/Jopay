@@ -48,7 +48,7 @@
             <image>
                 <Image url="@JopayLogo.png" />
             </image></ImageView>
-        <AnchorPane id="reportAnalysisPane" fx:id="reportAnalysisPane" layoutX="65.0" layoutY="264.0" onMouseClicked="#reportAnalysisClick" onMousePressed="#reportAnalysisClick" prefHeight="385.0" prefWidth="1858.0">
+        <AnchorPane id="reportAnalysisPane" fx:id="reportAnalysisPane" layoutX="65.0" layoutY="264.0" onMouseClicked="#reportAnalysisClick" onMousePressed="#reportAnalysisClick" prefHeight="385.0" prefWidth="1858.0" visible="false">
             <children>
             <VBox fx:id="reportAnalysisBox" layoutX="768.0" layoutY="10.0" prefHeight="397.0" prefWidth="373.0" spacing="10.0">
                <children>
@@ -362,7 +362,7 @@
                 </AnchorPane>
             </children>
         </AnchorPane>
-        <AnchorPane id="managePayrollPane" fx:id="managePayrollPane" layoutY="237.0" onMouseClicked="#managePayrollClick" prefHeight="472.0" prefWidth="1921.0" stylesheets="@admin2style.css" visible="false">
+        <AnchorPane id="managePayrollPane" fx:id="managePayrollPane" layoutY="237.0" onMouseClicked="#managePayrollClick" prefHeight="472.0" prefWidth="1921.0" stylesheets="@admin2style.css">
             <children>
                 <Rectangle id="manageEmpPane" arcHeight="5.0" arcWidth="5.0" fill="#dfdfdf" height="389.0" layoutX="63.0" layoutY="84.0" smooth="false" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="887.0" />
                 <VBox id="manageEmpLabelPane1" alignment="TOP_CENTER" layoutX="70.0" layoutY="89.0" prefHeight="346.0" prefWidth="160.0">
@@ -435,7 +435,7 @@
                         </Label>
                     </children>
                 </VBox>
-                <VBox id="manageEmpTextfieldPane1" layoutX="174.0" layoutY="89.0" prefHeight="346.0" prefWidth="242.0">
+                <VBox id="manageEmpTextfieldPane1" layoutX="198.0" layoutY="89.0" prefHeight="346.0" prefWidth="242.0">
                     <children>
                         <TextField fx:id="payrollemployeeName" prefHeight="12.0" prefWidth="169.0" />
                         <TextField fx:id="payrollEmployeeID">
@@ -579,20 +579,20 @@
                                 <Font size="20.0" />
                             </font>
                         </Button>
-                        <Button id="payrollDeleteButton" fx:id="payrollDeleteButton" mnemonicParsing="false" prefHeight="50.0" prefWidth="160.0" text="Delete" onAction="#deletePayroll">
+                        <Button id="payrollDeleteButton" fx:id="payrollDeleteButton" mnemonicParsing="false" onAction="#deletePayroll" prefHeight="50.0" prefWidth="160.0" text="Delete">
                             <font>
                                 <Font size="20.0" />
                             </font>
                         </Button>
                     </children>
                 </VBox>
-                <TextField id="manageEmpSearchBar" fx:id="searchIDManager" layoutX="62.0" layoutY="40.0" onAction="#onSearchEmployee" prefHeight="38.0" prefWidth="382.0" promptText="Employee ID " />
-                <ImageView id="manageEmpSearchIcon" fitHeight="37.0" fitWidth="32.0" layoutX="409.0" layoutY="43.0" pickOnBounds="true" preserveRatio="true">
+                <TextField id="manageEmpSearchBar" fx:id="searchIDManager" layoutX="70.0" layoutY="8.0" onAction="#onSearchEmployee" prefHeight="40.0" prefWidth="424.0" promptText="Employee ID " />
+                <ImageView id="manageEmpSearchIcon" fitHeight="37.0" fitWidth="32.0" layoutX="458.0" layoutY="13.0" pickOnBounds="true" preserveRatio="true">
                     <image>
                         <Image url="@searchIconManagePayroll.png" />
                     </image>
                 </ImageView>
-                <Label fx:id="errorLabelManagePayroll" layoutX="416.0" layoutY="52.0" prefHeight="22.0" prefWidth="362.0" />
+                <Label fx:id="errorLabelManagePayroll" layoutX="70.0" layoutY="54.0" prefHeight="22.0" prefWidth="362.0" />
             </children>
         </AnchorPane>
         <Label id="reportAnalysisLabel" fx:id="reportAnalysisLabel" layoutX="62.0" layoutY="84.0" prefHeight="62.0" prefWidth="334.0" text="Report Analysis " textFill="#0a625b">
@@ -611,24 +611,15 @@
             </font>
         </Label>
 
-        <HBox spacing="10" AnchorPane.topAnchor="20" AnchorPane.rightAnchor="40"
-              alignment="CENTER_RIGHT">
+        <HBox alignment="CENTER_RIGHT" spacing="10" AnchorPane.rightAnchor="40" AnchorPane.topAnchor="20">
 
-            <Hyperlink fx:id="adminLogoutHpl"
-                       onAction="#adminLogoutClick"
-                       text="Logout"
-                       textFill="#0a625b">
+            <Hyperlink fx:id="adminLogoutHpl" onAction="#adminLogoutClick" text="Logout" textFill="#0a625b">
                 <font>
                     <Font size="15.0" />
                 </font>
             </Hyperlink>
 
-            <ImageView fx:id="adminLogoutImage"
-                       fitHeight="35.0" fitWidth="30.0"
-                       onMouseClicked="#adminLogoutImageClick"
-                       pickOnBounds="true"
-                       preserveRatio="true"
-                       style="-fx-cursor: hand;">
+            <ImageView fx:id="adminLogoutImage" fitHeight="35.0" fitWidth="30.0" onMouseClicked="#adminLogoutImageClick" pickOnBounds="true" preserveRatio="true" style="-fx-cursor: hand;">
                 <image>
                     <Image url="@logoutbutton.png" />
                 </image>
