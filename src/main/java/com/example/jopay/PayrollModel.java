@@ -128,7 +128,7 @@ public class PayrollModel {
         this.dailyPerDiem = dailyPerDiem;
         this.perDiemCount = perDiemCount;
 
-        this.grossMonthlyPay = basicMonthlyPay + telecomAllowance + travelAllowance + riceSubsidy + otherNonTaxable;
+        this.grossMonthlyPay = basicMonthlyPay + (telecomAllowance * 2) + (travelAllowance * 2) + (riceSubsidy * 2) + otherNonTaxable;
         this.grossDailyRate = grossMonthlyPay / FACTORATE;
     }
 
@@ -179,13 +179,14 @@ public class PayrollModel {
         double slPay = calculateSLPay();
         double perDiemPay = calculatePerDiem();
 
+
         // Calculate total earnings with full precision
         totalEarnings = basicPayForPeriod
                 + telecomAllowance + travelAllowance + riceSubsidy
                 + perDiemPay + otherNonTaxable + regularOTPay
                 + nightDiffOTPay + specialHolidayPay
                 + regularHolidayPay + restDayPay + restDayOTPay
-                + restDayNightDiffOTPay + vlPay + slPay;
+                + restDayNightDiffOTPay;
 
         semiMonthlyGrossPay = totalEarnings;
 
@@ -291,6 +292,15 @@ public class PayrollModel {
 
     private double calculateSLPay() {
         return slUsed * basicDailyRate;
+    }
+
+    // for February
+    public double calculateUnusedLeaveConversion() {
+        // Called only in February for unused leave payout
+        double unusedVL = vlBalance;
+        double unusedSL = slBalance;
+
+        return (unusedVL + unusedSL) * basicDailyRate;
     }
 
     private double calculatePerDiem() {
