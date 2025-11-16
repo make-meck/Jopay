@@ -490,30 +490,4 @@ public class PayrollModel {
     public double getSSSContribution() { return sssContribution; }
     public double getPHICContribution() { return phicContribution; }
     public double getHDMFContribution() { return hdmfContribution; }
-
-    public String generatePayslipSummary() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("=== PAYSLIP ===\n");
-        sb.append("Employee ID: ").append(employeeId).append("\n");
-        sb.append("Employee Name: ").append(employeeName).append("\n");
-        sb.append("Period: ").append(startDate).append(" to ").append(endDate).append("\n");
-        sb.append("Status: ").append(employmentStatus).append("\n\n");
-
-        sb.append("EARNINGS:\n");
-        sb.append("Basic Pay: ").append(String.format("%.2f", semiMonthlyBasicPay)).append("\n");
-        sb.append("Gross Pay: ").append(String.format("%.2f", semiMonthlyGrossPay)).append("\n");
-        sb.append("Total Earnings: ").append(String.format("%.2f", totalEarnings)).append("\n\n");
-
-        sb.append("DEDUCTIONS:\n");
-        sb.append("SSS: ").append(String.format("%.2f", sssContribution)).append("\n");
-        sb.append("PhilHealth: ").append(String.format("%.2f", phicContribution)).append("\n");
-        sb.append("Pag-IBIG: ").append(String.format("%.2f", hdmfContribution)).append("\n");
-        sb.append("SSS Loan: ").append(String.format("%.2f", sssLoan)).append("\n");
-        sb.append("Withholding Tax: ").append(String.format("%.2f", withholdingTax)).append("\n");
-        sb.append("Total Deductions: ").append(String.format("%.2f", totalDeductions)).append("\n\n");
-
-        sb.append("NET PAY: ").append(String.format("%.2f", netPay)).append("\n");
-
-        return sb.toString();
-    }
 }

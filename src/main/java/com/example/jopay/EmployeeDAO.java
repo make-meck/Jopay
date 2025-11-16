@@ -1,9 +1,6 @@
 package com.example.jopay;
 
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,19 +9,13 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-/*
-This class is responsible for handling all of the SQL query and updates to the database
- */
-
+// This class is responsible for handling all of the SQL query and updates to the database
 
 public class EmployeeDAO {
     static DatabaseConnector connect;
-
-
     public EmployeeDAO() {
         this.connect = new DatabaseConnector();
     }
-
 
     // find the employee by their employee_ID
     public Optional<Employee> findEmployeeId(String employeeId) throws SQLException {
@@ -54,7 +45,7 @@ public class EmployeeDAO {
                 employee.setBasicSalary(rs.getDouble("basic_Salary"));
                 employee.setDateHired(rs.getString("date_Hired"));
 
-                // Handle DOB which might be null
+                // handle DOB which might be null
                 if (rs.getDate("employee_DOB") != null) {
                     employee.setDob(rs.getDate("employee_DOB").toLocalDate());
                 }
@@ -77,7 +68,7 @@ public class EmployeeDAO {
         }
     }
 
-    //updates the employee password
+    // updates the employee password
     public boolean updatePassword(int employeeId, String newPassword) throws SQLException {
         String updatePass = "UPDATE employee_account SET  employee_password = ?  WHERE employee_Id= ?";
         try (PreparedStatement stmt = connect.prepareStatement(updatePass)) {
@@ -87,7 +78,7 @@ public class EmployeeDAO {
         }
     }
 
-    //makes the employee inactive
+    // makes the employee inactive
     public static void deactivateEmployee(int employeeId) throws SQLException {
         String sql = "UPDATE employee_info SET is_Active = 0 WHERE employee_Id= ?";
         PreparedStatement active = connect.prepareStatement(sql);
@@ -100,7 +91,7 @@ public class EmployeeDAO {
         }
     }
 
-    //makes the account inactive
+    // makes the account inactive
     public static void deactivateAccount(int employeeId) throws SQLException {
         String sql = "UPDATE employee_account SET employee_password = NULL WHERE employee_Id =?";
         PreparedStatement deactivate = connect.prepareStatement(sql);
@@ -124,7 +115,7 @@ public class EmployeeDAO {
         return false;
     }
 
-    //This gets all the Employees from the database
+    // gets all the Employees from the database
     public static List<Employee> getAllEmployees() {
         List<Employee> employees = new ArrayList<>();
         String query = "SELECT * FROM employee_info ORDER BY employee_id";
@@ -149,7 +140,8 @@ public class EmployeeDAO {
         return employees;
     }
 
-    //This methods is used in the manage employee, where the admin needs to search by the employee's ID, Name, Department, and Status
+    /* used in the manage employee screen, where the admin needs to search
+       by the employee's ID, Name, Department, and Status */
     public static List<Employee> searchEmployees(String keyword) {
         List<Employee> employees = new ArrayList<>();
 
@@ -196,7 +188,7 @@ public class EmployeeDAO {
         return employees;
     }
 
-    //This method is used to add employee from the manage employee to the database
+    // add employee from the manage employee screen to the database
     public static void addEmployee(Employee employee, String password) throws SQLException {
         connect.setAutoCommit(false);
 
@@ -229,7 +221,8 @@ public class EmployeeDAO {
 
         connect.commit();
     }
-    //This get the next available employee ID based from the last Employee ID
+
+    // get the next available employee ID based from the last Employee ID
     public static int getNextEmployeeId() throws SQLException {
         String query = "SELECT MAX(employee_Id) AS maxId FROM employee_info";
         PreparedStatement stmt = connect.prepareStatement(query);
@@ -247,7 +240,8 @@ public class EmployeeDAO {
         stmt.close();
         return nextId;
     }
-    //This is used to find the employee by its Employee ID
+
+    // used to find the employee by its Employee ID
     public static Employee getEmployeeById(int employeeId) throws SQLException {
         String query = """
                 SELECT employee_Id, employee_FirstName, employee_LastName, 
@@ -275,6 +269,7 @@ public class EmployeeDAO {
         stmt.close();
         return employee;
     }
+
     //It updates the employement status of the employee
     public static void updateEmploymentStatus() {
         String query = "SELECT employee_Id, date_Hired, employment_Status FROM employee_info";
@@ -363,6 +358,7 @@ public class EmployeeDAO {
 
         return deptCounts;
     }
+
     //This is for the admin dashboard, where it also tracks the attendance of the employee
     public Map<String, Integer> getWeeklyAttendanceSummary() {
         Map<String, Integer> summary = new HashMap<>();

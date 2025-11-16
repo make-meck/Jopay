@@ -34,32 +34,6 @@ public class employeeLoginController {
     @FXML
     private final AutheticationHandler authService = new AutheticationHandler();
 
-   /* private int employeeID = 11111;
-    private String password = "0000";
-
-    @FXML
-    private void loginClick() throws IOException {
-        try {
-            if (employee_id.getText().isEmpty() || pass_word.getText().isEmpty()) {
-                error.setText("Please fill in all fields.");
-                return;
-            }
-
-            if (Integer.parseInt(employee_id.getText()) != employeeID || !pass_word.getText().equals(password)) {
-                error.setText("Account not found. Please try again.");
-            } else {
-                FXMLLoader dashboardLoader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
-                Stage stage = (Stage) loginButton.getScene().getWindow();
-                Scene dashboardScene = new Scene(dashboardLoader.load());
-                stage.setScene(dashboardScene);
-                stage.show();
-            }
-        } catch (NumberFormatException e) {
-            error.setText("Invalid Employee ID format.");
-        }
-    }
-    */
-
     @FXML
     private void handleLogin() {
         String employeeId = employee_id.getText();
@@ -106,7 +80,6 @@ public class employeeLoginController {
         stage.getScene().setRoot(root);
     }
 }
-
 
     /*@FXML
     private void backClick() throws IOException {
