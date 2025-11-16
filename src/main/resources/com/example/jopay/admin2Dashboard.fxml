@@ -599,12 +599,12 @@
                 <Font size="39.0" />
             </font>
         </Label>
-      <ImageView fx:id="adminLogoutImage" fitHeight="35.0" fitWidth="30.0" layoutX="1713.0" layoutY="20.0" onMouseClicked="#adminLogoutImageClick" pickOnBounds="true" preserveRatio="true" style="-fx-cursor: hand;">
+      <ImageView fx:id="adminLogoutImage" fitHeight="35.0" fitWidth="30.0" layoutX="1262.0" layoutY="20.0" onMouseClicked="#adminLogoutImageClick" pickOnBounds="true" preserveRatio="true" style="-fx-cursor: hand;">
          <image>
             <Image url="@logoutbutton.png" />
          </image>
       </ImageView>
-      <Hyperlink fx:id="adminLogoutHpl" layoutX="1656.0" layoutY="21.0" onAction="#adminLogoutClick" text="Logout" textFill="#0a625b">
+      <Hyperlink fx:id="adminLogoutHpl" layoutX="1198.0" layoutY="21.0" onAction="#adminLogoutClick" text="Logout" textFill="#0a625b">
          <font>
             <Font size="15.0" />
          </font></Hyperlink>

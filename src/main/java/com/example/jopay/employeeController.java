@@ -86,6 +86,8 @@ public class employeeController {
     private double netPay = 0.0;
     private int loggedInEmployeeId;
 
+    private Employee currentEmployee;
+
 
 
     @FXML
@@ -134,7 +136,7 @@ public class employeeController {
 
             welcomeLabel.setText("Mabuhay " + employeeName + "!");
 
-            System.out.println("Employee data loaded: " + employeeName);
+
         } else {
             System.err.println("Failed to load employee data for ID: " + empId);
         }
@@ -527,4 +529,10 @@ public class employeeController {
         }
 
     }
+
+
+
+
+
+
 }
