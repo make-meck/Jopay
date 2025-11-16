@@ -320,6 +320,9 @@ public class employeeController {
 
             if (pdfFile.exists()) {
                 Desktop.getDesktop().open(pdfFile);
+                Stage stage = (Stage) downloadBtn.getScene().getWindow();
+                stage.setFullScreen(true);
+                stage.show();
                 showAlert("Payslip generated and opened successfully!");
             } else {
                 showAlert("Error: PDF file was not created.");
