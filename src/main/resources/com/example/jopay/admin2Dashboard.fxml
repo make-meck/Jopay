@@ -579,7 +579,7 @@
                                 <Font size="20.0" />
                             </font>
                         </Button>
-                        <Button id="payrollDeleteButton" fx:id="payrollDeleteButton" mnemonicParsing="false" prefHeight="50.0" prefWidth="160.0" text="Delete">
+                        <Button id="payrollDeleteButton" fx:id="payrollDeleteButton" mnemonicParsing="false" prefHeight="50.0" prefWidth="160.0" text="Delete" onAction="#deletePayroll">
                             <font>
                                 <Font size="20.0" />
                             </font>

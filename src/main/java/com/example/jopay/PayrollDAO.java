@@ -770,6 +770,63 @@ public class PayrollDAO {
         return periods;
     }
 
+    /**
+     * Delete payroll record for a specific employee and period
+     * @param employeeId The employee ID
+     * @param periodId The payroll period ID
+     * @return true if deletion was successful, false otherwise
+     */
+    public boolean deletePayroll(String employeeId, int periodId) {
+        String sql = "DELETE FROM payroll_records WHERE employee_id = ? AND period_id = ?";
+
+        try (PreparedStatement pstmt = connect.prepareStatement(sql)) {
+            pstmt.setString(1, employeeId);
+            pstmt.setInt(2, periodId);
+
+            int rowsAffected = pstmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("✓ Payroll record deleted successfully for Employee ID: " +
+                        employeeId + ", Period ID: " + periodId);
+                return true;
+            } else {
+                System.out.println("⚠ No payroll record found for Employee ID: " +
+                        employeeId + ", Period ID: " + periodId);
+                return false;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("✗ Error deleting payroll: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Check if payroll record exists for the given employee and period
+     * @param employeeId The employee ID
+     * @param periodId The payroll period ID
+     * @return true if record exists, false otherwise
+     */
+    public boolean payrollExists(String employeeId, int periodId) {
+        String sql = "SELECT COUNT(*) FROM payroll_records WHERE employee_id = ? AND period_id = ?";
+
+        try (PreparedStatement pstmt = connect.prepareStatement(sql)) {
+            pstmt.setString(1, employeeId);
+            pstmt.setInt(2, periodId);
+
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error checking payroll existence: " + e.getMessage());
+        }
+
+        return false;
+    }
+
     /* public boolean updatePayroll(int payrollId, String employeeId, int periodId,
                                  PayrollModel model, SalaryConfig config,
                                  AttendanceData attendance) {

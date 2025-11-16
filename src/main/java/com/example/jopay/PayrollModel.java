@@ -180,7 +180,7 @@ public class PayrollModel {
         double perDiemPay = calculatePerDiem();
 
         // Calculate total earnings with full precision
-        totalEarnings = basicPayForPeriod - absentDeduction - undertimeDeduction
+        totalEarnings = basicPayForPeriod
                 + telecomAllowance + travelAllowance + riceSubsidy
                 + perDiemPay + otherNonTaxable + regularOTPay
                 + nightDiffOTPay + specialHolidayPay
@@ -218,14 +218,14 @@ public class PayrollModel {
         // Calculate Taxable Income with full precision
         // Taxable Income = Gross Pay - Contributions - Non-Taxable Allowances
         taxableIncome = semiMonthlyGrossPay - sssContribution - phicContribution
-                - hdmfContribution - totalNonTaxable;
+                - hdmfContribution - totalNonTaxable - undertimeDeduction - absentDeduction;
 
         // Calculate Withholding Tax with full precision
         withholdingTax = calculateWithholdingTax(taxableIncome);
 
         // Calculate Total Deductions with full precision
         totalDeductions = sssContribution + phicContribution + hdmfContribution
-                + sssLoan + withholdingTax;
+                + sssLoan + withholdingTax + undertimeDeduction + absentDeduction;
 
         // Calculate Net Pay with full precision - NO ROUNDING
         netPay = semiMonthlyGrossPay - totalDeductions;
