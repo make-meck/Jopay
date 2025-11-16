@@ -747,6 +747,12 @@ public class admin2Controller {
     @FXML
     private void updateComputedPayroll() {
         saveComputedPayroll();
+
+        Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+        successAlert.setTitle("Update Successful");
+        successAlert.setHeaderText(null);
+        successAlert.setContentText("✓ Payroll has been updated successfully!");
+        successAlert.showAndWait();
     }
 
 
