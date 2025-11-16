@@ -37,17 +37,19 @@ public class updatePasswordController {
     private String currentPassword = "0000";*/
 
     private final EmployeeDAO  employeeDAO= new EmployeeDAO();
+    private String currentEmployeeId;
 
+    public void setEmployeeId(String employeeId){
+        this.currentEmployeeId = employeeId;
+    }
     @FXML
     void updateBackButton() throws IOException {
-
-        String employeeId = employee_id.getText(); // or currentEmployeeId if stored
         FXMLLoader loader = new FXMLLoader(getClass().getResource("employee_dashboard.fxml"));
         Parent root = loader.load();
 
         employeeController controller = loader.getController();
-        controller.setLoggedInEmployeeId(employeeId);
-        controller.loadEmployeeData(employeeId);
+        controller.setLoggedInEmployeeId(currentEmployeeId); // Use stored ID
+        controller.loadEmployeeData(currentEmployeeId); // Use stored ID
 
         Stage stage = (Stage) backButton.getScene().getWindow();
         stage.getScene().setRoot(root);
