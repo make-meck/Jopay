@@ -155,32 +155,22 @@ public class PayrollDAO {
         }
     }
 
-
+    // send data to the model for computations
     public void loadContributionsIntoPayrollModel(String employeeId, PayrollModel payrollModel, boolean isFirstHalf) {
         ContributionData data = getContributions(employeeId);
 
         if (data != null) {
-            // *** FIX: Database stores MONTHLY, so divide by 2 for semi-monthly ***
             double semiMonthlySSS = data.sssContribution / 2;
             double semiMonthlyPHIC = data.phicContribution;
             double hdmf = isFirstHalf ? data.hdmfContribution : 0.0;
 
-            System.out.println("=== loadContributionsIntoPayrollModel() DEBUG ===");
-            System.out.println("From database (MONTHLY values):");
-            System.out.println("  SSS (monthly): ₱" + data.sssContribution);
-            System.out.println("  PHIC (monthly): ₱" + data.phicContribution);
-            System.out.println("Converting to SEMI-MONTHLY for payroll:");
-            System.out.println("  SSS (semi-monthly): ₱" + semiMonthlySSS);
-            System.out.println("  PHIC (semi-monthly): ₱" + semiMonthlyPHIC);
-            System.out.println("  HDMF: ₱" + hdmf);
-            System.out.println("  isFirstHalf: " + isFirstHalf);
-
             payrollModel.setPreComputedContributions(
-                    semiMonthlySSS,     // Use semi-monthly
-                    semiMonthlyPHIC,    // Use semi-monthly
+                    semiMonthlySSS,
+                    semiMonthlyPHIC,
                     hdmf
             );
 
+            // for debugging purposes
             System.out.println("✓ Pre-computed contributions SET in PayrollModel");
             System.out.println("================================================\n");
         } else {
@@ -201,6 +191,7 @@ public class PayrollDAO {
         public java.time.LocalDateTime computedDate;
     }
 
+    // retrieve payroll data from salary_config table
     public SalaryConfig getSalaryConfig(String employeeId) {
         SalaryConfig config = null;
         String query = "SELECT basic_Pay, telecom_Allowance, travel_allowance, rice_Subsidy, " +
@@ -231,10 +222,6 @@ public class PayrollDAO {
                 config.phicContribution = rs.getDouble("philc_contribution");
                 config.hdmfContribution = rs.getDouble("hdmf_Contribution");
 
-                System.out.println("Basic Pay: " + config.basicPay);
-                System.out.println("SSS: " + config.sssContribution);
-                System.out.println("PHIC: " + config.phicContribution);
-                System.out.println("HDMF: " + config.hdmfContribution);
             } else {
                 System.out.println("✗ No salary config found for employee: " + employeeId);
             }
@@ -295,15 +282,6 @@ public class PayrollDAO {
                 data.restDayOTHours = 0.0;
                 data.restDayNightDiffOTHours = 0.0;
 
-                System.out.println("\n=== ATTENDANCE DATA LOADED ===");
-                System.out.println("Employee ID: " + employeeId);
-                System.out.println("Period: " + startDate + " to " + endDate);
-                System.out.println("Days Worked: " + data.daysWorked);
-                System.out.println("Days Absent (from time_log): " + data.daysAbsent);
-                System.out.println("OT Hours: " + data.regularOTHours);
-                System.out.println("Undertime Hours: " + data.undertimeHours);
-                System.out.println("==============================\n");
-
                 return data;
             }
         } catch (SQLException e) {
@@ -317,43 +295,7 @@ public class PayrollDAO {
         return emptyData;
     }
 
-    // retrieve absence inf0
-    public AbsenceInfo getRecentAbsenceInfo(String employeeId) {
-        AbsenceInfo info = new AbsenceInfo();
-
-        // Get absences for current month
-        String query = "SELECT COUNT(*) as absence_count " +
-                "FROM time_log " +
-                "WHERE employee_id = ? " +
-                "AND MONTH(log_date) = MONTH(CURDATE()) " +
-                "AND YEAR(log_date) = YEAR(CURDATE()) " +
-                "AND (status IS NULL OR status != 'Present')";
-
-        try (PreparedStatement pstmt = connect.prepareStatement(query)) {
-            pstmt.setString(1, employeeId);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                info.absenceCount = rs.getInt("absence_count");
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Error getting recent absence info: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return info;
-    }
-
-    // act as container
-    public static class AbsenceInfo {
-        public int absenceCount;
-    }
-
-    /**
-     * Calculate VL balance based on months worked this year
-     * Formula: 1.25 days per month
-     */
+    // compute vl days available per employee
     public static double calculateVLBalance(LocalDate dateHired, int targetYear) {
         if (dateHired == null) return 0.0;
 
@@ -376,7 +318,7 @@ public class PayrollDAO {
             current = current.plusMonths(1);
         }
 
-        // VL: 1.25 days per month
+        // 15 divide by 12 = 1.25
         double vlBalance = monthsWorked * 1.25;
 
         System.out.println("  Auto-calc VL: " + monthsWorked + " months × 1.25 = " + vlBalance + " days");
@@ -384,9 +326,7 @@ public class PayrollDAO {
         return vlBalance;
     }
 
-    /**
-     * Calculate SL balance (fixed 10 days per year)
-     */
+    // set available sl to 10
     public static double calculateSLBalance(LocalDate dateHired, int targetYear) {
         if (dateHired == null) return 0.0;
 
@@ -431,7 +371,7 @@ public class PayrollDAO {
         return new DeductionData();
     }
 
-    // Update Basic Salary in employee_info
+    // update Basic Salary in employee_info
     public boolean updateBasicSalary(String employeeId, double newMonthlyBasicSalary) {
         String query = """
             UPDATE employee_info
@@ -461,7 +401,7 @@ public class PayrollDAO {
         }
     }
 
-    //  Update Per Diem in salary_config
+    //  update Per Diem in salary_config
     public boolean updatePerDiem(String employeeId, double perDiem) {
         String query = """
             UPDATE salary_config
@@ -521,6 +461,7 @@ public class PayrollDAO {
         }
     }
 
+    // update vl and sl in leave_balance
     public boolean updateLeaveBalance(String employeeId, int year, double balance, String leaveType) {
         String column = leaveType.equalsIgnoreCase("VL") ? "vacation_leave_balance" : "sick_leave_balance";
 
@@ -592,8 +533,7 @@ public class PayrollDAO {
         }
     }
 
-
-    // Update allowances in salary_config
+    // update allowances in salary_config
     public boolean updateAllowances(String employeeId, double telecom, double travel,
                                     double rice, double nonTaxable) {
         String query = """
@@ -684,48 +624,8 @@ public class PayrollDAO {
         }
     }
 
-    /**
-     * FOR ADMIN: Get periods with payroll data
-     * Shows ONLY periods that have at least one payroll record
-     */
-    public List<PayrollPeriod> getPeriodsWithPayrollData() {
-        List<PayrollPeriod> periods = new ArrayList<>();
-        String query = """
-        SELECT DISTINCT pp.period_ID, pp.period_name, pp.start_Date, 
-               pp.end_Date, pp.pay_Date, pp.status
-        FROM payroll_period pp
-        INNER JOIN payroll_records pr ON pp.period_ID = pr.period_id
-        ORDER BY pp.start_Date DESC
-    """;
 
-        try (PreparedStatement stmt = connect.getConnection().prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                PayrollPeriod period = new PayrollPeriod();
-                period.periodId = rs.getInt("period_ID");
-                period.periodName = rs.getString("period_name");
-                period.startDate = rs.getDate("start_Date").toLocalDate();
-                period.endDate = rs.getDate("end_Date").toLocalDate();
-                period.payDate = rs.getDate("pay_Date").toLocalDate();
-                period.status = rs.getString("status");
-                periods.add(period);
-            }
-
-            System.out.println("✓ Admin: Found " + periods.size() + " periods with payroll data");
-
-        } catch (SQLException e) {
-            System.err.println("Error fetching periods with payroll data: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return periods;
-    }
-
-    /**
-     * FOR EMPLOYEE: Get ONLY periods where employee has payroll records
-     * Used in employee dashboard payslip dropdown
-     * Shows only periods where payslip exists
-     */
+    // display in employee dashboard's dropdown the periods with available record only
     public List<PayrollPeriod> getPeriodsWithPayrollDataForEmployee(String employeeId) {
         List<PayrollPeriod> periods = new ArrayList<>();
 
@@ -763,14 +663,7 @@ public class PayrollDAO {
         return periods;
     }
 
-    /**
-     * FOR ADMIN: Get ALL periods from employee's hire date onwards
-     * Used in admin manage payroll page
-     * Shows all periods so admin can create payroll for any period
-     *
-     * @param employeeId The employee ID to get periods for
-     * @return List of periods from hire date onwards
-     */
+    // display available period in admin dashboard's dropdown
     public List<PayrollPeriod> getPeriodsFromHireDate(String employeeId) {
         List<PayrollPeriod> periods = new ArrayList<>();
 
@@ -811,12 +704,7 @@ public class PayrollDAO {
         return periods;
     }
 
-    /**
-     * Delete payroll record for a specific employee and period
-     * @param employeeId The employee ID
-     * @param periodId The payroll period ID
-     * @return true if deletion was successful, false otherwise
-     */
+    // delete payroll record for specific employee and period
     public boolean deletePayroll(String employeeId, int periodId) {
         String sql = "DELETE FROM payroll_records WHERE employee_id = ? AND period_id = ?";
 
@@ -843,12 +731,7 @@ public class PayrollDAO {
         }
     }
 
-    /**
-     * Check if payroll record exists for the given employee and period
-     * @param employeeId The employee ID
-     * @param periodId The payroll period ID
-     * @return true if record exists, false otherwise
-     */
+    // check if payroll record exists for the given employee and period
     public boolean payrollExists(String employeeId, int periodId) {
         String sql = "SELECT COUNT(*) FROM payroll_records WHERE employee_id = ? AND period_id = ?";
 
@@ -868,7 +751,7 @@ public class PayrollDAO {
         return false;
     }
 
-
+    // save payroll in database payroll_records
     public boolean savePayroll(String employeeId, int periodId, PayrollModel model,
                                SalaryConfig config, AttendanceData attendance) {
         String query = """
@@ -895,30 +778,30 @@ public class PayrollDAO {
             double sssLoan = deductions != null ? deductions.sssLoan : 0.0;
 
             // Set parameters in correct order
-            stmt.setString(1, employeeId);                                          // employee_Id
-            stmt.setInt(2, periodId);                                               // period_id
-            stmt.setDouble(3, model.getSemiMonthlyBasicPay());                     // basic_pay
-            stmt.setDouble(4, config != null ? config.telecomAllowance : 0.0);     // telecom_Allowance
-            stmt.setDouble(5, config != null ? config.travelAllowance : 0.0);      // travel_Allowance
-            stmt.setDouble(6, config != null ? config.riceSubsidy : 0.0);          // rice_Subsidy
-            stmt.setDouble(7, config != null ? config.nonTaxableSalary : 0.0);     // non_Taxable_Salary
-            stmt.setDouble(8, config != null ? config.perDiem : 0.0);              // per_Deim
-            stmt.setInt(9, config != null ? config.perDiemCount : 0);              // per_Deim_Count
-            stmt.setDouble(10, attendance.regularOTHours * model.getHourlyRate() * 1.25); // overtime_Pay
-            stmt.setDouble(11, attendance.regularOTHours);                          // overtime_hours
-            stmt.setDouble(12, attendance.undertimeHours * model.getHourlyRate()); // undertime_Pay
-            stmt.setDouble(13, attendance.undertimeHours);                          // undertime_hours
-            stmt.setDouble(14, model.getSSSContribution());                         // sss_Contribution
-            stmt.setDouble(15, model.getPHICContribution());                        // phic_contribution
-            stmt.setDouble(16, model.getHDMFContribution());                        // hdmf_Contibution
-            stmt.setDouble(17, sssLoan);                                            // sss_Loan
-            stmt.setDouble(18, attendance.daysAbsent * model.getGrossDailyRate()); // absences
-            stmt.setInt(19, attendance.daysAbsent);                                 // num_Absences
-            stmt.setDouble(20, model.getTaxableIncome());                           // taxable_income
-            stmt.setDouble(21, model.getWithholdingTax());                          // withholding_tax
-            stmt.setDouble(22, model.getSemiMonthlyGrossPay());                     // gross_pay
-            stmt.setDouble(23, model.getTotalDeductions());                         // total_Deduction
-            stmt.setDouble(24, model.getNetPay());                                  // net_Pay
+            stmt.setString(1, employeeId);
+            stmt.setInt(2, periodId);
+            stmt.setDouble(3, model.getSemiMonthlyBasicPay());
+            stmt.setDouble(4, config != null ? config.telecomAllowance : 0.0);
+            stmt.setDouble(5, config != null ? config.travelAllowance : 0.0);
+            stmt.setDouble(6, config != null ? config.riceSubsidy : 0.0);
+            stmt.setDouble(7, config != null ? config.nonTaxableSalary : 0.0);
+            stmt.setDouble(8, config != null ? config.perDiem : 0.0);
+            stmt.setInt(9, config != null ? config.perDiemCount : 0);
+            stmt.setDouble(10, attendance.regularOTHours * model.getHourlyRate() * 1.25);
+            stmt.setDouble(11, attendance.regularOTHours);
+            stmt.setDouble(12, attendance.undertimeHours * model.getHourlyRate());
+            stmt.setDouble(13, attendance.undertimeHours);
+            stmt.setDouble(14, model.getSSSContribution());
+            stmt.setDouble(15, model.getPHICContribution());
+            stmt.setDouble(16, model.getHDMFContribution());
+            stmt.setDouble(17, sssLoan);
+            stmt.setDouble(18, attendance.daysAbsent * model.getGrossDailyRate());
+            stmt.setInt(19, attendance.daysAbsent);
+            stmt.setDouble(20, model.getTaxableIncome());
+            stmt.setDouble(21, model.getWithholdingTax());
+            stmt.setDouble(22, model.getSemiMonthlyGrossPay());
+            stmt.setDouble(23, model.getTotalDeductions());
+            stmt.setDouble(24, model.getNetPay());
             // Parameter 25 is 'DRAFT' which is hardcoded in the SQL
 
             int result = stmt.executeUpdate();
@@ -1015,35 +898,6 @@ public class PayrollDAO {
     }
 
 
-    public List<PayrollPeriod> getAllPayrollPeriods() {
-        List<PayrollPeriod> periods = new ArrayList<>();
-        String query = """
-            SELECT period_ID, period_name, start_Date, end_Date, pay_Date, status
-            FROM payroll_period
-            ORDER BY start_Date DESC
-        """;
-
-        try (PreparedStatement stmt = connect.getConnection().prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                PayrollPeriod period = new PayrollPeriod();
-                period.periodId = rs.getInt("period_ID");
-                period.periodName = rs.getString("period_name");
-                period.startDate = rs.getDate("start_Date").toLocalDate();
-                period.endDate = rs.getDate("end_Date").toLocalDate();
-                period.payDate = rs.getDate("pay_Date").toLocalDate();
-                period.status = rs.getString("status");
-                periods.add(period);
-            }
-        } catch (SQLException e) {
-            System.err.println("Error fetching payroll periods: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return periods;
-    }
-
-
     // retrieve absence count
     public int getAbsenceCount(String employeeId, LocalDate startDate, LocalDate endDate) {
         String query = """
@@ -1091,10 +945,6 @@ public class PayrollDAO {
                 data.slBalance = rs.getDouble("sick_leave_balance");
                 data.vlUsed = 0.0;  // Not tracked in table
                 data.slUsed = 0.0;  // Not tracked in table
-
-                System.out.println("✓ Leave data loaded for employee " + employeeId);
-                System.out.println("  VL Balance: " + data.vlBalance);
-                System.out.println("  SL Balance: " + data.slBalance);
 
                 return data;
             } else {
