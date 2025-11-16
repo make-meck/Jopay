@@ -359,6 +359,55 @@ public class PayrollDAO {
         public int absenceCount;
     }
 
+    /**
+     * Calculate VL balance based on months worked this year
+     * Formula: 1.25 days per month
+     */
+    public static double calculateVLBalance(LocalDate dateHired, int targetYear) {
+        if (dateHired == null) return 0.0;
+
+        LocalDate startOfYear = LocalDate.of(targetYear, 1, 1);
+        LocalDate today = LocalDate.now();
+
+        // Determine start date for calculation
+        LocalDate calculationStart = dateHired.getYear() < targetYear ?
+                startOfYear : dateHired;
+
+        if (dateHired.getYear() > targetYear) return 0.0;
+
+        // Calculate months from hire/start of year to now
+        int monthsWorked = 0;
+        LocalDate current = calculationStart.withDayOfMonth(1);
+        LocalDate endMonth = today.withDayOfMonth(1);
+
+        while (!current.isAfter(endMonth)) {
+            monthsWorked++;
+            current = current.plusMonths(1);
+        }
+
+        // VL: 1.25 days per month
+        double vlBalance = monthsWorked * 1.25;
+
+        System.out.println("  Auto-calc VL: " + monthsWorked + " months × 1.25 = " + vlBalance + " days");
+
+        return vlBalance;
+    }
+
+    /**
+     * Calculate SL balance (fixed 10 days per year)
+     */
+    public static double calculateSLBalance(LocalDate dateHired, int targetYear) {
+        if (dateHired == null) return 0.0;
+
+        // If hired this year or before, get 10 days SL
+        if (dateHired.getYear() <= targetYear) {
+            System.out.println("  Auto-calc SL: 10.0 days (fixed)");
+            return 10.0;
+        }
+
+        return 0.0;
+    }
+
     public DeductionData getDeductions(String employeeId) {
         String query = """
         SELECT 
@@ -482,10 +531,10 @@ public class PayrollDAO {
     }
 
     public boolean updateLeaveBalance(String employeeId, int year, double balance, String leaveType) {
-        String column = leaveType.equalsIgnoreCase("VL") ? "vl_balance" : "sl_balance";
+        String column = leaveType.equalsIgnoreCase("VL") ? "vacation_leave_balance" : "sick_leave_balance";
 
-        // check if record exists
-        String checkQuery = "SELECT COUNT(*) FROM leave_balances WHERE employee_Id = ? AND year = ?";
+        // Check if record exists
+        String checkQuery = "SELECT COUNT(*) FROM leave_balance WHERE employee_Id = ? AND year = ?";
 
         try (PreparedStatement checkStmt = connect.getConnection().prepareStatement(checkQuery)) {
             checkStmt.setString(1, employeeId);
@@ -497,7 +546,7 @@ public class PayrollDAO {
 
             if (recordExists) {
                 // Update existing record
-                String updateQuery = "UPDATE leave_balances SET " + column + " = ? " +
+                String updateQuery = "UPDATE leave_balance SET " + column + " = ? " +
                         "WHERE employee_Id = ? AND year = ?";
 
                 try (PreparedStatement updateStmt = connect.getConnection().prepareStatement(updateQuery)) {
@@ -516,10 +565,10 @@ public class PayrollDAO {
             } else {
                 // Insert new record
                 String insertQuery = """
-                    INSERT INTO leave_balances 
-                    (employee_Id, year, vl_balance, sl_balance, vl_used, sl_used)
-                    VALUES (?, ?, ?, ?, 0, 0)
-                """;
+                INSERT INTO leave_balance 
+                (employee_Id, year, vacation_leave_balance, sick_leave_balance)
+                VALUES (?, ?, ?, ?)
+            """;
 
                 try (PreparedStatement insertStmt = connect.getConnection().prepareStatement(insertQuery)) {
                     insertStmt.setString(1, employeeId);
@@ -551,6 +600,7 @@ public class PayrollDAO {
             return false;
         }
     }
+
 
     // Update allowances in salary_config
     public boolean updateAllowances(String employeeId, double telecom, double travel,
@@ -768,6 +818,63 @@ public class PayrollDAO {
             e.printStackTrace();
         }
         return periods;
+    }
+
+    /**
+     * Delete payroll record for a specific employee and period
+     * @param employeeId The employee ID
+     * @param periodId The payroll period ID
+     * @return true if deletion was successful, false otherwise
+     */
+    public boolean deletePayroll(String employeeId, int periodId) {
+        String sql = "DELETE FROM payroll_records WHERE employee_id = ? AND period_id = ?";
+
+        try (PreparedStatement pstmt = connect.prepareStatement(sql)) {
+            pstmt.setString(1, employeeId);
+            pstmt.setInt(2, periodId);
+
+            int rowsAffected = pstmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("✓ Payroll record deleted successfully for Employee ID: " +
+                        employeeId + ", Period ID: " + periodId);
+                return true;
+            } else {
+                System.out.println("⚠ No payroll record found for Employee ID: " +
+                        employeeId + ", Period ID: " + periodId);
+                return false;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("✗ Error deleting payroll: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Check if payroll record exists for the given employee and period
+     * @param employeeId The employee ID
+     * @param periodId The payroll period ID
+     * @return true if record exists, false otherwise
+     */
+    public boolean payrollExists(String employeeId, int periodId) {
+        String sql = "SELECT COUNT(*) FROM payroll_records WHERE employee_id = ? AND period_id = ?";
+
+        try (PreparedStatement pstmt = connect.prepareStatement(sql)) {
+            pstmt.setString(1, employeeId);
+            pstmt.setInt(2, periodId);
+
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error checking payroll existence: " + e.getMessage());
+        }
+
+        return false;
     }
 
     /* public boolean updatePayroll(int payrollId, String employeeId, int periodId,
@@ -1314,8 +1421,8 @@ public class PayrollDAO {
     public LeaveData getLeaveData(String employeeId, int year) {
         String query = """
         SELECT 
-            sick_leave_balance,
-            vacation_leave_balance
+            vacation_leave_balance,
+            sick_leave_balance
         FROM leave_balance
         WHERE employee_Id = ? AND year = ?
         LIMIT 1
@@ -1328,11 +1435,18 @@ public class PayrollDAO {
 
             if (rs.next()) {
                 LeaveData data = new LeaveData();
-                data.slBalance = rs.getDouble("sick_leave_balance");
                 data.vlBalance = rs.getDouble("vacation_leave_balance");
-                data.slUsed = 0.0;
-                data.vlUsed = 0.0;
+                data.slBalance = rs.getDouble("sick_leave_balance");
+                data.vlUsed = 0.0;  // Not tracked in your table
+                data.slUsed = 0.0;  // Not tracked in your table
+
+                System.out.println("✓ Leave data loaded for employee " + employeeId);
+                System.out.println("  VL Balance: " + data.vlBalance);
+                System.out.println("  SL Balance: " + data.slBalance);
+
                 return data;
+            } else {
+                System.out.println("⚠ No leave balance record for employee " + employeeId + " year " + year);
             }
         } catch (SQLException e) {
             System.err.println("Error fetching leave data: " + e.getMessage());

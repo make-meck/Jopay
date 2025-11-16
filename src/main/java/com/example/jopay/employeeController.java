@@ -233,6 +233,13 @@ public class employeeController {
                 this.undertime = rs.getDouble("undertime_Pay");
                 this.undertimeHours = rs.getDouble("undertime_hours");
                 this.sssContributions = rs.getDouble("sss_Contribution");
+                System.out.println("=== LOADED FROM DATABASE ===");
+                System.out.println("SSS Contribution: ₱" + this.sssContributions);
+                System.out.println("PHIC Contribution: ₱" + this.phicContributions);
+                System.out.println("HDMF Contribution: ₱" + this.hdmfContributions);
+                System.out.println("Withholding Tax: ₱" + this.withholdingTax);
+                System.out.println("Total Deductions: ₱" + this.totalDeductions);
+                System.out.println("===========================\n");
                 this.phicContributions = rs.getDouble("phic_contribution");
                 this.hdmfContributions = rs.getDouble("hdmf_Contibution");
                 this.sssLoan = rs.getDouble("sss_Loan");

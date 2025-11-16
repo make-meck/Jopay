@@ -553,8 +553,8 @@
                         <TextField fx:id="withholdingTaxTF" editable="false" layoutX="11.0" layoutY="112.0" />
                         <TextField fx:id="overtimeTF" editable="false" layoutX="11.0" layoutY="145.0" prefHeight="26.0" prefWidth="116.0" />
                         <TextField fx:id="undertimeTF" editable="false" layoutX="11.0" layoutY="179.0" />
-                        <TextField fx:id="vlBalanceTF" editable="false" layoutX="11.0" layoutY="212.0" />
-                        <TextField fx:id="slBalanceTF" editable="false" layoutX="11.0" layoutY="246.0">
+                        <TextField fx:id="vlBalanceTF" editable="true" layoutX="11.0" layoutY="212.0" />
+                        <TextField fx:id="slBalanceTF" editable="true" layoutX="11.0" layoutY="246.0">
                             <VBox.margin>
                                 <Insets />
                             </VBox.margin>
@@ -563,7 +563,7 @@
                      <VBox.margin>
                         <Insets />
                      </VBox.margin></TextField>
-                        <TextField fx:id="numAbsencesTF" editable="false" layoutX="11.0" layoutY="246.0">
+                        <TextField fx:id="numAbsencesTF" editable="true" layoutX="11.0" layoutY="246.0">
                      <VBox.margin>
                         <Insets bottom="12.0" />
                      </VBox.margin></TextField>
@@ -579,7 +579,7 @@
                                 <Font size="20.0" />
                             </font>
                         </Button>
-                        <Button id="payrollDeleteButton" fx:id="payrollDeleteButton" mnemonicParsing="false" prefHeight="50.0" prefWidth="160.0" text="Delete">
+                        <Button id="payrollDeleteButton" fx:id="payrollDeleteButton" mnemonicParsing="false" prefHeight="50.0" prefWidth="160.0" text="Delete" onAction="#deletePayroll">
                             <font>
                                 <Font size="20.0" />
                             </font>
