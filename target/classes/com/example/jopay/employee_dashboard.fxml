@@ -102,13 +102,13 @@
                         </font>
                     </Label>
 
-                    <PieChart fx:id="employeeAttendancePieChart" layoutX="733.0" layoutY="236.0" prefHeight="318.0" prefWidth="402.0" />
+                    <PieChart fx:id="employeeAttendancePieChart" layoutX="733.0" layoutY="236.0" prefHeight="348.0" prefWidth="428.0" />
                 </children>
             </Pane>
 
-            <Hyperlink id="update_password" fx:id="updatePasswordLink" onAction="#handleUpdatePassword" text="Update password" textFill="#0a625b" underline="true" AnchorPane.rightAnchor="80.0" AnchorPane.topAnchor="72.0">
+            <Hyperlink id="update_password" fx:id="updatePasswordLink" layoutY="58.4" onAction="#handleUpdatePassword" prefHeight="40.0" prefWidth="144.0" text="Update password" textFill="#0a625b" underline="true" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="58.0">
                 <font>
-                    <Font name="System Bold" size="13.0" />
+                    <Font name="System Bold" size="16.0" />
                 </font>
             </Hyperlink>
         </children>
