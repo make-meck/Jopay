@@ -480,8 +480,12 @@ public class employeeController {
     @FXML
     void handleUpdatePassword() throws IOException {
         FXMLLoader updatePasswordLoader = new FXMLLoader(getClass().getResource("updatepassword.fxml"));
+        Parent root = updatePasswordLoader.load();  // ✅ Load FIRST
+
+        updatePasswordController controller = updatePasswordLoader.getController();  // ✅ Get controller AFTER
+        controller.setEmployeeId(String.valueOf(this.loggedInEmployeeId));
+
         Stage stage = (Stage) updatePasswordLink.getScene().getWindow();
-        Parent root = updatePasswordLoader.load();
         stage.getScene().setRoot(root);
     }
 

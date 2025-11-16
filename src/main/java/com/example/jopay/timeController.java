@@ -1,3 +1,4 @@
+
 package com.example.jopay;
 
 import javafx.animation.KeyFrame;
@@ -30,6 +31,7 @@ public class timeController {
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EE, MMMM dd, yyyy");
     private final TimelogModel timelog = new TimelogModel();
+    private final autoAbsent autoAbsentService = new autoAbsent();
 
     public enum AttendanceStatus {
         Present, Undertime, Overtime
@@ -37,28 +39,32 @@ public class timeController {
 
     @FXML
     public void initialize() {
-        System.out.println("=== INITIALIZING TIME CONTROLLER ===");
 
+
+        // Mark employees as absent on initialization (for employees who haven't shown up)
         try {
-            timelog.markAbsentForNonClockedInEmployees();
-            System.out.println("✓ Absent marking completed");
-        } catch (SQLException e) {
-            System.err.println("✗ Error marking absences: " + e.getMessage());
+            autoAbsentService.runAutoAbsent();
+            System.out.println("Initial absent marking completed");
+        } catch (Exception e) {
+            System.err.println(" Error marking absences: " + e.getMessage());
             e.printStackTrace();
         }
 
-        updateDateTime();
+        // Schedule daily auto-absent check at 12:30 AM
+        autoAbsentService.scheduleDailyCheck();
 
+        // Start the clock
+        updateDateTime();
         Timeline clock = new Timeline(new KeyFrame(Duration.seconds(1), event -> updateDateTime()));
         clock.setCycleCount(Timeline.INDEFINITE);
         clock.play();
 
+        // Set up event handlers
         timeInEmployeeID.setOnAction(event -> recordTimeIn());
         timeOutEmployeeID.setOnAction(actionEvent -> recordTimeOut());
     }
 
     private void recordTimeIn() {
-        System.out.println("\n=== TIME IN REQUEST ===");
         String employeeIdText = timeInEmployeeID.getText().trim();
 
         if (employeeIdText.isEmpty()) {
@@ -89,45 +95,40 @@ public class timeController {
 
                 if (success) {
                     loginInfo.setText("LOG-IN TIME: " + now.format(timeFormatter));
-                    statusLabel.setText("✓ Time-in recorded successfully! Status: Present");
+                    statusLabel.setText("Time-in recorded successfully! Status: Present");
                     statusLabel.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
-                    System.out.println("✓ Time-in successful");
                 } else {
-                    // Check if already timed out
+                    // Check why it failed
                     if (timelog.hasTimedOutToday(employeeId)) {
-                        statusLabel.setText("⚠ You have already completed your shift for today!");
+                        statusLabel.setText("You have already completed your shift for today!");
                         statusLabel.setStyle("-fx-text-fill: orange; -fx-font-weight: bold;");
-                        System.out.println("✗ Already completed shift");
+
                     } else {
-                        statusLabel.setText("⚠ You are already timed in! Please time out first.");
+                        statusLabel.setText(" You are already timed in! Please time out first.");
                         statusLabel.setStyle("-fx-text-fill: orange; -fx-font-weight: bold;");
-                        System.out.println("✗ Already timed in");
+
                     }
                 }
-
                 rs.close();
 
             } else {
-                ShowEmployeeNotFound();
-                System.out.println("✗ Employee not found");
+                showEmployeeNotFound();
+                System.out.println("Employee not found");
             }
 
         } catch (SQLException e) {
             statusLabel.setText("Database error: " + e.getMessage());
             statusLabel.setStyle("-fx-text-fill: red;");
-            System.err.println("✗ SQL Error: " + e.getMessage());
             e.printStackTrace();
         } catch (NumberFormatException e) {
             statusLabel.setText("Invalid Employee ID Format");
             statusLabel.setStyle("-fx-text-fill: red;");
-            System.err.println("✗ Invalid ID format");
         } finally {
             timeInEmployeeID.clear();
         }
     }
 
     private void recordTimeOut() {
-        System.out.println("\n=== TIME OUT REQUEST ===");
         String employeeIdText = timeOutEmployeeID.getText().trim();
 
         if (employeeIdText.isEmpty()) {
@@ -164,23 +165,19 @@ public class timeController {
                 System.out.println("Has any time-in: " + hasAnyTimeIn);
 
                 if (!hasAnyTimeIn) {
-                    statusLabel.setText("⚠ You haven't timed in today yet!");
-                    statusLabel.setStyle("-fx-text-fill: orange; -fx-font-weight: bold;");
-                    System.out.println("✗ No time-in record");
+                    statusLabel.setText("You haven't timed in today yet!");
+
                     return;
                 }
 
                 if (hasTimedOut) {
-                    statusLabel.setText("⚠ You have already timed out today!");
-                    statusLabel.setStyle("-fx-text-fill: orange; -fx-font-weight: bold;");
-                    System.out.println("✗ Already timed out");
+                    statusLabel.setText(" You have already timed out today!");
                     return;
                 }
 
                 if (!hasActiveTimeIn) {
-                    statusLabel.setText("⚠ No active time-in session found!");
-                    statusLabel.setStyle("-fx-text-fill: orange; -fx-font-weight: bold;");
-                    System.out.println("✗ No active session");
+                    statusLabel.setText("No active time-in session found!");
+                    statusLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
                     return;
                 }
 
@@ -189,9 +186,8 @@ public class timeController {
                 // Get time-in
                 Time timeIn = timelog.getTimeIn(employeeId);
                 if (timeIn == null) {
-                    statusLabel.setText("⚠ No time-in record found!");
+                    statusLabel.setText("No time-in record found!");
                     statusLabel.setStyle("-fx-text-fill: red;");
-                    System.out.println("✗ Time-in is null");
                     return;
                 }
 
@@ -206,59 +202,52 @@ public class timeController {
                 System.out.println("Minutes worked: " + minutesWorked);
                 System.out.println("Total hours: " + totalHours);
 
-                // Determine attendance status
+                // Determine attendance status based on hours worked
                 AttendanceStatus attendanceStatus;
                 if (totalHours >= 8.0) {
-                    if (totalHours > 8.0) {
-                        attendanceStatus = AttendanceStatus.Overtime;
-                    } else {
-                        attendanceStatus = AttendanceStatus.Present;
-                    }
+                    attendanceStatus = (totalHours > 8.0) ? AttendanceStatus.Overtime : AttendanceStatus.Present;
                 } else {
                     attendanceStatus = AttendanceStatus.Undertime;
                 }
 
                 System.out.println("Attendance Status: " + attendanceStatus.name());
 
-                // Record time-out
+                // Record time-out with calculated status
                 boolean success = timelog.recordTimeOut(employeeId, now, totalHours, attendanceStatus.name());
 
                 if (success) {
                     loginInfo.setText("LOG-OUT TIME: " + now.format(timeFormatter));
                     statusLabel.setText(String.format(
-                            "✓ Time-out recorded! Total Hours: %.2fh | Status: %s",
+                            "Time-out recorded! Total Hours: %.2fh | Status: %s",
                             totalHours,
                             attendanceStatus.name()
                     ));
                     statusLabel.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
-                    System.out.println("✓ Time-out successful");
                 } else {
-                    statusLabel.setText("✗ Failed to record time-out. Please try again.");
+                    statusLabel.setText("Failed to record time-out. Please try again.");
                     statusLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
-                    System.out.println("✗ Time-out failed");
+
                 }
 
             } else {
-                ShowEmployeeNotFound();
-                System.out.println("✗ Employee not found");
+                showEmployeeNotFound();
+                System.out.println("Employee not found");
             }
 
         } catch (SQLException e) {
             statusLabel.setText("Database error: " + e.getMessage());
             statusLabel.setStyle("-fx-text-fill: red;");
-            System.err.println("✗ SQL Error: " + e.getMessage());
             e.printStackTrace();
         } catch (NumberFormatException e) {
             statusLabel.setText("Invalid Employee ID format");
             statusLabel.setStyle("-fx-text-fill: red;");
-            System.err.println("✗ Invalid ID format");
         } finally {
             timeOutEmployeeID.clear();
         }
     }
 
-    private void ShowEmployeeNotFound() {
-        statusLabel.setText("❌ Employee Does Not Exist");
+    private void showEmployeeNotFound() {
+        statusLabel.setText("Employee Does Not Exist");
         statusLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
         loginInfo.setText("");
         employeeInfoName.setText("");
