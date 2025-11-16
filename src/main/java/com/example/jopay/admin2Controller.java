@@ -22,6 +22,9 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import java.util.Optional;
 
 
 
@@ -1101,6 +1104,112 @@ public class admin2Controller {
             e.printStackTrace();
         }
     }
+
+    // Add this method to your admin2Controller class
+
+    @FXML
+    private void deletePayroll() {
+        String empId = payrollEmployeeID.getText().trim();
+
+        // Validation: Check if employee is selected
+        if (empId.isEmpty()) {
+            errorLabelManagePayroll.setText("Please search for an employee first");
+            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
+            return;
+        }
+
+        // Validation: Check if period is selected
+        if (selectedStartDate == null || selectedEndDate == null || selectedPeriodId == 0) {
+            errorLabelManagePayroll.setText("Please select a payroll period from the dropdown");
+            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
+            return;
+        }
+
+        try {
+            PayrollDAO dao = new PayrollDAO();
+
+            // Check if payroll record exists
+            boolean exists = dao.payrollExists(empId, selectedPeriodId);
+
+            if (!exists) {
+                errorLabelManagePayroll.setText("No payroll record found for this period");
+                errorLabelManagePayroll.setStyle("-fx-text-fill: orange;");
+                dao.close();
+                return;
+            }
+
+            // Show confirmation dialog
+            Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmAlert.setTitle("Delete Payroll Confirmation");
+            confirmAlert.setHeaderText("Delete Payroll Record");
+            confirmAlert.setContentText(String.format(
+                    "Are you sure you want to delete the payroll record for:\n\n" +
+                            "Employee ID: %s\n" +
+                            "Employee Name: %s\n" +
+                            "Period: %s to %s\n\n" +
+                            "This action cannot be undone!",
+                    empId,
+                    payrollemployeeName.getText(),
+                    selectedStartDate.toString(),
+                    selectedEndDate.toString()
+            ));
+
+            Optional<ButtonType> result = confirmAlert.showAndWait();
+
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                // User confirmed deletion
+                boolean deleted = dao.deletePayroll(empId, selectedPeriodId);
+
+                if (deleted) {
+                    errorLabelManagePayroll.setStyle("-fx-text-fill: green;");
+                    errorLabelManagePayroll.setText(String.format(
+                            "✓ Payroll record deleted successfully for Period ID: %d",
+                            selectedPeriodId
+                    ));
+
+                    // Clear the computed fields to reflect deletion
+                    clearComputedFields();
+
+                    System.out.println("Payroll deleted for employee " + empId +
+                            " in period " + selectedPeriodId);
+                } else {
+                    errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
+                    errorLabelManagePayroll.setText("Failed to delete payroll record");
+                }
+            } else {
+                // User cancelled deletion
+                errorLabelManagePayroll.setStyle("-fx-text-fill: blue;");
+                errorLabelManagePayroll.setText("Deletion cancelled");
+            }
+
+            dao.close();
+
+        } catch (Exception e) {
+            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
+            errorLabelManagePayroll.setText("Error deleting payroll: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Clear only the computed payroll fields (not employee info or allowances)
+     */
+    private void clearComputedFields() {
+        basicPayTF.clear();
+        overtimeTF.clear();
+        undertimeTF.clear();
+        absencesTF.clear();
+        numAbsencesTF.clear();
+        sssContributionTF.clear();
+        phicContributionTF.clear();
+        hdmfContributionTF.clear();
+        taxablePayTF.clear();
+        withholdingTaxTF.clear();
+        grossPayTF.clear();
+        totalDeductionTF.clear();
+        netPayTF.clear();
+    }
+
     //When the admin clicked "Manage Payroll" button, the element related will be visible.
     @FXML
     private void managePayrollClick() {
