@@ -1,17 +1,12 @@
 package com.example.jopay;
 
-import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
-import javafx.geometry.Side;
-import javafx.geometry.VPos;
-import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.PieChart;
@@ -21,28 +16,15 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.util.Duration;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import java.util.Optional;
-
-
-
 import java.io.IOException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
-import static com.example.jopay.EmployeeDAO.connect;
+
+
 
 public class admin2Controller {
 
@@ -165,13 +147,9 @@ public class admin2Controller {
 
         employeeDAO = new EmployeeDAO();
 
-
-
         if (employeeTable != null) {
             setupEmployeeTable();
         }
-
-
         setupAutoUpdateListeners();
 
         Platform.runLater(() -> {
@@ -253,7 +231,6 @@ public class admin2Controller {
 
         PayrollDAO dao = new PayrollDAO();
 
-        // ✅ CORRECT: Get ALL periods from selected employee's hire date
         List<PayrollDAO.PayrollPeriod> periods = dao.getPeriodsFromHireDate(employeeId);
 
         ObservableList<PayrollPeriodItem> periodItems =
@@ -304,7 +281,7 @@ public class admin2Controller {
 
         dao.close();
     }
-
+    // this is for the search employee table under the manage employee tab in admin dashboard
     @FXML
     public void setupEmployeeTable() {
         colId.setCellValueFactory(new PropertyValueFactory<>("employeeId"));
@@ -331,7 +308,7 @@ public class admin2Controller {
         employeeList.addAll(EmployeeDAO.searchEmployees(keyword));
         employeeTable.setItems(employeeList);
     }
-
+    //admin authetication method
     @FXML
     private void loginClick() throws IOException {
         try {
@@ -353,7 +330,7 @@ public class admin2Controller {
             error.setText("Please fill in all fields.");
         }
     }
-
+    //this methods is intended for the back button in the admin login page
     @FXML
     void backButtonClick() throws IOException {
         FXMLLoader employeeDashboardLoader = new FXMLLoader(getClass().getResource("employeelogin.fxml"));
@@ -361,7 +338,7 @@ public class admin2Controller {
         Parent root = employeeDashboardLoader.load();
         stage.getScene().setRoot(root);
     }
-
+    //when the admin logout, it will go to the admin login page
     @FXML
     void adminLogoutClick() throws IOException {
         FXMLLoader adminLoginLoader = new FXMLLoader(getClass().getResource("admin2.fxml"));
@@ -378,6 +355,7 @@ public class admin2Controller {
         stage.getScene().setRoot(root);
     }
 
+    //Once the Manage Employee button was clicked, it will make the other elements that is unrelated to manage employee will not be visible
     @FXML
     private void manageEmployeeClick() {
         pane1.setVisible(true);
@@ -1123,112 +1101,7 @@ public class admin2Controller {
             e.printStackTrace();
         }
     }
-
-    // Add this method to your admin2Controller class
-
-    @FXML
-    private void deletePayroll() {
-        String empId = payrollEmployeeID.getText().trim();
-
-        // Validation: Check if employee is selected
-        if (empId.isEmpty()) {
-            errorLabelManagePayroll.setText("Please search for an employee first");
-            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
-            return;
-        }
-
-        // Validation: Check if period is selected
-        if (selectedStartDate == null || selectedEndDate == null || selectedPeriodId == 0) {
-            errorLabelManagePayroll.setText("Please select a payroll period from the dropdown");
-            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
-            return;
-        }
-
-        try {
-            PayrollDAO dao = new PayrollDAO();
-
-            // Check if payroll record exists
-            boolean exists = dao.payrollExists(empId, selectedPeriodId);
-
-            if (!exists) {
-                errorLabelManagePayroll.setText("No payroll record found for this period");
-                errorLabelManagePayroll.setStyle("-fx-text-fill: orange;");
-                dao.close();
-                return;
-            }
-
-            // Show confirmation dialog
-            Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
-            confirmAlert.setTitle("Delete Payroll Confirmation");
-            confirmAlert.setHeaderText("Delete Payroll Record");
-            confirmAlert.setContentText(String.format(
-                    "Are you sure you want to delete the payroll record for:\n\n" +
-                            "Employee ID: %s\n" +
-                            "Employee Name: %s\n" +
-                            "Period: %s to %s\n\n" +
-                            "This action cannot be undone!",
-                    empId,
-                    payrollemployeeName.getText(),
-                    selectedStartDate.toString(),
-                    selectedEndDate.toString()
-            ));
-
-            Optional<ButtonType> result = confirmAlert.showAndWait();
-
-            if (result.isPresent() && result.get() == ButtonType.OK) {
-                // User confirmed deletion
-                boolean deleted = dao.deletePayroll(empId, selectedPeriodId);
-
-                if (deleted) {
-                    errorLabelManagePayroll.setStyle("-fx-text-fill: green;");
-                    errorLabelManagePayroll.setText(String.format(
-                            "✓ Payroll record deleted successfully for Period ID: %d",
-                            selectedPeriodId
-                    ));
-
-                    // Clear the computed fields to reflect deletion
-                    clearComputedFields();
-
-                    System.out.println("Payroll deleted for employee " + empId +
-                            " in period " + selectedPeriodId);
-                } else {
-                    errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
-                    errorLabelManagePayroll.setText("Failed to delete payroll record");
-                }
-            } else {
-                // User cancelled deletion
-                errorLabelManagePayroll.setStyle("-fx-text-fill: blue;");
-                errorLabelManagePayroll.setText("Deletion cancelled");
-            }
-
-            dao.close();
-
-        } catch (Exception e) {
-            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
-            errorLabelManagePayroll.setText("Error deleting payroll: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Clear only the computed payroll fields (not employee info or allowances)
-     */
-    private void clearComputedFields() {
-        basicPayTF.clear();
-        overtimeTF.clear();
-        undertimeTF.clear();
-        absencesTF.clear();
-        numAbsencesTF.clear();
-        sssContributionTF.clear();
-        phicContributionTF.clear();
-        hdmfContributionTF.clear();
-        taxablePayTF.clear();
-        withholdingTaxTF.clear();
-        grossPayTF.clear();
-        totalDeductionTF.clear();
-        netPayTF.clear();
-    }
-
+    //When the admin clicked "Manage Payroll" button, the element related will be visible.
     @FXML
     private void managePayrollClick() {
         pane1.setVisible(false);
@@ -1238,7 +1111,7 @@ public class admin2Controller {
         manageEmpLabel.setVisible(false);
         reportAnalysisLabel.setVisible(false);
     }
-
+    //When the admin, clicked the "Report Analysis" button it will show the elements related to this screen such as the charts.
     @FXML
     private void reportAnalysisClick() {
         pane1.setVisible(false);
@@ -1249,14 +1122,14 @@ public class admin2Controller {
         manageEmpLabel.setVisible(false);
     }
 
-
+    //It displays the number of active employees in the company
     private void displayActiveEmployees() {
 
         int total = employeeDAO.getActiveEmployeeCount();
         headCountLabel.setText(String.valueOf(total));
     }
 
-
+//This charts displays the number of employees per department
     public void loadDepartmentChart() {
         if (departmentWiseCount == null) {
             System.out.println("ERROR: Chart is null!");
@@ -1265,11 +1138,8 @@ public class admin2Controller {
 
         Map<String, Integer> deptCounts = employeeDAO.getEmployeeDepartmentCounts();
 
-
-        // Clear previous data
         departmentWiseCount.getData().clear();
 
-        // Create a series
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Active Employees");
 
@@ -1277,7 +1147,6 @@ public class admin2Controller {
             series.getData().add(new XYChart.Data<>(dept, count));
         });
 
-        // Add series to chart
         departmentWiseCount.getData().add(series);
         departmentWiseCount.setTitle("Department Wise Headcount");
 
@@ -1290,24 +1159,21 @@ public class admin2Controller {
 
         }
 
-        // Optimize spacing between bars
         departmentWiseCount.setCategoryGap(10);
         departmentWiseCount.setBarGap(10);
 
-        // Dynamically calculate chart width based on number of departments
+
         int categoryCount = deptCounts.size();
         int widthPerCategory = 70; // Pixels per department
         int calculatedWidth = categoryCount * widthPerCategory;
         int minWidth = 1000;
 
-        // Set a generous width to prevent label overlap
+
         departmentWiseCount.setPrefWidth(Math.max(calculatedWidth, minWidth));
         departmentWiseCount.setMinWidth(calculatedWidth);
 
-        // Add padding for rotated labels (especially bottom padding)
-        departmentWiseCount.setPadding(new Insets(10, 10, 80, 10));
+        departmentWiseCount.setPadding(new Insets(10, 10, 40, 10));
 
-        // If chart is inside a ScrollPane, ensure it uses the full width
         if (departmentWiseCount.getParent() instanceof javafx.scene.control.ScrollPane) {
             javafx.scene.control.ScrollPane scrollPane =
                     (javafx.scene.control.ScrollPane) departmentWiseCount.getParent();
@@ -1315,10 +1181,8 @@ public class admin2Controller {
             scrollPane.setVbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
             scrollPane.setFitToHeight(true);
         }
-
-
     }
-
+    //This displays the weekly attendance of the employees
     public void loadWeeklyAttendanceChart() {
         Map<String, Integer> summary = employeeDAO.getWeeklyAttendanceSummary();
 

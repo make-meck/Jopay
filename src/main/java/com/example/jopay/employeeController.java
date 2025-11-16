@@ -6,7 +6,6 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
@@ -22,6 +21,7 @@ import java.sql.*;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 public class employeeController {
@@ -537,9 +537,6 @@ public class employeeController {
 
 
     public void loadAttendancePieChart() {
-        System.out.println("=== loadAttendancePieChart called ===");
-        System.out.println("PieChart is null? " + (employeeAttendancePieChart == null));
-        System.out.println("Employee ID: " + loggedInEmployeeId);
 
         if (employeeAttendancePieChart == null) {
             System.out.println("ERROR: PieChart node is null!");
@@ -548,30 +545,36 @@ public class employeeController {
 
         if (loggedInEmployeeId > 0) {
             EmployeeDAO employeeDAO = new EmployeeDAO();
-            Map<String, Integer> summary = employeeDAO.getEmployeeAttendanceSummary(loggedInEmployeeId);
 
-            System.out.println("Attendance summary size: " + summary.size());
-            System.out.println("Attendance summary contents: " + summary);
+            // Get current month and year
+            LocalDate now = LocalDate.now();
+            int currentMonth = now.getMonthValue();
+            int currentYear = now.getYear();
+
+            // Get monthly attendance summary
+            Map<String, Integer> summary = employeeDAO.getEmployeeAttendanceSummary(
+                    loggedInEmployeeId,
+                    currentMonth,
+                    currentYear
+            );
 
             ObservableList<PieChart.Data> pieData = FXCollections.observableArrayList();
 
             if (summary.isEmpty()) {
-                System.out.println("WARNING: No attendance data found.");
                 pieData.add(new PieChart.Data("No Data", 1));
             } else {
                 summary.forEach((status, count) -> {
-                    System.out.println("Adding to pie chart: " + status + " = " + count);
                     pieData.add(new PieChart.Data(status + " (" + count + ")", count));
                 });
             }
 
             employeeAttendancePieChart.setData(pieData);
-            employeeAttendancePieChart.setTitle("Your Attendance Summary");
-        } else {
-            System.out.println("ERROR: Employee ID not set or invalid!");
+
+            // Update title to show the month
+            String monthName = now.getMonth().toString();
+            employeeAttendancePieChart.setTitle("Attendance Summary - " + monthName + " " + currentYear);
         }
     }
-
     // ══════════════════════════════════════════════════════════════════════════
     // *** NEW INNER CLASS: PayslipPeriodItem ***
     // ══════════════════════════════════════════════════════════════════════════

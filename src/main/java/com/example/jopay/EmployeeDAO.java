@@ -12,9 +12,11 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-/*this class will handle the employees of the company
-transactions like delete, add, update and so on
+/*
+This class is responsible for handling all of the SQL query and updates to the database
  */
+
+
 public class EmployeeDAO {
     static DatabaseConnector connect;
 
@@ -23,15 +25,6 @@ public class EmployeeDAO {
         this.connect = new DatabaseConnector();
     }
 
-    //create or add new employee to the database
-
-    public boolean createEmployee(Employee employee) throws SQLException {
-        String addEmp = "INSERT INTO employee_account (employee_Id, employee_password) VALUES (? , ?) ";
-        PreparedStatement stmt = connect.prepareStatement(addEmp);
-        stmt.setString(1, employee.getEmployeeId());
-        stmt.setString(2, employee.getPassword());
-        return stmt.executeUpdate() > 0;
-    }
 
     // find the employee by their employee_ID
     public Optional<Employee> findEmployeeId(String employeeId) throws SQLException {
@@ -131,22 +124,7 @@ public class EmployeeDAO {
         return false;
     }
 
-
-    public boolean validateLogin(String employeeId, String password) throws SQLException {
-        String valiDate = "SELECT employee_password FROM employee_account WHERE employee_Id=?";
-        try (PreparedStatement stmt = connect.prepareStatement(valiDate)) {
-            stmt.setString(1, employeeId);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                String storedPassword = rs.getString("employee_id");
-                //for now, using plain-text comparison
-                //later, replace with Bcrypt.checkpw(password,storedpassword
-                return storedPassword.equals(password);
-            }
-        }
-        return false;
-    }
-
+    //This gets all the Employees from the database
     public static List<Employee> getAllEmployees() {
         List<Employee> employees = new ArrayList<>();
         String query = "SELECT * FROM employee_info ORDER BY employee_id";
@@ -171,6 +149,7 @@ public class EmployeeDAO {
         return employees;
     }
 
+    //This methods is used in the manage employee, where the admin needs to search by the employee's ID, Name, Department, and Status
     public static List<Employee> searchEmployees(String keyword) {
         List<Employee> employees = new ArrayList<>();
 
@@ -217,7 +196,7 @@ public class EmployeeDAO {
         return employees;
     }
 
-
+    //This method is used to add employee from the manage employee to the database
     public static void addEmployee(Employee employee, String password) throws SQLException {
         connect.setAutoCommit(false);
 
@@ -250,7 +229,7 @@ public class EmployeeDAO {
 
         connect.commit();
     }
-
+    //This get the next available employee ID based from the last Employee ID
     public static int getNextEmployeeId() throws SQLException {
         String query = "SELECT MAX(employee_Id) AS maxId FROM employee_info";
         PreparedStatement stmt = connect.prepareStatement(query);
@@ -259,7 +238,7 @@ public class EmployeeDAO {
 
         int nextId = 6700002;
         if (rs.next()) {
-            int maxId = rs.getInt("maxId"); // get the MAX value from the query
+            int maxId = rs.getInt("maxId");
             if (maxId != 0) {
                 nextId = maxId + 1;
             }
@@ -268,7 +247,7 @@ public class EmployeeDAO {
         stmt.close();
         return nextId;
     }
-
+    //This is used to find the employee by its Employee ID
     public static Employee getEmployeeById(int employeeId) throws SQLException {
         String query = """
                 SELECT employee_Id, employee_FirstName, employee_LastName, 
@@ -296,7 +275,7 @@ public class EmployeeDAO {
         stmt.close();
         return employee;
     }
-
+    //It updates the employement status of the employee
     public static void updateEmploymentStatus() {
         String query = "SELECT employee_Id, date_Hired, employment_Status FROM employee_info";
         String updateQuery = "UPDATE employee_info SET employment_Status = ? WHERE employee_Id = ?";
@@ -330,8 +309,8 @@ public class EmployeeDAO {
         }
     }
 
+    //It gets the number of active employee of the company
     public int getActiveEmployeeCount() {
-
 
         String query = "SELECT COUNT(*) AS employee_count FROM employee_info WHERE is_Active = 1";
         try (PreparedStatement stmt = connect.prepareStatement(query);
@@ -384,7 +363,7 @@ public class EmployeeDAO {
 
         return deptCounts;
     }
-    //this is for the admin dashboard, where it also tracks the attendance of the employee
+    //This is for the admin dashboard, where it also tracks the attendance of the employee
     public Map<String, Integer> getWeeklyAttendanceSummary() {
         Map<String, Integer> summary = new HashMap<>();
 
@@ -412,27 +391,29 @@ public class EmployeeDAO {
         return summary;
     }
 
-    //this is for the employee attendance
-    public Map<String, Integer> getEmployeeAttendanceSummary(int employeeId) {
+    //This is for getting the monthly attendance of the employee
+    public Map<String, Integer> getEmployeeAttendanceSummary(int employeeId, int month, int year) {
         Map<String, Integer> summary = new HashMap<>();
 
-
         String query = """
-    SELECT status, COUNT(*) AS count
-    FROM time_log
-    WHERE employee_Id = ?
-    GROUP BY status
+        SELECT status, COUNT(*) AS count
+        FROM time_log
+        WHERE employee_Id = ?
+        AND MONTH(log_date) = ?
+        AND YEAR(log_date) = ?
+        GROUP BY status
         """;
 
         try (PreparedStatement stmt = connect.prepareStatement(query)) {
             stmt.setInt(1, employeeId);
+            stmt.setInt(2, month);
+            stmt.setInt(3, year);
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
                 String status = rs.getString("status");
                 int count = rs.getInt("count");
                 summary.put(status, count);
-
             }
 
         } catch (SQLException e) {
