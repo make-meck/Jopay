@@ -1427,7 +1427,7 @@ public class admin2Controller {
     @FXML
     private void addEmployeeClick() {
         addEmpPane.setVisible(true);
-        searchHBox.setVisible(true);
+        searchHBox.setVisible(false);
         addEmpPaneErrorLabel.setText("");
         employeeTablePane.setVisible(false);
         removeEmpPane.setVisible(false);
