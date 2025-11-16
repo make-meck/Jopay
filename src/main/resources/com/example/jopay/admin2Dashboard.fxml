@@ -121,7 +121,7 @@
                 </HBox>
                 <AnchorPane fx:id="employeeTablePane" layoutX="62.0" layoutY="81.0" prefHeight="200.0" prefWidth="200.0">
                     <children>
-                        <TableView fx:id="employeeTable" onSort="#setupEmployeeTable" prefHeight="273.0" prefWidth="1082.0" style="-fx-border-color: #0a625b; -fx-border-width: 1.7; -fx-background-color: white;" stylesheets="@admin2style.css">
+                        <TableView fx:id="employeeTable" onSort="#setupEmployeeTable" prefHeight="333.0" prefWidth="1081.0" style="-fx-border-color: #0a625b; -fx-border-width: 1.7; -fx-background-color: white;" stylesheets="@admin2style.css">
                             <columns>
                                 <TableColumn fx:id="colId" prefWidth="173.99999618530273" style="-fx-background-color: white;" text="ID" />
                                 <TableColumn fx:id="colName" prefWidth="357.33335876464844" style="-fx-background-color: white;" text="Name" />
