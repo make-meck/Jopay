@@ -11,8 +11,8 @@ import java.io.IOException;
 public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-      // FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("employee_timein.fxml"));
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("employeelogin.fxml"));
+       FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("employee_timein.fxml"));
+       //FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("employeelogin.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
 
         Image icon = new Image(getClass().getResource("/com/example/jopay/logoIcon.png").toExternalForm());
