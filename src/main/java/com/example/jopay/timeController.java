@@ -104,7 +104,7 @@ public class timeController {
                         statusLabel.setStyle("-fx-text-fill: orange; -fx-font-weight: bold;");
 
                     } else {
-                        statusLabel.setText(" You are already timed in! Please time out first.");
+                        statusLabel.setText(" You are already timed in! ");
                         statusLabel.setStyle("-fx-text-fill: orange; -fx-font-weight: bold;");
 
                     }
