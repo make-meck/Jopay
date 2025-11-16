@@ -91,6 +91,7 @@ public class updatePasswordController {
 
                 employeeController controller = loader.getController();
                 controller.setEmployeeName(currentEmployee.getFirstName() + " " + currentEmployee.getLastName());
+                controller.setLoggedInEmployeeId(EmpID);
 
                 Stage stage = (Stage) loginButton.getScene().getWindow();
                 stage.getScene().setRoot(root);
