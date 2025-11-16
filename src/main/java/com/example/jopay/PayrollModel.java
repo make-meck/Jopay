@@ -15,8 +15,6 @@ public class PayrollModel {
     private static final double PHIC_MAX = 2500.00;
     private static final double HDMF = 200.00;
     private static final double VL_ACCRUAL_RATE = 1.25;
-    private static final int TOTAL_VL_PER_YEAR = 15;
-    private static final int TOTAL_SL_PER_YEAR = 10;
     private static final double NON_TAXABLE_13TH_MONTH_MAX = 90000.00;
 
     private String employeeId;
@@ -178,7 +176,6 @@ public class PayrollModel {
         double vlPay = calculateVLPay();
         double slPay = calculateSLPay();
         double perDiemPay = calculatePerDiem();
-
 
         // Calculate total earnings with full precision
         totalEarnings = basicPayForPeriod
@@ -453,6 +450,7 @@ public class PayrollModel {
         return monthsWorked * VL_ACCRUAL_RATE;
     }
 
+    // will be used at the end of the year
     public static double calculate13thMonthPay(double totalBasicSalaryForYear) {
         return totalBasicSalaryForYear / 12;
     }
