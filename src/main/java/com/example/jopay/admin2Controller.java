@@ -172,6 +172,7 @@ public class admin2Controller {
 
     }
 
+    // used when data from textfield is changed, other fields will auto-update
     private void setupAutoUpdateListeners() {
         if (basicPayTF != null) {
             basicPayTF.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
@@ -257,7 +258,7 @@ public class admin2Controller {
 
                 String empId = payrollEmployeeID.getText().trim();
                 if (!empId.isEmpty()) {
-                    refreshLeaveBalance(empId);  // ← ADD THIS LINE
+                    refreshLeaveBalance(empId);
                     autoRecomputePayroll();
                 }
 
@@ -274,6 +275,7 @@ public class admin2Controller {
 
         dao.close();
     }
+
     // this is for the search employee table under the manage employee tab in admin dashboard
     @FXML
     public void setupEmployeeTable() {
@@ -301,6 +303,7 @@ public class admin2Controller {
         employeeList.addAll(EmployeeDAO.searchEmployees(keyword));
         employeeTable.setItems(employeeList);
     }
+
     //admin authetication method
     @FXML
     private void loginClick() throws IOException {
@@ -323,7 +326,8 @@ public class admin2Controller {
             error.setText("Please fill in all fields.");
         }
     }
-    //this methods is intended for the back button in the admin login page
+
+    // intended for the back button in the admin login page
     @FXML
     void backButtonClick() throws IOException {
         FXMLLoader employeeDashboardLoader = new FXMLLoader(getClass().getResource("employeelogin.fxml"));
@@ -331,7 +335,8 @@ public class admin2Controller {
         Parent root = employeeDashboardLoader.load();
         stage.getScene().setRoot(root);
     }
-    //when the admin logout, it will go to the admin login page
+
+    // when the admin logout, it will go to the admin login page
     @FXML
     void adminLogoutClick() throws IOException {
         FXMLLoader adminLoginLoader = new FXMLLoader(getClass().getResource("admin2.fxml"));
@@ -348,7 +353,8 @@ public class admin2Controller {
         stage.getScene().setRoot(root);
     }
 
-    //Once the Manage Employee button was clicked, it will make the other elements that is unrelated to manage employee will not be visible
+    /* Once the Manage Employee button was clicked, it will make the other elements
+       that is unrelated to manage employee will not be visible */
     @FXML
     private void manageEmployeeClick() {
         pane1.setVisible(true);
@@ -364,32 +370,31 @@ public class admin2Controller {
         loadEmployeeTable();
     }
 
+    // it will display the computed payroll on the textfields
     @FXML
     private void displayComputedPayroll(PayrollModel model, PayrollDAO.SalaryConfig config,
                                         PayrollDAO.AttendanceData attendance, double perDiem, int perDiemCount) {
-        // Calculate absence amount
+        // calculate absence amount
         double absenceAmount = attendance.daysAbsent * model.getGrossDailyRate();
 
-        // Display all computed values in the text fields
+        // display all computed values in the text fields
         basicPayTF.setText(String.format("₱%,.2f", model.getSemiMonthlyBasicPay()));
         overtimeTF.setText(String.format("₱%,.2f", attendance.regularOTHours * model.getHourlyRate() * 1.25));
         undertimeTF.setText(String.format("₱%,.2f", attendance.undertimeHours * model.getHourlyRate()));
 
-        // *** DISPLAY ABSENCE INFO ***
+        // display absence info
         absencesTF.setText(String.format("₱%,.2f", absenceAmount));
         numAbsencesTF.setText(String.valueOf(attendance.daysAbsent));
 
-        // Computed contributions
+        // computed contributions with model formula
         sssContributionTF.setText(String.format("₱%,.2f", model.getSSSContribution()));
         phicContributionTF.setText(String.format("₱%,.2f", model.getPHICContribution()));
 
         double hdmf = model.getHDMFContribution();
         if (hdmf > 0) {
-            hdmfContributionTF.setText(String.format("₱%,.2f ✓", hdmf));
-            hdmfContributionTF.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+            hdmfContributionTF.setText(String.format("₱%,.2f", hdmf));
         } else {
-            hdmfContributionTF.setText("₱0.00 (Not deducted)");
-            hdmfContributionTF.setStyle("-fx-text-fill: gray;");
+            hdmfContributionTF.setText("₱0.00");
         }
 
         taxablePayTF.setText(String.format("₱%,.2f", model.getTaxableIncome()));
@@ -410,17 +415,15 @@ public class admin2Controller {
                 (hdmf > 0 ? " ✓ DEDUCTED" : " ✗ NOT DEDUCTED"));
         System.out.println("Overtime: " + String.format("₱%,.2f", attendance.regularOTHours * model.getHourlyRate() * 1.25));
         System.out.println("Undertime: " + String.format("₱%,.2f", attendance.undertimeHours * model.getHourlyRate()));
-
-        // *** ADD ABSENCE DEBUG OUTPUT ***
         System.out.println("Days Absent: " + attendance.daysAbsent);
         System.out.println("Absence Deduction: " + String.format("₱%,.2f", absenceAmount));
-
         System.out.println("Taxable Income: " + String.format("₱%,.2f", model.getTaxableIncome()));
         System.out.println("Withholding Tax: " + String.format("₱%,.2f", model.getWithholdingTax()));
         System.out.println("Total Deductions: " + String.format("₱%,.2f", model.getTotalDeductions()));
         System.out.println("Net Pay: " + String.format("₱%,.2f", model.getNetPay()));
         System.out.println("========================\n");
     }
+
 
     @FXML
     private void clearPayrollFields() {
@@ -441,7 +444,7 @@ public class admin2Controller {
         selectedEndDate = null;
         selectedPeriodId = 0;
 
-        // Clear computed fields
+        // clear computed fields
         basicPayTF.clear();
         overtimeTF.clear();
         undertimeTF.clear();
@@ -459,6 +462,8 @@ public class admin2Controller {
         errorLabelManagePayroll.setText("");
     }
 
+    /* when employee id is searched, all data (computed or from database) will
+    automatically be displayed on the textfields */
     @FXML
     private void onSearchEmployee() {
         PayrollDAO payrollDAO = new PayrollDAO();
@@ -470,7 +475,7 @@ public class admin2Controller {
             return;
         }
 
-        // Get employee info
+        // get employee info
         PayrollDAO.EmployeeInfo empInfo = payrollDAO.getEmployeeInfo(searchID);
         if (empInfo == null) {
             clearPayrollFields();
@@ -480,7 +485,7 @@ public class admin2Controller {
             return;
         }
 
-        // Auto-compute contributions if they don't exist or are zero
+        // auto-compute contributions if they don't exist or are zero
         PayrollDAO.ContributionData existingContrib = payrollDAO.getContributions(searchID);
         if (existingContrib == null || existingContrib.sssContribution == 0.0) {
             System.out.println("⚠ No valid contributions found. Auto-computing...");
@@ -495,15 +500,15 @@ public class admin2Controller {
             }
         }
 
-        // Display employee basic info
+        // display employee basic info
         payrollemployeeName.setText(empInfo.employeeName);
         payrollEmployeeID.setText(empInfo.employeeId);
 
-        // Calculate semi-monthly basic pay
+        // calculate semi-monthly basic pay
         double semiMonthlyPay = empInfo.basicMonthlyPay / 2;
         basicPayTF.setText(String.format("₱%,.2f", semiMonthlyPay));
 
-        // Get salary config
+        // get salary_config
         PayrollDAO.SalaryConfig config = payrollDAO.getSalaryConfig(searchID);
         if (config != null) {
             telecoAllowance.setText(String.format("%.2f", config.telecomAllowance));
@@ -513,7 +518,7 @@ public class admin2Controller {
             perDeimTF.setText(String.format("%.2f", config.perDiem));
             perDeimCountTF.setText(String.valueOf(config.perDiemCount));
 
-            // Refresh contributions after auto-compute
+            // refresh contributions after auto-compute
             PayrollDAO.ContributionData refreshedContrib = payrollDAO.getContributions(searchID);
             if (refreshedContrib != null) {
                 sssContributionTF.setText(String.format("₱%,.2f", refreshedContrib.sssContribution / 2));
@@ -538,40 +543,27 @@ public class admin2Controller {
             hdmfContributionTF.setText("₱0.00");
         }
 
-        // *** NEW: Load leave balances ***
-        // Load leave balances - show current balance, clear usage fields
+        // load vl and sl available days
         int currentYear = LocalDate.now().getYear();
         PayrollDAO.LeaveData leaveData = payrollDAO.getLeaveData(searchID, currentYear);
 
         if (leaveData == null || (leaveData.vlBalance == 0.0 && leaveData.slBalance == 0.0)) {
-            // No leave balance or balance is zero - auto-calculate and allocate
-            System.out.println("═══ AUTO-ALLOCATING LEAVE ═══");
-            System.out.println("Employee: " + empInfo.employeeName);
-            System.out.println("Hire Date: " + empInfo.dateHired);
-
-            // Calculate based on hire date
+            // calculate based on hire date
             double vlDays = PayrollDAO.calculateVLBalance(empInfo.dateHired, currentYear);
             double slDays = PayrollDAO.calculateSLBalance(empInfo.dateHired, currentYear);
 
-            // Save to database
+            // save to database
             payrollDAO.updateLeaveBalance(searchID, currentYear, vlDays, "VL");
             payrollDAO.updateLeaveBalance(searchID, currentYear, slDays, "SL");
 
             System.out.println("✓ Leave auto-allocated: VL " + vlDays + ", SL " + slDays);
             System.out.println("════════════════════════════════");
 
-            // Show info message to admin
-            errorLabelManagePayroll.setStyle("-fx-text-fill: blue;");
-            errorLabelManagePayroll.setText(String.format(
-                    "ℹ Leave auto-allocated: VL %.2f days, SL %.0f days (based on hire date %s)",
-                    vlDays, slDays, empInfo.dateHired
-            ));
-
-            // Reload leave data
+            // reload leave data
             leaveData = payrollDAO.getLeaveData(searchID, currentYear);
         }
 
-// Display current balance
+        // display current balance
         if (leaveData != null) {
             vlBalanceTF.setPromptText("Available: " + String.format("%.2f", leaveData.vlBalance) + " days");
             slBalanceTF.setPromptText("Available: " + String.format("%.2f", leaveData.slBalance) + " days");
@@ -589,8 +581,7 @@ public class admin2Controller {
             slBalanceTF.clear();
         }
 
-
-        // Load SSS Loan
+        // load SSS Loan
         PayrollDAO.DeductionData deductions = payrollDAO.getDeductions(searchID);
         if (deductions != null) {
             sssLoanTF.setText(String.format("%.2f", deductions.sssLoan));
@@ -602,14 +593,12 @@ public class admin2Controller {
         payrollDAO.close();
     }
 
-
-
+    // auto-compute other fields when basic pay is changed
     private void handleBasicPayUpdate() {
         String empId = payrollEmployeeID.getText().trim();
         if (empId.isEmpty()) return;
 
         try {
-            // Parse the basic pay from textfield (remove currency symbols)
             String basicPayText = basicPayTF.getText().trim()
                     .replace("₱", "")
                     .replace(",", "");
@@ -618,21 +607,21 @@ public class admin2Controller {
 
             double newBasicPay = Double.parseDouble(basicPayText);
 
-            // Convert semi-monthly to monthly
+            // convert semi-monthly to monthly
             double newMonthlyBasicPay = newBasicPay * 2;
 
             PayrollDAO dao = new PayrollDAO();
 
-            // Update basic salary in employee_info table
+            // update basic salary in employee_info table
             boolean updated = dao.updateBasicSalary(empId, newMonthlyBasicPay);
 
             if (updated) {
                 System.out.println("✓ Basic Salary updated to: ₱" + String.format("%,.2f", newMonthlyBasicPay));
 
-                // Auto-recompute contributions based on new salary
+                // auto-recompute contributions based on new salary
                 dao.autoComputeAndSaveContributions(empId, newMonthlyBasicPay);
 
-                // Auto-recompute payroll if period is selected
+                // auto-recompute payroll if period is selected
                 if (selectedStartDate != null && selectedEndDate != null) {
                     autoRecomputePayroll();
                 }
@@ -648,6 +637,7 @@ public class admin2Controller {
         }
     }
 
+    // auto-compute other fields when per diem is changed
     private void handlePerDiemUpdate() {
         String empId = payrollEmployeeID.getText().trim();
         if (empId.isEmpty()) return;
@@ -658,7 +648,7 @@ public class admin2Controller {
 
             PayrollDAO dao = new PayrollDAO();
 
-            // Update in database
+            // update in database
             boolean updated = dao.updatePerDiem(empId, perDiem);
 
             if (updated) {
@@ -679,7 +669,7 @@ public class admin2Controller {
         }
     }
 
-
+    // auto-compute other fields when per diem count is changed
     private void handlePerDiemCountUpdate() {
         String empId = payrollEmployeeID.getText().trim();
         if (empId.isEmpty()) return;
@@ -690,13 +680,13 @@ public class admin2Controller {
 
             PayrollDAO dao = new PayrollDAO();
 
-            // Update in database
+            // update in database
             boolean updated = dao.updatePerDiemCount(empId, perDiemCount);
 
             if (updated) {
                 System.out.println("✓ Per Diem Count updated to: " + perDiemCount);
 
-                // Auto-recompute if period is selected
+                // auto-recompute if period is selected
                 if (selectedStartDate != null && selectedEndDate != null) {
                     autoRecomputePayroll();
                 }
@@ -712,6 +702,7 @@ public class admin2Controller {
         }
     }
 
+    // auto-compute other fields when sss loan is changed
     private void handleSSSLoanUpdate() {
         String empId = payrollEmployeeID.getText().trim();
         if (empId.isEmpty()) return;
@@ -722,7 +713,7 @@ public class admin2Controller {
 
             PayrollDAO dao = new PayrollDAO();
 
-            // Update in database
+            // update in database
             boolean updated = dao.updateSSSLoan(empId, sssLoan);
 
             if (updated) {
@@ -744,6 +735,7 @@ public class admin2Controller {
     }
 
 
+    // update payroll record in database
     @FXML
     private void updateComputedPayroll() {
         saveComputedPayroll();
@@ -755,7 +747,258 @@ public class admin2Controller {
         successAlert.showAndWait();
     }
 
+    // auto-recompute payroll when updated
+    private void autoRecomputePayroll() {
+        String empId = payrollEmployeeID.getText().trim();
 
+        if (empId.isEmpty() || selectedStartDate == null || selectedEndDate == null) {
+            return;
+        }
+
+        try {
+            // Get updated values from text fields
+            double perDiemInput = perDeimTF.getText().trim().isEmpty() ? 0.0 :
+                    Double.parseDouble(perDeimTF.getText().trim().replace("₱", "").replace(",", ""));
+            int perDiemCountInput = perDeimCountTF.getText().trim().isEmpty() ? 0 :
+                    Integer.parseInt(perDeimCountTF.getText().trim());
+            double sssLoanInput = sssLoanTF.getText().trim().isEmpty() ? 0.0 :
+                    Double.parseDouble(sssLoanTF.getText().trim().replace("₱", "").replace(",", ""));
+
+            PayrollDAO dao = new PayrollDAO();
+
+            // Get all required data (will now have updated values)
+            PayrollDAO.EmployeeInfo empInfo = dao.getEmployeeInfo(empId);
+            PayrollDAO.SalaryConfig config = dao.getSalaryConfig(empId);
+            PayrollDAO.AttendanceData attendance = dao.getAttendanceData(empId, selectedStartDate, selectedEndDate);
+
+            if (empInfo == null) {
+                return;
+            }
+
+            // initialize PayrollModel using PayrollService pattern
+            PayrollModel model = new PayrollModel();
+            model.PayrollComputation(
+                    empInfo.employeeId,
+                    empInfo.employeeName,
+                    empInfo.basicMonthlyPay,
+                    empInfo.employmentStatus,
+                    empInfo.dateHired,
+                    empInfo.workingHoursPerDay
+            );
+
+            boolean isFirstPeriod = selectedStartDate.getDayOfMonth() >= 26 ||
+                    selectedStartDate.getDayOfMonth() <= 10;
+            model.setPayrollPeriod(selectedStartDate, selectedEndDate, isFirstPeriod);
+
+            dao.loadContributionsIntoPayrollModel(empId, model, isFirstPeriod);
+
+            // set attendance data
+            model.setAttendanceData(
+                    attendance.daysWorked,
+                    attendance.daysAbsent,
+                    attendance.regularOTHours,
+                    attendance.nightDifferentialOTHours,
+                    attendance.specialHolidaysWorked,
+                    attendance.regularHolidaysWorked,
+                    attendance.restDaysWorked,
+                    attendance.restDayOTHours,
+                    attendance.restDayNightDiffOTHours,
+                    attendance.undertimeHours
+            );
+
+            // set allowances with updated per diem values
+            if (config != null) {
+                model.setAllowances(
+                        config.telecomAllowance,
+                        config.travelAllowance,
+                        config.riceSubsidy,
+                        config.nonTaxableSalary,
+                        perDiemInput,
+                        perDiemCountInput
+                );
+            } else {
+                model.setAllowances(0, 0, 0, 0, perDiemInput, perDiemCountInput);
+            }
+
+            // set deductions
+            model.setDeductions(sssLoanInput);
+
+            // get updated leave data
+            int currentYear = selectedStartDate.getYear();
+            PayrollDAO.LeaveData leave = dao.getLeaveData(empId, currentYear);
+            if (leave != null) {
+                model.setLeaveData(
+                        leave.vlUsed,
+                        leave.slUsed,
+                        leave.vlBalance,
+                        leave.slBalance
+                );
+            }
+
+            // compute payroll
+            model.computePayroll();
+
+            // display computed values
+            displayComputedPayroll(model, config, attendance, perDiemInput, perDiemCountInput);
+
+
+            dao.close();
+
+        } catch (NumberFormatException e) {
+            // Silently fail if invalid number - user is still typing
+        } catch (Exception e) {
+            System.err.println("Error auto-recomputing: " + e.getMessage());
+        }
+    }
+
+    // save computed payroll to the database
+    @FXML
+    private void saveComputedPayroll() {
+        String empId = payrollEmployeeID.getText().trim();
+
+        if (empId.isEmpty()) {
+            errorLabelManagePayroll.setText("Please compute payroll first");
+            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
+            return;
+        }
+
+        if (selectedStartDate == null || selectedEndDate == null) {
+            errorLabelManagePayroll.setText("Please select a payroll period");
+            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
+            return;
+        }
+
+        try {
+            double sssLoanInput = sssLoanTF.getText().trim().isEmpty() ? 0.0 :
+                    Double.parseDouble(sssLoanTF.getText().trim().replace("₱", "").replace(",", ""));
+            double perDiemInput = perDeimTF.getText().trim().isEmpty() ? 0.0 :
+                    Double.parseDouble(perDeimTF.getText().trim());
+            int perDiemCountInput = perDeimCountTF.getText().trim().isEmpty() ? 0 :
+                    Integer.parseInt(perDeimCountTF.getText().trim());
+
+            PayrollDAO dao = new PayrollDAO();
+
+            // get all required data
+            PayrollDAO.EmployeeInfo empInfo = dao.getEmployeeInfo(empId);
+            PayrollDAO.SalaryConfig config = dao.getSalaryConfig(empId);
+            PayrollDAO.AttendanceData attendance = dao.getAttendanceData(empId, selectedStartDate, selectedEndDate);
+
+            if (empInfo == null) {
+                errorLabelManagePayroll.setText("Employee not found");
+                errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
+                dao.close();
+                return;
+            }
+
+            // initialize PayrollModel
+            PayrollModel model = new PayrollModel();
+            model.PayrollComputation(
+                    empInfo.employeeId,
+                    empInfo.employeeName,
+                    empInfo.basicMonthlyPay,
+                    empInfo.employmentStatus,
+                    empInfo.dateHired,
+                    empInfo.workingHoursPerDay
+            );
+
+            // determine period type
+            boolean isFirstPeriod = selectedStartDate.getDayOfMonth() >= 26 ||
+                    selectedStartDate.getDayOfMonth() <= 10;
+            model.setPayrollPeriod(selectedStartDate, selectedEndDate, isFirstPeriod);
+
+            // load pre-computed contributions
+            dao.loadContributionsIntoPayrollModel(empId, model, isFirstPeriod);
+
+            model.setAttendanceData(
+                    attendance.daysWorked, attendance.daysAbsent,
+                    attendance.regularOTHours, attendance.nightDifferentialOTHours,
+                    attendance.specialHolidaysWorked, attendance.regularHolidaysWorked,
+                    attendance.restDaysWorked, attendance.restDayOTHours,
+                    attendance.restDayNightDiffOTHours, attendance.undertimeHours
+            );
+
+            if (config != null) {
+                model.setAllowances(
+                        config.telecomAllowance, config.travelAllowance,
+                        config.riceSubsidy, config.nonTaxableSalary,
+                        perDiemInput, perDiemCountInput
+                );
+            } else {
+                model.setAllowances(0, 0, 0, 0, perDiemInput, perDiemCountInput);
+            }
+
+            model.setDeductions(sssLoanInput);
+
+            // get leave data
+            int currentYear = selectedStartDate.getYear();
+            PayrollDAO.LeaveData leave = dao.getLeaveData(empId, currentYear);
+            if (leave != null) {
+                double vlDaysTaken = vlBalanceTF.getText().trim().isEmpty() ? 0.0 :
+                        Double.parseDouble(vlBalanceTF.getText().trim());
+                double slDaysTaken = slBalanceTF.getText().trim().isEmpty() ? 0.0 :
+                        Double.parseDouble(slBalanceTF.getText().trim());
+
+                model.setLeaveData(vlDaysTaken, slDaysTaken, leave.vlBalance, leave.slBalance);
+            }
+
+            model.computePayroll();
+
+            // save to database
+            boolean saved = dao.savePayroll(
+                    empId,
+                    selectedPeriodId,
+                    model,
+                    config,
+                    attendance
+            );
+
+            if (saved) {
+
+            }
+
+            dao.close();
+
+        } catch (Exception e) {
+            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
+            errorLabelManagePayroll.setText("Error saving payroll: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // display current leave balance after refresh
+    private void refreshLeaveBalance(String employeeId) {
+        if (employeeId == null || employeeId.isEmpty()) {
+            return;
+        }
+
+        try {
+            PayrollDAO dao = new PayrollDAO();
+            int currentYear = LocalDate.now().getYear();
+
+            // get current leave balance from database
+            PayrollDAO.LeaveData leaveData = dao.getLeaveData(employeeId, currentYear);
+
+            if (leaveData != null) {
+                // update prompt text with current balance
+                vlBalanceTF.setPromptText("Available: " + String.format("%.2f", leaveData.vlBalance) + " days");
+                slBalanceTF.setPromptText("Available: " + String.format("%.2f", leaveData.slBalance) + " days");
+
+                // clear input fields
+                vlBalanceTF.clear();
+                slBalanceTF.clear();
+
+                System.out.println("═══ BALANCE REFRESHED ═══");
+                System.out.println("VL: " + leaveData.vlBalance + " days");
+                System.out.println("SL: " + leaveData.slBalance + " days");
+                System.out.println("═════════════════════════");
+            }
+
+            dao.close();
+
+        } catch (Exception e) {
+            System.err.println("Error refreshing leave: " + e.getMessage());
+        }
+    }
 
     @FXML
     private void computePayroll() {
@@ -894,277 +1137,7 @@ public class admin2Controller {
         }
     }
 
-    // auto-recompute payroll when updated
-    private void autoRecomputePayroll() {
-        String empId = payrollEmployeeID.getText().trim();
-
-        if (empId.isEmpty() || selectedStartDate == null || selectedEndDate == null) {
-            return;
-        }
-
-        try {
-            // Get updated values from text fields
-            double perDiemInput = perDeimTF.getText().trim().isEmpty() ? 0.0 :
-                    Double.parseDouble(perDeimTF.getText().trim().replace("₱", "").replace(",", ""));
-            int perDiemCountInput = perDeimCountTF.getText().trim().isEmpty() ? 0 :
-                    Integer.parseInt(perDeimCountTF.getText().trim());
-            double sssLoanInput = sssLoanTF.getText().trim().isEmpty() ? 0.0 :
-                    Double.parseDouble(sssLoanTF.getText().trim().replace("₱", "").replace(",", ""));
-
-            PayrollDAO dao = new PayrollDAO();
-
-            // Get all required data (will now have updated values)
-            PayrollDAO.EmployeeInfo empInfo = dao.getEmployeeInfo(empId);
-            PayrollDAO.SalaryConfig config = dao.getSalaryConfig(empId);
-            PayrollDAO.AttendanceData attendance = dao.getAttendanceData(empId, selectedStartDate, selectedEndDate);
-
-            if (empInfo == null) {
-                return;
-            }
-
-            // Initialize PayrollModel using PayrollService pattern
-            PayrollModel model = new PayrollModel();
-            model.PayrollComputation(
-                    empInfo.employeeId,
-                    empInfo.employeeName,
-                    empInfo.basicMonthlyPay,
-                    empInfo.employmentStatus,
-                    empInfo.dateHired,
-                    empInfo.workingHoursPerDay
-            );
-
-            boolean isFirstPeriod = selectedStartDate.getDayOfMonth() >= 26 ||
-                    selectedStartDate.getDayOfMonth() <= 10;
-            model.setPayrollPeriod(selectedStartDate, selectedEndDate, isFirstPeriod);
-
-            dao.loadContributionsIntoPayrollModel(empId, model, isFirstPeriod);
-
-            // Set attendance data
-            model.setAttendanceData(
-                    attendance.daysWorked,
-                    attendance.daysAbsent,
-                    attendance.regularOTHours,
-                    attendance.nightDifferentialOTHours,
-                    attendance.specialHolidaysWorked,
-                    attendance.regularHolidaysWorked,
-                    attendance.restDaysWorked,
-                    attendance.restDayOTHours,
-                    attendance.restDayNightDiffOTHours,
-                    attendance.undertimeHours
-            );
-
-            // Set allowances with updated per diem values
-            if (config != null) {
-                model.setAllowances(
-                        config.telecomAllowance,
-                        config.travelAllowance,
-                        config.riceSubsidy,
-                        config.nonTaxableSalary,
-                        perDiemInput,
-                        perDiemCountInput
-                );
-            } else {
-                model.setAllowances(0, 0, 0, 0, perDiemInput, perDiemCountInput);
-            }
-
-            // Set deductions
-            model.setDeductions(sssLoanInput);
-
-            // Get updated leave data
-            int currentYear = selectedStartDate.getYear();
-            PayrollDAO.LeaveData leave = dao.getLeaveData(empId, currentYear);
-            if (leave != null) {
-                model.setLeaveData(
-                        leave.vlUsed,
-                        leave.slUsed,
-                        leave.vlBalance,
-                        leave.slBalance
-                );
-            }
-
-            // Compute payroll
-            model.computePayroll();
-
-            // Display computed values
-            displayComputedPayroll(model, config, attendance, perDiemInput, perDiemCountInput);
-
-
-            dao.close();
-
-        } catch (NumberFormatException e) {
-            // Silently fail if invalid number - user is still typing
-        } catch (Exception e) {
-            System.err.println("Error auto-recomputing: " + e.getMessage());
-        }
-    }
-
-
-    @FXML
-    private void saveComputedPayroll() {
-        String empId = payrollEmployeeID.getText().trim();
-
-        if (empId.isEmpty()) {
-            errorLabelManagePayroll.setText("Please compute payroll first");
-            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
-            return;
-        }
-
-        if (selectedStartDate == null || selectedEndDate == null) {
-            errorLabelManagePayroll.setText("Please select a payroll period");
-            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
-            return;
-        }
-
-        try {
-            double sssLoanInput = sssLoanTF.getText().trim().isEmpty() ? 0.0 :
-                    Double.parseDouble(sssLoanTF.getText().trim().replace("₱", "").replace(",", ""));
-            double perDiemInput = perDeimTF.getText().trim().isEmpty() ? 0.0 :
-                    Double.parseDouble(perDeimTF.getText().trim());
-            int perDiemCountInput = perDeimCountTF.getText().trim().isEmpty() ? 0 :
-                    Integer.parseInt(perDeimCountTF.getText().trim());
-
-            PayrollDAO dao = new PayrollDAO();
-
-            // Get all required data
-            PayrollDAO.EmployeeInfo empInfo = dao.getEmployeeInfo(empId);
-            PayrollDAO.SalaryConfig config = dao.getSalaryConfig(empId);
-            PayrollDAO.AttendanceData attendance = dao.getAttendanceData(empId, selectedStartDate, selectedEndDate);
-
-            if (empInfo == null) {
-                errorLabelManagePayroll.setText("Employee not found");
-                errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
-                dao.close();
-                return;
-            }
-
-            // Initialize PayrollModel
-            PayrollModel model = new PayrollModel();
-            model.PayrollComputation(
-                    empInfo.employeeId,
-                    empInfo.employeeName,
-                    empInfo.basicMonthlyPay,
-                    empInfo.employmentStatus,
-                    empInfo.dateHired,
-                    empInfo.workingHoursPerDay
-            );
-
-            // Determine period type
-            boolean isFirstPeriod = selectedStartDate.getDayOfMonth() >= 26 ||
-                    selectedStartDate.getDayOfMonth() <= 10;
-            model.setPayrollPeriod(selectedStartDate, selectedEndDate, isFirstPeriod);
-
-            // *** ADD THIS: Load pre-computed contributions ***
-            dao.loadContributionsIntoPayrollModel(empId, model, isFirstPeriod);
-
-            model.setAttendanceData(
-                    attendance.daysWorked, attendance.daysAbsent,
-                    attendance.regularOTHours, attendance.nightDifferentialOTHours,
-                    attendance.specialHolidaysWorked, attendance.regularHolidaysWorked,
-                    attendance.restDaysWorked, attendance.restDayOTHours,
-                    attendance.restDayNightDiffOTHours, attendance.undertimeHours
-            );
-
-            if (config != null) {
-                model.setAllowances(
-                        config.telecomAllowance, config.travelAllowance,
-                        config.riceSubsidy, config.nonTaxableSalary,
-                        perDiemInput, perDiemCountInput
-                );
-            } else {
-                model.setAllowances(0, 0, 0, 0, perDiemInput, perDiemCountInput);
-            }
-
-            model.setDeductions(sssLoanInput);
-
-            // Get leave data
-            int currentYear = selectedStartDate.getYear();
-            PayrollDAO.LeaveData leave = dao.getLeaveData(empId, currentYear);
-            if (leave != null) {
-                double vlDaysTaken = vlBalanceTF.getText().trim().isEmpty() ? 0.0 :
-                        Double.parseDouble(vlBalanceTF.getText().trim());
-                double slDaysTaken = slBalanceTF.getText().trim().isEmpty() ? 0.0 :
-                        Double.parseDouble(slBalanceTF.getText().trim());
-
-                model.setLeaveData(vlDaysTaken, slDaysTaken, leave.vlBalance, leave.slBalance);
-            }
-
-            model.computePayroll();
-
-            // *** ADD DEBUG OUTPUT ***
-            System.out.println("\n=== BEFORE SAVING TO DATABASE ===");
-            System.out.println("SSS: ₱" + model.getSSSContribution());
-            System.out.println("PHIC: ₱" + model.getPHICContribution());
-            System.out.println("HDMF: ₱" + model.getHDMFContribution());
-            System.out.println("Withholding Tax: ₱" + model.getWithholdingTax());
-            System.out.println("Total Deductions: ₱" + model.getTotalDeductions());
-            System.out.println("Net Pay: ₱" + model.getNetPay());
-            System.out.println("==================================\n");
-
-            // Save to database
-            boolean saved = dao.savePayroll(
-                    empId,
-                    selectedPeriodId,
-                    model,
-                    config,
-                    attendance
-            );
-
-            if (saved) {
-                // Handle leave balance updates...
-                // (rest of your existing code)
-            }
-
-            dao.close();
-
-        } catch (Exception e) {
-            errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
-            errorLabelManagePayroll.setText("Error saving payroll: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Refresh and display current leave balance
-     * Called when period changes
-     */
-    private void refreshLeaveBalance(String employeeId) {
-        if (employeeId == null || employeeId.isEmpty()) {
-            return;
-        }
-
-        try {
-            PayrollDAO dao = new PayrollDAO();
-            int currentYear = LocalDate.now().getYear();
-
-            // Get current leave balance from database
-            PayrollDAO.LeaveData leaveData = dao.getLeaveData(employeeId, currentYear);
-
-            if (leaveData != null) {
-                // Update prompt text with current balance
-                vlBalanceTF.setPromptText("Available: " + String.format("%.2f", leaveData.vlBalance) + " days");
-                slBalanceTF.setPromptText("Available: " + String.format("%.2f", leaveData.slBalance) + " days");
-
-                // Clear input fields
-                vlBalanceTF.clear();
-                slBalanceTF.clear();
-
-                System.out.println("═══ BALANCE REFRESHED ═══");
-                System.out.println("VL: " + leaveData.vlBalance + " days");
-                System.out.println("SL: " + leaveData.slBalance + " days");
-                System.out.println("═════════════════════════");
-            }
-
-            dao.close();
-
-        } catch (Exception e) {
-            System.err.println("Error refreshing leave: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Special method for February leave conversion
-     * Converts unused VL/SL to cash payout
-     */
+    // special method for February leave conversion
     @FXML
     private void computeFebruaryLeaveConversion() {
         String empId = payrollEmployeeID.getText().trim();
@@ -1224,8 +1197,7 @@ public class admin2Controller {
         }
     }
 
-    // Add this method to your admin2Controller class
-
+    // delete payroll in the database
     @FXML
     private void deletePayroll() {
         String empId = payrollEmployeeID.getText().trim();
@@ -1237,7 +1209,7 @@ public class admin2Controller {
             return;
         }
 
-        // Validation: Check if period is selected
+        // check if period is selected
         if (selectedStartDate == null || selectedEndDate == null || selectedPeriodId == 0) {
             errorLabelManagePayroll.setText("Please select a payroll period from the dropdown");
             errorLabelManagePayroll.setStyle("-fx-text-fill: red;");
@@ -1247,7 +1219,7 @@ public class admin2Controller {
         try {
             PayrollDAO dao = new PayrollDAO();
 
-            // Check if payroll record exists
+            // check if payroll record exists
             boolean exists = dao.payrollExists(empId, selectedPeriodId);
 
             if (!exists) {
@@ -1257,7 +1229,7 @@ public class admin2Controller {
                 return;
             }
 
-            // Show confirmation dialog
+            // show confirmation dialog
             Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
             confirmAlert.setTitle("Delete Payroll Confirmation");
             confirmAlert.setHeaderText("Delete Payroll Record");
@@ -1276,7 +1248,7 @@ public class admin2Controller {
             Optional<ButtonType> result = confirmAlert.showAndWait();
 
             if (result.isPresent() && result.get() == ButtonType.OK) {
-                // User confirmed deletion
+                // user confirmed deletion
                 boolean deleted = dao.deletePayroll(empId, selectedPeriodId);
 
                 if (deleted) {
@@ -1286,7 +1258,7 @@ public class admin2Controller {
                             selectedPeriodId
                     ));
 
-                    // Clear the computed fields to reflect deletion
+                    // clear the computed fields to reflect deletion
                     clearComputedFields();
 
                     System.out.println("Payroll deleted for employee " + empId +
@@ -1296,7 +1268,7 @@ public class admin2Controller {
                     errorLabelManagePayroll.setText("Failed to delete payroll record");
                 }
             } else {
-                // User cancelled deletion
+                // user cancelled deletion
                 errorLabelManagePayroll.setStyle("-fx-text-fill: blue;");
                 errorLabelManagePayroll.setText("Deletion cancelled");
             }
@@ -1310,9 +1282,7 @@ public class admin2Controller {
         }
     }
 
-    /**
-     * Clear only the computed payroll fields (not employee info or allowances)
-     */
+    // clear only the computed payroll fields (not employee info or allowances)
     private void clearComputedFields() {
         basicPayTF.clear();
         overtimeTF.clear();
@@ -1329,7 +1299,7 @@ public class admin2Controller {
         netPayTF.clear();
     }
 
-    //When the admin clicked "Manage Payroll" button, the element related will be visible.
+    // When the admin clicked "Manage Payroll" button, the element related will be visible.
     @FXML
     private void managePayrollClick() {
         pane1.setVisible(false);
@@ -1339,7 +1309,7 @@ public class admin2Controller {
         manageEmpLabel.setVisible(false);
         reportAnalysisLabel.setVisible(false);
     }
-    //When the admin, clicked the "Report Analysis" button it will show the elements related to this screen such as the charts.
+    // When the admin, clicked the "Report Analysis" button it will show the elements related to this screen such as the charts.
     @FXML
     private void reportAnalysisClick() {
         pane1.setVisible(false);
@@ -1350,14 +1320,14 @@ public class admin2Controller {
         manageEmpLabel.setVisible(false);
     }
 
-    //It displays the number of active employees in the company
+    // It displays the number of active employees in the company
     private void displayActiveEmployees() {
 
         int total = employeeDAO.getActiveEmployeeCount();
         headCountLabel.setText(String.valueOf(total));
     }
 
-//This charts displays the number of employees per department
+    // This charts displays the number of employees per department
     public void loadDepartmentChart() {
         if (departmentWiseCount == null) {
             System.out.println("ERROR: Chart is null!");
@@ -1410,7 +1380,8 @@ public class admin2Controller {
             scrollPane.setFitToHeight(true);
         }
     }
-    //This displays the weekly attendance of the employees
+
+    // This displays the weekly attendance of the employees
     public void loadWeeklyAttendanceChart() {
         Map<String, Integer> summary = employeeDAO.getWeeklyAttendanceSummary();
 
@@ -1424,6 +1395,7 @@ public class admin2Controller {
         attendancePieChart.setTitle("Weekly Attendance Summary");
     }
 
+    // displays add employee screen
     @FXML
     private void addEmployeeClick() {
         addEmpPane.setVisible(true);
@@ -1440,6 +1412,7 @@ public class admin2Controller {
         }
     }
 
+    // lead back to manage employee table
     @FXML
     private void addEmpBackButtonClick() {
         pane1.setVisible(true);
@@ -1554,6 +1527,7 @@ public class admin2Controller {
         confirmationPane.setVisible(false);
     }
 
+    // search and filter employee
     @FXML
     private void searchEmployeebyID() {
         String findEmp = employeeIDToRemoveTextfield.getText().trim();
@@ -1595,42 +1569,7 @@ public class admin2Controller {
         removeJobLabel.setText("Job Title:");
     }
 
-    /**
-     * Optional: Set current period based on today's date
-     * Add this if you have a "Set Current Period" button in FXML
-     */
-    @FXML
-    private void setCurrentPeriod() {
-        LocalDate now = LocalDate.now();
-        int day = now.getDayOfMonth();
-
-        // Find the appropriate period in the ComboBox
-        PayrollPeriodItem currentPeriod = null;
-
-        for (PayrollPeriodItem item : payrollPeriodComboBox.getItems()) {
-            LocalDate start = item.getPeriod().startDate;
-            LocalDate end = item.getPeriod().endDate;
-
-            // Check if today falls within this period
-            if (!now.isBefore(start) && !now.isAfter(end)) {
-                currentPeriod = item;
-                break;
-            }
-        }
-
-        if (currentPeriod != null) {
-            payrollPeriodComboBox.getSelectionModel().select(currentPeriod);
-            errorLabelManagePayroll.setStyle("-fx-text-fill: blue;");
-            errorLabelManagePayroll.setText("✓ Current period selected automatically");
-        } else {
-            errorLabelManagePayroll.setStyle("-fx-text-fill: orange;");
-            errorLabelManagePayroll.setText("No active period found for current date");
-        }
-    }
-
-    /**
-     * Inner class to represent a period item in the ComboBox
-     */
+    // Inner class to represent a period item in the ComboBox
     public static class PayrollPeriodItem {
         private PayrollDAO.PayrollPeriod period;
 

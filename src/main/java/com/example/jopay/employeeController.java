@@ -29,7 +29,6 @@ public class employeeController {
     @FXML
     private Label welcomeLabel;
 
-    // *** CHANGED: ComboBox type to use PayslipPeriodItem ***
     @FXML
     private ComboBox<PayslipPeriodItem> comboBoxPeriod;
 
@@ -49,10 +48,8 @@ public class employeeController {
     private ImageView logoutImageView;
 
     private String selectedPeriod = "";
-    private int selectedPeriodId = 0;  // *** ADD THIS ***
+    private int selectedPeriodId = 0;
 
-    @FXML
-    private Button updateBackBtn;
     @FXML private PieChart employeeAttendancePieChart;
 
     // Employee data
@@ -98,8 +95,6 @@ public class employeeController {
         System.out.println("=== employeeController initialized ===");
         System.out.println("PieChart is null? " + (employeeAttendancePieChart == null));
 
-        // *** REMOVED: loadPayrollPeriods() - will be called in loadEmployeeData() ***
-
         downloadLink.setVisible(false);
         downloadBtn.setVisible(false);
 
@@ -109,10 +104,7 @@ public class employeeController {
         }
     }
 
-    /**
-     * Load ONLY periods where THIS employee has payroll records
-     * Used for payslip dropdown - employee can only view existing payslips
-     */
+    // show only periods where certain employee has payroll records
     private void loadPayrollPeriods() {
         if (employeeId == null || employeeId.isEmpty()) {
             System.err.println("⚠ Cannot load payroll periods: Employee ID not set");
@@ -121,7 +113,6 @@ public class employeeController {
 
         PayrollDAO dao = new PayrollDAO();
 
-        // ✅ CORRECT: Get ONLY periods where employee has payroll records
         java.util.List<PayrollDAO.PayrollPeriod> periods =
                 dao.getPeriodsWithPayrollDataForEmployee(employeeId);
 
@@ -132,7 +123,7 @@ public class employeeController {
             comboBoxPeriod.setPromptText("No payslips available");
             comboBoxPeriod.setDisable(true);
 
-            // Hide download controls
+            // Hide download controls for generated payslips
             downloadLink.setVisible(false);
             downloadBtn.setVisible(false);
         } else {
@@ -150,7 +141,6 @@ public class employeeController {
         dao.close();
     }
 
-    // *** UPDATED METHOD ***
     // load employee info
     public void loadEmployeeData(String empId) {
         this.employeeId = empId;
@@ -166,7 +156,6 @@ public class employeeController {
 
             System.out.println("Employee data loaded: " + employeeName);
 
-            // *** ADD THIS: Load payroll periods after employee data is loaded ***
             loadPayrollPeriods();
         } else {
             System.err.println("Failed to load employee data for ID: " + empId);
@@ -175,9 +164,7 @@ public class employeeController {
         dao.close();
     }
 
-    /**
-     * Load payroll data from database for the selected period
-     */
+    // load payroll record from database for selected period
     private boolean loadPayrollDataForPeriod(int periodId) {
         PayrollDAO dao = new PayrollDAO();
         DatabaseConnector dbConnect = new DatabaseConnector();
@@ -283,17 +270,15 @@ public class employeeController {
         }
     }
 
-    // *** UPDATED METHOD ***
+    // handle period selected from dropdown
     @FXML
     void handleMonthSelection() {
         PayslipPeriodItem selection = comboBoxPeriod.getValue();
 
         if (selection != null) {
-            // *** CHANGED: Get data from PayslipPeriodItem object ***
+            // Get data from the period selected
             selectedPeriod = selection.getPeriod().periodName;
             selectedPeriodId = selection.getPeriod().periodId;
-
-            System.out.println("Period selected: " + selectedPeriod + " (ID: " + selectedPeriodId + ")");
 
             // Load payroll data for this period
             boolean dataLoaded = loadPayrollDataForPeriod(selectedPeriodId);
@@ -312,6 +297,7 @@ public class employeeController {
         }
     }
 
+    // displays the payslip pdf file
     @FXML
     void handleDownloadPayslip() {
         if (selectedPeriod == null || selectedPeriod.isEmpty()) {
@@ -341,6 +327,7 @@ public class employeeController {
         }
     }
 
+    // generates the content of pdf
     private void generatePayslipPDF(File file) throws DocumentException, IOException {
         Document document = new Document(PageSize.A4, 50, 50, 80, 50);
         PdfWriter.getInstance(document, new FileOutputStream(file));
@@ -462,6 +449,7 @@ public class employeeController {
         document.close();
     }
 
+    // cell properties
     private void addCell(PdfPTable table, String text, Font font, int border) {
         PdfPCell cell = new PdfPCell(new Phrase(text, font));
         cell.setPadding(5);
@@ -484,6 +472,7 @@ public class employeeController {
         return String.format("%,.2f", amount);
     }
 
+    // lead to update password screen
     @FXML
     void handleUpdatePassword() throws IOException {
         FXMLLoader updatePasswordLoader = new FXMLLoader(getClass().getResource("updatepassword.fxml"));
@@ -496,6 +485,7 @@ public class employeeController {
         stage.getScene().setRoot(root);
     }
 
+    // lead to login page
     @FXML
     void handleLogout() throws IOException {
         FXMLLoader employeeLoginLoader = new FXMLLoader(getClass().getResource("employeelogin.fxml"));
@@ -504,6 +494,7 @@ public class employeeController {
         stage.getScene().setRoot(root);
     }
 
+    // lead to login page
     @FXML
     void handleLogoutImageClick() throws IOException {
         FXMLLoader employeeLoginLoader = new FXMLLoader(getClass().getResource("employeelogin.fxml"));
@@ -520,6 +511,7 @@ public class employeeController {
         alert.showAndWait();
     }
 
+    // greetings
     public void setEmployeeName(String name) {
         this.employeeName = name;
         welcomeLabel.setText("Mabuhay " + name + "!");
@@ -541,8 +533,7 @@ public class employeeController {
         Platform.runLater(this::loadAttendancePieChart);
     }
 
-
-
+    // display attendance pie chart
     public void loadAttendancePieChart() {
 
         if (employeeAttendancePieChart == null) {
@@ -582,14 +573,8 @@ public class employeeController {
             employeeAttendancePieChart.setTitle("Attendance Summary - " + monthName + " " + currentYear);
         }
     }
-    // ══════════════════════════════════════════════════════════════════════════
-    // *** NEW INNER CLASS: PayslipPeriodItem ***
-    // ══════════════════════════════════════════════════════════════════════════
 
-    /**
-     * Wrapper class for displaying period items in the ComboBox
-     * This allows us to show the period name but store the full period object
-     */
+    // inner class for displaying period items in the ComboBox
     public static class PayslipPeriodItem {
         private PayrollDAO.PayrollPeriod period;
 
